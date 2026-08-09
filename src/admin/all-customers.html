@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <title>Customer Management — Resolvia</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+    <style>
+        /* ── Page-specific only ── */
+
+        /* Avatar */
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            object-fit: cover;
+            border: 2px solid var(--border);
+            display: block;
+            margin: 0 auto;
+            transition: transform var(--t-fast), box-shadow var(--t-fast);
+        }
+
+        .avatar:hover {
+            transform: scale(1.12);
+            box-shadow: var(--shadow-md);
+        }
+
+        .avatar-placeholder {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font-size: 14px;
+            border: 2px solid var(--primary-mid);
+        }
+
+        /* Action buttons */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: 0 var(--space-3);
+            height: 28px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-strong);
+            background: var(--bg-surface);
+            font-size: var(--text-xs);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast), transform var(--t-fast);
+            white-space: nowrap;
+        }
+
+        .action-btn.view-btn {
+            color: var(--info);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .action-btn.view-btn:hover {
+            background: var(--info);
+            color: #fff;
+            border-color: var(--info);
+            transform: translateY(-1px);
+        }
+
+        .action-btn.status-btn {
+            color: var(--primary);
+            border-color: var(--primary-mid);
+        }
+
+        .action-btn.status-btn:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        /* Customer details modal profile section */
+        .customer-profile {
+            display: flex;
+            align-items: center;
+            gap: var(--space-5);
+            padding-bottom: var(--space-5);
+            margin-bottom: var(--space-5);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            border: 3px solid var(--border);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-surface-2);
+            flex-shrink: 0;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-avatar i {
+            font-size: 32px;
+            color: var(--text-muted);
+        }
+
+        .profile-name {
+            font-size: var(--text-xl);
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+
+        .profile-id {
+            font-family: var(--font-mono);
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-2);
+        }
+
+        /* Details grid */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-3);
+        }
+
+        .detail-item {
+            background: var(--bg-surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--space-3) var(--space-4);
+            transition: background-color var(--t-base), border-color var(--t-base);
+        }
+
+        .detail-label {
+            font-size: var(--text-xs);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: var(--text-muted);
+            margin-bottom: var(--space-1);
+        }
+
+        .detail-value {
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        /* Status change options */
+        .status-options {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+            margin-top: var(--space-4);
+        }
+
+        .status-option {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            border: 1.5px solid var(--border-strong);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background var(--t-fast), border-color var(--t-fast);
+            background: var(--bg-surface);
+        }
+
+        .status-option:hover {
+            background: var(--bg-surface-2);
+            border-color: var(--primary);
+        }
+
+        .status-option.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .status-option input {
+            accent-color: var(--primary);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .status-option label {
+            font-size: var(--text-sm);
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        /* Upload area */
+        .upload-area {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            padding: var(--space-4);
+            background: var(--bg-surface-2);
+            border: 1.5px dashed var(--border-strong);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-5);
+            transition: border-color var(--t-fast), background var(--t-base);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+        }
+
+        .image-preview {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-full);
+            border: 2px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-surface);
+            flex-shrink: 0;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview i {
+            font-size: 24px;
+            color: var(--text-muted);
+        }
+
+        .upload-hint {
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+            margin-top: var(--space-1);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: calc(var(--header-height) + var(--space-4));
+            right: var(--space-5);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: 500;
+            z-index: 5000;
+            box-shadow: var(--shadow-lg);
+            min-width: 260px;
+            max-width: 380px;
+            animation: toast-in 0.25s ease;
+            border-left: 4px solid transparent;
+        }
+
+        @keyframes toast-in {
+            from {
+                transform: translateX(110%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            background: var(--success-light);
+            border-color: var(--success);
+            color: #166534;
+        }
+
+        .toast.error {
+            background: var(--danger-light);
+            border-color: var(--danger);
+            color: #9f1239;
+        }
+
+        .toast.warning {
+            background: var(--warning-light);
+            border-color: var(--warning);
+            color: #92400e;
+        }
+
+        .toast i {
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .toast-msg {
+            flex: 1;
+        }
+
+        .toast-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.6;
+            font-size: 14px;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+
+        /* Table column sizing */
+        #customerTable th:nth-child(1),
+        #customerTable td:nth-child(1) {
+            width: 50px;
+            text-align: center;
+        }
+
+        #customerTable th:nth-child(2),
+        #customerTable td:nth-child(2) {
+            width: 110px;
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+        }
+
+        #customerTable th:nth-child(3),
+        #customerTable td:nth-child(3) {
+            width: 56px;
+            text-align: center;
+        }
+
+        #customerTable th:nth-child(7),
+        #customerTable td:nth-child(7) {
+            width: 100px;
+            text-align: center;
+        }
+
+        #customerTable th:nth-child(8),
+        #customerTable td:nth-child(8) {
+            width: 130px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .customer-profile {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .upload-area {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .upload-area .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="/assets/logo.png" alt="Resolvia" id="logo">
+            <span class="logo-text">Resolvia</span>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" title="Toggle theme">
+                <i class="fa fa-moon icon-moon"></i>
+                <i class="fa fa-sun icon-sun"></i>
+            </button>
+            <div class="profile-icon"><i class="fa fa-user"></i></div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fa fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <nav class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </nav>
+
+    <main class="main-content" id="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Customer Management</h1>
+                <p class="page-subtitle">View and manage all customer accounts</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-primary" id="addCustomerBtn" style="display:none;">
+                    <i class="fas fa-user-plus"></i> Add Customer
+                </button>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="table-toolbar">
+            <div class="input-group table-search">
+                <i class="fas fa-search input-icon"></i>
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by name, email, or ID…">
+            </div>
+            <div class="table-actions">
+                <div class="flex items-center gap-2">
+                    <label class="form-label" style="margin:0;white-space:nowrap;">Show</label>
+                    <select id="entriesPerPage" class="form-control" style="width:80px;">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <button class="btn btn-secondary" id="searchBtn">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrapper">
+            <table id="customerTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Customer ID</th>
+                        <th>Photo</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="customerTableBody"></tbody>
+            </table>
+
+            <div class="pagination">
+                <span class="pagination-info" id="paginationInfo">Showing 1–10 of 0 customers</span>
+                <div class="pagination-controls">
+                    <button class="page-btn" id="prevPage" disabled><i class="fas fa-chevron-left"></i></button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn" id="nextPage"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ── Customer Details Modal ── -->
+    <div class="modal-overlay" id="customerDetailsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Customer Details</h2>
+                <button class="modal-close" id="closeDetailsModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="customer-profile">
+                    <div class="profile-avatar" id="detailProfileImage">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <div class="profile-name" id="detailCustomerName">—</div>
+                        <div class="profile-id" id="detailCustomerId">—</div>
+                        <span class="badge" id="detailStatus">—</span>
+                    </div>
+                </div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Email</div>
+                        <div class="detail-value" id="detailEmail">—</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Phone</div>
+                        <div class="detail-value" id="detailPhone">—</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Member Since</div>
+                        <div class="detail-value" id="detailCreatedAt">—</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Last Updated</div>
+                        <div class="detail-value" id="detailUpdatedAt">—</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="closeDetailsBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Add Customer Modal ── -->
+    <div class="modal-overlay" id="addCustomerModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Add New Customer</h2>
+                <button class="modal-close" id="closeAddCustomerModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="customerForm" autocomplete="off">
+
+                    <div class="upload-area">
+                        <div class="image-preview" id="addImagePreview">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-secondary btn-sm" id="uploadImageBtn">
+                                <i class="fas fa-upload"></i> Upload Photo
+                            </button>
+                            <p class="upload-hint">JPG, PNG, GIF — max 2MB</p>
+                        </div>
+                        <input type="file" id="imageInput" style="display:none;" accept="image/*">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Customer ID <span class="form-required">*</span></label>
+                            <input type="text" id="customerId" class="form-control" placeholder="e.g. CUST-001"
+                                pattern="[A-Za-z0-9\-_]+" required>
+                            <span class="form-error" id="customerIdError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span></span>
+                            </span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Full Name <span class="form-required">*</span></label>
+                            <input type="text" id="customerName" class="form-control" placeholder="Enter full name"
+                                required>
+                            <span class="form-error" id="customerNameError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Email <span class="form-required">*</span></label>
+                            <div class="input-group">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" id="customerEmail" class="form-control"
+                                    placeholder="customer@example.com" required>
+                            </div>
+                            <span class="form-error" id="customerEmailError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span></span>
+                            </span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <div class="input-group">
+                                <i class="fas fa-phone input-icon"></i>
+                                <input type="tel" id="customerPhone" class="form-control" placeholder="+1 234 567 8900">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Password <span class="form-required">*</span></label>
+                            <div class="input-group">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" id="customerPassword" class="form-control"
+                                    placeholder="Min. 6 characters" required>
+                            </div>
+                            <span class="form-error" id="customerPasswordError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span></span>
+                            </span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm Password <span class="form-required">*</span></label>
+                            <div class="input-group">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" id="customerConfirmPassword" class="form-control"
+                                    placeholder="Repeat password" required>
+                            </div>
+                            <span class="form-error" id="customerConfirmPasswordError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="max-width:200px;">
+                        <label class="form-label">Status</label>
+                        <select id="customerStatus" class="form-control">
+                            <option value="Active" selected>Active</option>
+                            <option value="Disabled">Disabled</option>
+                        </select>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelAddCustomerBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveCustomerBtn">
+                    <i class="fas fa-save"></i> Save Customer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Status Change Modal ── -->
+    <div class="modal-overlay" id="statusModal">
+        <div class="modal" style="max-width:400px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Change Status</h2>
+                <button class="modal-close" id="closeStatusModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-secondary" style="font-size:var(--text-sm);">
+                    Select new status for <strong id="statusCustomerName" class="text-primary-color"></strong>:
+                </p>
+                <div class="status-options">
+                    <div class="status-option" data-value="Active">
+                        <input type="radio" id="statusActive" name="status" value="Active">
+                        <label for="statusActive">
+                            <span class="badge badge-green"><span class="status-dot green"></span> Active</span>
+                        </label>
+                    </div>
+                    <div class="status-option" data-value="Disabled">
+                        <input type="radio" id="statusDisabled" name="status" value="Disabled">
+                        <label for="statusDisabled">
+                            <span class="badge badge-red"><span class="status-dot red"></span> Disabled</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelStatusBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveStatusBtn">
+                    <i class="fas fa-check"></i> Update Status
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+    <script>
+        const API_BASE_URL = '/api';
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let totalCustomers = 0;
+        let totalPages = 1;
+        let currentCustomerId = null;
+
+        // ── Toast ──────────────────────────────────────────
+        function showToast(message, type = 'success') {
+            document.querySelectorAll('.toast').forEach(t => t.remove());
+            const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', warning: 'fa-triangle-exclamation' };
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas ${icons[type]}"></i>
+                <span class="toast-msg">${message}</span>
+                <button class="toast-close"><i class="fas fa-times"></i></button>
+            `;
+            document.body.appendChild(toast);
+            toast.querySelector('.toast-close').addEventListener('click', () => toast.remove());
+            setTimeout(() => toast?.remove(), 4000);
+        }
+
+        // ── Modal helpers ──────────────────────────────────
+        function openModal(id) { document.getElementById(id).classList.add('open'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+        // ── Table ──────────────────────────────────────────
+        async function renderTable() {
+            const tbody = document.getElementById('customerTableBody');
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center" style="padding:var(--space-8)">
+                <div class="spinner" style="margin:0 auto"></div>
+            </td></tr>`;
+
+            try {
+                const search = document.getElementById('searchInput').value.trim();
+                const { data: result } = await api.get(`${API_BASE_URL}/customers`, {
+                    params: { page: currentPage, limit: itemsPerPage, search }
+                });
+
+                if (!result.success) throw new Error(result.message);
+                tbody.innerHTML = '';
+
+                if (!result.data.length) {
+                    tbody.innerHTML = `<tr><td colspan="8">
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="fas fa-users"></i></div>
+                            <p class="empty-title">No customers found</p>
+                            <p class="empty-text">Try adjusting your search.</p>
+                        </div>
+                    </td></tr>`;
+                    totalCustomers = 0; totalPages = 1;
+                    updatePagination(); return;
+                }
+
+                result.data.forEach((c, i) => {
+                    const rowNum = (currentPage - 1) * itemsPerPage + i + 1;
+
+                    const avatar = c.picture
+                        ? `<img src="${c.picture}" alt="${c.name}" class="avatar"
+                               onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'avatar-placeholder',innerHTML:'<i class=\\'fas fa-user\\'></i>'}));">`
+                        : `<div class="avatar-placeholder"><i class="fas fa-user"></i></div>`;
+
+                    const statusBadge = c.status === 'Active'
+                        ? `<span class="badge badge-green"><span class="status-dot green"></span> Active</span>`
+                        : `<span class="badge badge-red"><span class="status-dot red"></span> Disabled</span>`;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="text-center font-mono text-muted">${rowNum}</td>
+                        <td class="font-mono">${c.customer_id}</td>
+                        <td>${avatar}</td>
+                        <td class="font-semibold">${c.name}</td>
+                        <td class="text-secondary">${c.phone_number || '—'}</td>
+                        <td class="text-secondary">${c.email}</td>
+                        <td class="text-center">${statusBadge}</td>
+                        <td class="text-center">
+                            <div class="flex gap-1 justify-center">
+                                <button class="action-btn view-btn" data-id="${c.customer_id}">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="action-btn status-btn" data-id="${c.customer_id}">
+                                    <i class="fas fa-sync-alt"></i> Status
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                totalCustomers = result.pagination.total;
+                totalPages = result.pagination.pages;
+                updatePagination();
+
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="8">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                        <p class="empty-title">Failed to load</p>
+                        <p class="empty-text">Could not fetch customer data.</p>
+                    </div>
+                </td></tr>`;
+                showToast('Error loading customers', 'error');
+            }
+        }
+
+        // ── Pagination ─────────────────────────────────────
+        function updatePagination() {
+            const start = totalCustomers ? (currentPage - 1) * itemsPerPage + 1 : 0;
+            const end = Math.min(currentPage * itemsPerPage, totalCustomers);
+            document.getElementById('paginationInfo').textContent =
+                `Showing ${start}–${end} of ${totalCustomers} customer${totalCustomers !== 1 ? 's' : ''}`;
+
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage >= totalPages || !totalPages;
+
+            const controls = document.querySelector('.pagination-controls');
+            controls.querySelectorAll('.page-btn:not(#prevPage):not(#nextPage)').forEach(b => b.remove());
+
+            const max = 5;
+            let s = Math.max(1, currentPage - Math.floor(max / 2));
+            let e = Math.min(totalPages, s + max - 1);
+            if (e - s + 1 < max) s = Math.max(1, e - max + 1);
+
+            const nextBtn = document.getElementById('nextPage');
+            for (let p = s; p <= e; p++) {
+                const btn = document.createElement('button');
+                btn.className = `page-btn${p === currentPage ? ' active' : ''}`;
+                btn.textContent = p;
+                btn.addEventListener('click', () => { currentPage = p; renderTable(); });
+                controls.insertBefore(btn, nextBtn);
+            }
+        }
+
+        // ── Form helpers ───────────────────────────────────
+        function clearErrors() {
+            document.querySelectorAll('.form-error').forEach(e => e.style.display = 'none');
+            document.querySelectorAll('.form-control.is-error').forEach(e => e.classList.remove('is-error'));
+        }
+        function setError(inputId, errorId, msg) {
+            document.getElementById(inputId).classList.add('is-error');
+            const el = document.getElementById(errorId);
+            el.querySelector('span').textContent = msg;
+            el.style.display = 'flex';
+        }
+
+        function validateForm() {
+            clearErrors();
+            let valid = true;
+            const id = document.getElementById('customerId').value.trim();
+            const nm = document.getElementById('customerName').value.trim();
+            const em = document.getElementById('customerEmail').value.trim();
+            const pw = document.getElementById('customerPassword').value;
+            const pwc = document.getElementById('customerConfirmPassword').value;
+
+            if (!id) { setError('customerId', 'customerIdError', 'Customer ID is required'); valid = false; }
+            if (!nm) { setError('customerName', 'customerNameError', 'Full name is required'); valid = false; }
+            if (!em) { setError('customerEmail', 'customerEmailError', 'Email is required'); valid = false; }
+            else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+                setError('customerEmail', 'customerEmailError', 'Enter a valid email'); valid = false;
+            }
+            if (!pw) { setError('customerPassword', 'customerPasswordError', 'Password is required'); valid = false; }
+            else if (pw.length < 6) { setError('customerPassword', 'customerPasswordError', 'Min. 6 characters'); valid = false; }
+            else if (pw !== pwc) { setError('customerConfirmPassword', 'customerConfirmPasswordError', 'Passwords do not match'); valid = false; }
+            return valid;
+        }
+
+        function resetForm() {
+            document.getElementById('customerForm').reset();
+            document.getElementById('addImagePreview').innerHTML = '<i class="fas fa-user"></i>';
+            clearErrors();
+        }
+
+        // ── Details modal ──────────────────────────────────
+        async function openDetailsModal(customerId) {
+            try {
+                const { data: result } = await api.get(`${API_BASE_URL}/customers/${customerId}`);
+                if (!result.success) throw new Error(result.message);
+                const c = result.data;
+
+                document.getElementById('detailCustomerName').textContent = c.name;
+                document.getElementById('detailCustomerId').textContent = c.customer_id;
+                document.getElementById('detailEmail').textContent = c.email;
+                document.getElementById('detailPhone').textContent = c.phone_number || '—';
+
+                const fmt = d => new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                document.getElementById('detailCreatedAt').textContent = fmt(c.created_at);
+                document.getElementById('detailUpdatedAt').textContent = fmt(c.updated_at);
+
+                const statusEl = document.getElementById('detailStatus');
+                statusEl.className = `badge ${c.status === 'Active' ? 'badge-green' : 'badge-red'}`;
+                statusEl.innerHTML = `<span class="status-dot ${c.status === 'Active' ? 'green' : 'red'}"></span> ${c.status}`;
+
+                const avatar = document.getElementById('detailProfileImage');
+                avatar.innerHTML = c.picture
+                    ? `<img src="${c.picture}" alt="${c.name}" onerror="this.replaceWith(Object.assign(document.createElement('i'),{className:'fas fa-user',style:'font-size:32px;color:var(--text-muted)'}));">`
+                    : `<i class="fas fa-user"></i>`;
+
+                openModal('customerDetailsModal');
+            } catch (err) {
+                console.error(err);
+                showToast('Error loading customer details', 'error');
+            }
+        }
+
+        // ── Status modal ───────────────────────────────────
+        async function openStatusModal(customerId) {
+            try {
+                const { data: result } = await api.get(`${API_BASE_URL}/customers/${customerId}`);
+                if (!result.success) throw new Error(result.message);
+                const c = result.data;
+
+                currentCustomerId = customerId;
+                document.getElementById('statusCustomerName').textContent = c.name;
+
+                document.querySelectorAll('.status-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                    if (opt.dataset.value === c.status) {
+                        opt.classList.add('selected');
+                        opt.querySelector('input').checked = true;
+                    }
+                });
+
+                openModal('statusModal');
+            } catch (err) {
+                console.error(err);
+                showToast('Error loading customer data', 'error');
+            }
+        }
+
+        // ── Save customer ──────────────────────────────────
+        async function saveCustomer() {
+            if (!validateForm()) return;
+
+            const saveBtn = document.getElementById('saveCustomerBtn');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner"></span> Saving…';
+
+            try {
+                const fd = new FormData();
+                fd.append('customer_id', document.getElementById('customerId').value.trim());
+                fd.append('name', document.getElementById('customerName').value.trim());
+                fd.append('email', document.getElementById('customerEmail').value.trim());
+                fd.append('phone_number', document.getElementById('customerPhone').value.trim());
+                fd.append('password', document.getElementById('customerPassword').value);
+                fd.append('status', document.getElementById('customerStatus').value);
+
+                const img = document.getElementById('imageInput').files[0];
+                if (img) fd.append('picture', img);
+
+                const { data: result } = await api.post(`${API_BASE_URL}/customers`, fd);
+                if (!result.success) throw new Error(result.message);
+
+                showToast('Customer added successfully', 'success');
+                closeModal('addCustomerModal');
+                resetForm();
+                renderTable();
+            } catch (err) {
+                console.error(err);
+                showToast(err.message || 'Error saving customer', 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Customer';
+            }
+        }
+
+        // ── Update status ──────────────────────────────────
+        async function updateStatus() {
+            const selected = document.querySelector('input[name="status"]:checked');
+            if (!selected) { showToast('Please select a status', 'warning'); return; }
+
+            const saveBtn = document.getElementById('saveStatusBtn');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner"></span>';
+
+            try {
+                const { data: result } = await api.put(
+                    `${API_BASE_URL}/customers/${currentCustomerId}/status`,
+                    { status: selected.value }
+                );
+                if (!result.success) throw new Error(result.message);
+
+                showToast('Status updated successfully', 'success');
+                closeModal('statusModal');
+                renderTable();
+            } catch (err) {
+                console.error(err);
+                showToast(err.message || 'Error updating status', 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-check"></i> Update Status';
+            }
+        }
+
+        // ── Init ───────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Search
+            document.getElementById('searchBtn').addEventListener('click', () => { currentPage = 1; renderTable(); });
+            document.getElementById('searchInput').addEventListener('keypress', e => {
+                if (e.key === 'Enter') { currentPage = 1; renderTable(); }
+            });
+            document.getElementById('entriesPerPage').addEventListener('change', function () {
+                itemsPerPage = +this.value; currentPage = 1; renderTable();
+            });
+
+            // Pagination
+            document.getElementById('prevPage').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderTable(); } });
+            document.getElementById('nextPage').addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; renderTable(); } });
+
+            // Add customer
+            document.getElementById('addCustomerBtn').addEventListener('click', () => { resetForm(); openModal('addCustomerModal'); });
+
+            // Modal closes
+            ['closeDetailsModal', 'closeDetailsBtn'].forEach(id =>
+                document.getElementById(id).addEventListener('click', () => closeModal('customerDetailsModal')));
+            ['closeAddCustomerModal', 'cancelAddCustomerBtn'].forEach(id =>
+                document.getElementById(id).addEventListener('click', () => closeModal('addCustomerModal')));
+            ['closeStatusModal', 'cancelStatusBtn'].forEach(id =>
+                document.getElementById(id).addEventListener('click', () => closeModal('statusModal')));
+
+            // Close on backdrop click
+            ['customerDetailsModal', 'addCustomerModal', 'statusModal'].forEach(id => {
+                document.getElementById(id).addEventListener('click', e => {
+                    if (e.target === document.getElementById(id)) closeModal(id);
+                });
+            });
+
+            // Save
+            document.getElementById('saveCustomerBtn').addEventListener('click', saveCustomer);
+            document.getElementById('saveStatusBtn').addEventListener('click', updateStatus);
+
+            // Image upload
+            document.getElementById('uploadImageBtn').addEventListener('click', () =>
+                document.getElementById('imageInput').click());
+            document.getElementById('imageInput').addEventListener('change', function () {
+                const file = this.files[0];
+                if (!file) return;
+                if (file.size > 2 * 1024 * 1024) { showToast('Image must be under 2MB', 'warning'); return; }
+                if (!file.type.match('image.*')) { showToast('Please select an image file', 'warning'); return; }
+                const reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById('addImagePreview').innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Status options
+            document.querySelectorAll('.status-option').forEach(opt => {
+                opt.addEventListener('click', () => {
+                    document.querySelectorAll('.status-option').forEach(o => o.classList.remove('selected'));
+                    opt.classList.add('selected');
+                    opt.querySelector('input').checked = true;
+                });
+            });
+
+            // Table delegation
+            document.addEventListener('click', e => {
+                const view = e.target.closest('.view-btn');
+                const status = e.target.closest('.status-btn');
+                if (view) openDetailsModal(view.dataset.id);
+                if (status) openStatusModal(status.dataset.id);
+            });
+
+            renderTable();
+        });
+    </script>
+</body>
+
+</html>

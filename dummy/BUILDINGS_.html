@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <title>Buildings Management - NUTECH CMS</title>
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary-color: #0E5A4C;
+            --primary-light: #BFFFF3;
+            --primary-transparent-10: rgba(14, 90, 76, 0.1);
+            --sidebar-bg: #F4F4F4;
+            --text-light: #FFFFFF;
+            --text-gray: #7B7B7B;
+            --text-hover: #0E5A4C;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --icon-bg: rgba(255, 255, 255, 0.1);
+            --icon-hover-bg: rgba(255, 255, 255, 0.2);
+            --header-height: 60px;
+            --sidebar-width: 250px;
+            --nav-item-height: 48px;
+            --icon-size: 22px;
+            --nav-font-size: 16px;
+            --badge-bg: #FF4757;
+            --badge-text: #FFFFFF;
+            --badge-size: 20px;
+            --badge-font-size: 11px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
+            background-color: var(--primary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            padding: 0 20px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-text {
+            color: var(--text-light);
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        #menu-control {
+            font-size: var(--icon-size);
+            color: var(--text-light);
+            cursor: pointer;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        #logo {
+            height: 40px;
+            width: auto;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .profile-icon {
+            color: var(--text-light);
+            font-size: 20px;
+            cursor: pointer;
+            background: var(--icon-bg);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .profile-icon:hover {
+            background: var(--icon-hover-bg);
+        }
+
+        .navigation-menu {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
+            background-color: var(--sidebar-bg);
+            box-shadow: 2px 0 5px var(--shadow-color);
+            padding: 15px 0;
+            transition: transform 0.3s ease;
+            z-index: 999;
+            transform: translateX(-100%);
+            overflow-y: auto;
+        }
+
+        .navigation-menu.open {
+            transform: translateX(0);
+        }
+
+        ul {
+            list-style: none;
+            width: 100%;
+        }
+
+        .nav-item {
+            height: var(--nav-item-height);
+            display: flex;
+            align-items: center;
+            padding: 0 18px;
+            margin: 4px 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .nav-item p, .nav-item i {
+            font-size: var(--nav-font-size);
+            color: var(--text-gray);
+        }
+
+        .nav-item i {
+            width: var(--icon-size);
+            text-align: center;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .nav-item p {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 10px;
+        }
+
+        .nav-item:hover {
+            background-color: var(--primary-transparent-10);
+        }
+
+        .nav-item:hover p, .nav-item:hover i {
+            color: var(--text-hover);
+        }
+
+        .nav-item.active {
+            background-color: var(--primary-light);
+            border-right: 4px solid var(--primary-color);
+        }
+
+        .nav-item.active p, .nav-item.active i {
+            color: var(--text-hover);
+            font-weight: 600;
+        }
+
+        /* Badge styles */
+        .nav-badge {
+            position: absolute;
+            right: 15px;
+            background-color: var(--badge-bg);
+            color: var(--badge-text);
+            font-size: var(--badge-font-size);
+            font-weight: 600;
+            min-width: var(--badge-size);
+            height: var(--badge-size);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+            transition: all 0.2s ease;
+            z-index: 1;
+        }
+
+        .nav-badge.hidden {
+            display: none;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 4px rgba(255, 71, 87, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0);
+            }
+        }
+
+        .nav-badge.pulse {
+            animation: pulse 2s infinite;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-top: var(--header-height);
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+            min-height: calc(100vh - var(--header-height));
+            width: 100%;
+        }
+
+        .main-content.shifted {
+            margin-left: var(--sidebar-width);
+        }
+
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            
+            /* Make sidebar full width on mobile */
+            .navigation-menu {
+                width: 280px;
+                max-width: 85%;
+            }
+            
+            /* Remove margin shift on mobile since sidebar overlays */
+            .main-content.shifted {
+                margin-left: 0;
+            }
+            
+            /* Add overlay when sidebar is open on mobile */
+            .navigation-menu.open + .main-content::before {
+                content: '';
+                position: fixed;
+                top: var(--header-height);
+                left: 0;
+                width: 100%;
+                height: calc(100vh - var(--header-height));
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 998;
+            }
+            
+            /* Adjust header for mobile */
+            header {
+                padding: 0 16px;
+            }
+            
+            /* Adjust logo size for mobile */
+            #logo {
+                height: 36px;
+            }
+            
+            /* Adjust profile icon for mobile */
+            .profile-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+            }
+            
+            /* Adjust menu control for mobile */
+            #menu-control {
+                font-size: 20px;
+            }
+            
+            /* Adjust main content padding for mobile */
+            .main-content {
+                padding: 16px;
+            }
+            
+            /* Adjust badge for mobile */
+            .nav-badge {
+                right: 12px;
+                font-size: 10px;
+                min-width: 18px;
+                height: 18px;
+            }
+        }
+
+        /* Small mobile devices */
+        @media (max-width: 480px) {
+            /* Further reduce header height on very small screens */
+            :root {
+                --header-height: 56px;
+            }
+            
+            header {
+                padding: 0 12px;
+            }
+            
+            /* Make sidebar slightly narrower on very small screens */
+            .navigation-menu {
+                width: 260px;
+                max-width: 82%;
+            }
+            
+            /* Adjust main content padding for very small screens */
+            .main-content {
+                padding: 12px;
+            }
+            
+            /* Adjust nav items for very small screens */
+            .nav-item {
+                height: 46px;
+                padding: 0 16px;
+            }
+            
+            .nav-item p, .nav-item i {
+                font-size: 15px;
+            }
+            
+            .nav-item i {
+                font-size: 17px;
+                margin-right: 10px;
+            }
+            
+            /* Adjust badge for small screens */
+            .nav-badge {
+                right: 10px;
+                font-size: 9px;
+                min-width: 16px;
+                height: 16px;
+            }
+        }
+
+        /* Additional styles for the buildings page */
+        .buildings-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .page-title {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .page-description {
+            color: var(--text-gray);
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        /* Building selection section */
+        .building-selection-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        
+        .section-title {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            font-size: 22px;
+        }
+        
+        .selection-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-gray);
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background-color: white;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--primary-transparent-10);
+        }
+        
+        .selection-display {
+            background-color: var(--primary-transparent-10);
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .selection-display.active {
+            display: block;
+        }
+        
+        .selection-display h4 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .selection-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .detail-item {
+            background-color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            min-width: 180px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .detail-item strong {
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .detail-item span {
+            color: var(--text-gray);
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+        }
+        
+        .btn-primary:hover {
+            background-color: #0c4c3f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow-color);
+        }
+        
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: var(--text-gray);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background-color: var(--badge-bg);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #ff3742;
+            transform: translateY(-2px);
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1100;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            color: var(--primary-color);
+            font-size: 22px;
+            margin: 0;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-gray);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            color: var(--primary-color);
+        }
+        
+        .modal-body {
+            padding: 25px;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-col {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .dynamic-input-container {
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .dynamic-input-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .dynamic-input-item input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .add-input-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--primary-color);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .add-input-btn:hover {
+            text-decoration: underline;
+        }
+        
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* Table styles */
+        .table-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-gray);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        .buildings-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+        
+        .buildings-table th {
+            background-color: var(--primary-transparent-10);
+            color: var(--primary-color);
+            text-align: left;
+            padding: 15px;
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary-light);
+        }
+        
+        .buildings-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            color: var(--text-gray);
+        }
+        
+        .buildings-table tr:hover {
+            background-color: rgba(14, 90, 76, 0.03);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-gray);
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+        
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: var(--text-gray);
+        }
+        
+        /* Blueprint section */
+        .blueprint-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        
+        .blueprint-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        .blueprint-image {
+            flex: 1;
+            min-width: 300px;
+            max-width: 500px;
+        }
+        
+        .blueprint-placeholder {
+            width: 100%;
+            height: 300px;
+            background-color: #f9f9f9;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-gray);
+        }
+        
+        .blueprint-placeholder i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+        
+        .blueprint-img {
+            width: 100%;
+            height: 300px;
+            object-fit: contain;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .blueprint-img.active {
+            display: block;
+        }
+        
+        .blueprint-details {
+            flex: 2;
+            min-width: 300px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .buildings-container {
+                padding: 15px;
+            }
+            
+            .selection-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .form-group {
+                width: 100%;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .blueprint-container {
+                flex-direction: column;
+            }
+            
+            .blueprint-image {
+                max-width: 100%;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .buildings-container {
+                padding: 10px;
+            }
+            
+            .building-selection-section, .table-section, .blueprint-section {
+                padding: 20px;
+            }
+            
+            .modal-content {
+                width: 95%;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .btn-sm {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="C:\ICAT\LOGO.jpeg" alt="logo" id="logo">
+            <h2 class="logo-text">NUTECH CMS</h2>
+        </div>
+
+        <div class="header-right">
+            <div class="profile-icon">
+                <i class="fa fa-user"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </div>
+
+    <div class="main-content" id="main-content">
+        <div class="buildings-container">
+            <h1 class="page-title">Buildings Management</h1>
+            <p class="page-description">Manage buildings, floors, and rooms. Add new buildings or edit existing ones.</p>
+            
+            <!-- Building Selection Section -->
+            <div class="building-selection-section">
+                <h2 class="section-title"><i class="fa fa-building"></i> Select Building, Floor & Room</h2>
+                
+                <div class="selection-form">
+                    <div class="form-group">
+                        <label for="colony-select">Select Colony</label>
+                        <select id="colony-select" class="form-control">
+                            <option value="">-- Select a Colony --</option>
+                            <option value="1">Main Campus Colony (C001)</option>
+                            <option value="2">Science Park Colony (C002)</option>
+                            <option value="3">Library Gardens Colony (C003)</option>
+                            <option value="4">Student Village Colony (C004)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="building-select">Select Building</label>
+                        <select id="building-select" class="form-control" disabled>
+                            <option value="">-- Select a Building --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="floor-select">Select Floor</label>
+                        <select id="floor-select" class="form-control" disabled>
+                            <option value="">-- Select a Floor --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="room-select">Select Room</label>
+                        <select id="room-select" class="form-control" disabled>
+                            <option value="">-- Select a Room --</option>
+                        </select>
+                    </div>
+                    
+                    <button id="add-building-btn" class="btn btn-primary">
+                        <i class="fa fa-plus"></i> Add New Building
+                    </button>
+                </div>
+                
+                <div id="selection-display" class="selection-display">
+                    <h4>Selected Details</h4>
+                    <div class="selection-details">
+                        <div class="detail-item">
+                            <strong>Colony</strong>
+                            <span id="display-colony">Not selected</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Building</strong>
+                            <span id="display-building">Not selected</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Floor</strong>
+                            <span id="display-floor">Not selected</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Room</strong>
+                            <span id="display-room">Not selected</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Room Type</strong>
+                            <span id="display-room-type">Not selected</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Blueprint Section (Backend Integration) -->
+            <div class="blueprint-section">
+                <h2 class="section-title"><i class="fa fa-map"></i> Floor Blueprint</h2>
+                <div class="blueprint-container">
+                    <div class="blueprint-image">
+                        <div id="blueprint-placeholder" class="blueprint-placeholder">
+                            <i class="fa fa-image"></i>
+                            <p id="blueprint-message">Select a building and floor to view blueprint</p>
+                        </div>
+                        <img id="blueprint-img" class="blueprint-img" src="" alt="Floor Blueprint">
+                    </div>
+                    <div class="blueprint-details">
+                        <p>Blueprints are managed in the backend system and will automatically display here when available for the selected building and floor.</p>
+                        <ul style="margin-top: 15px; color: var(--text-gray); padding-left: 20px;">
+                            <li>Blueprint images are pre-uploaded in the backend</li>
+                            <li>Automatic display based on building and floor selection</li>
+                            <li>High-resolution floor layouts for better visualization</li>
+                        </ul>
+                        <div id="blueprint-info" style="margin-top: 15px; padding: 10px; background-color: var(--primary-transparent-10); border-radius: 6px; display: none;">
+                            <strong style="color: var(--primary-color);">Blueprint Info:</strong>
+                            <p id="blueprint-description" style="margin-top: 5px;"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Buildings Table Section -->
+            <div class="table-section">
+                <div class="table-header">
+                    <h2 class="section-title"><i class="fa fa-list"></i> All Buildings</h2>
+                    <div class="search-box">
+                        <i class="fa fa-search"></i>
+                        <input type="text" id="building-search" placeholder="Search by building name or number...">
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="buildings-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Building Number</th>
+                                <th>Building Name</th>
+                                <th>Colony</th>
+                                <th>Number of Floors</th>
+                                <th>Number of Rooms</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="buildings-table-body">
+                            <!-- Table rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                    
+                    <div id="empty-table-message" class="empty-state">
+                        <i class="fa fa-building"></i>
+                        <h3>No Buildings Found</h3>
+                        <p>Add your first building using the "Add New Building" button above.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Building Modal -->
+    <div id="building-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Add New Building</h3>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="building-form">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="colony-assign">Select Colony *</label>
+                            <select id="colony-assign" class="form-control" required>
+                                <option value="">-- Select Colony --</option>
+                                <option value="1">Main Campus Colony (C001)</option>
+                                <option value="2">Science Park Colony (C002)</option>
+                                <option value="3">Library Gardens Colony (C003)</option>
+                                <option value="4">Student Village Colony (C004)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="building-name">Building Name *</label>
+                            <input type="text" id="building-name" class="form-control" required>
+                        </div>
+                        <div class="form-col">
+                            <label for="building-number">Building Number *</label>
+                            <input type="text" id="building-number" class="form-control" required>
+                            <small style="color: var(--text-gray); margin-top: 5px; display: block;">Must be unique (e.g., B001, B002)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Floor Names *</label>
+                        <small style="color: var(--text-gray); display: block; margin-bottom: 10px;">Add floor names (e.g., Ground Floor, First Floor, etc.)</small>
+                        <div class="dynamic-input-container" id="floor-names-container">
+                            <div class="dynamic-input-item">
+                                <input type="text" class="form-control floor-name-input" placeholder="E.g., Ground Floor" value="Ground Floor" required>
+                                <button type="button" class="btn btn-danger btn-sm remove-input"><i class="fa fa-times"></i></button>
+                            </div>
+                            <div class="dynamic-input-item">
+                                <input type="text" class="form-control floor-name-input" placeholder="E.g., First Floor" value="First Floor" required>
+                                <button type="button" class="btn btn-danger btn-sm remove-input"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <button type="button" class="add-input-btn" id="add-floor-btn">
+                            <i class="fa fa-plus"></i> Add Another Floor
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Room Names *</label>
+                        <small style="color: var(--text-gray); display: block; margin-bottom: 10px;">Add room names (e.g., Classroom 101, Office 201, etc.)</small>
+                        <div class="dynamic-input-container" id="room-names-container">
+                            <div class="dynamic-input-item">
+                                <input type="text" class="form-control room-name-input" placeholder="E.g., Classroom 101" value="Classroom 101" required>
+                                <button type="button" class="btn btn-danger btn-sm remove-input"><i class="fa fa-times"></i></button>
+                            </div>
+                            <div class="dynamic-input-item">
+                                <input type="text" class="form-control room-name-input" placeholder="E.g., Office 102" value="Office 102" required>
+                                <button type="button" class="btn btn-danger btn-sm remove-input"><i class="fa fa-times"></i></button>
+                            </div>
+                            <div class="dynamic-input-item">
+                                <input type="text" class="form-control room-name-input" placeholder="E.g., Laboratory 103" value="Laboratory 103" required>
+                                <button type="button" class="btn btn-danger btn-sm remove-input"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <button type="button" class="add-input-btn" id="add-room-btn">
+                            <i class="fa fa-plus"></i> Add Another Room
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="building-description">Description (Optional)</label>
+                        <textarea id="building-description" class="form-control" rows="3" placeholder="Add any additional details about this building..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="modal-cancel">Cancel</button>
+                <button type="button" class="btn btn-primary" id="modal-save">Save Building</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for colonies (shared between both pages)
+        const coloniesData = [
+            {
+                id: 1,
+                number: "C001",
+                name: "Main Campus Colony",
+                buildings: 4,
+                location: "North Campus Area",
+                description: "Primary campus colony housing main academic buildings"
+            },
+            {
+                id: 2,
+                number: "C002",
+                name: "Science Park Colony",
+                buildings: 3,
+                location: "East Campus Area",
+                description: "Colony dedicated to science and research facilities"
+            },
+            {
+                id: 3,
+                number: "C003",
+                name: "Library Gardens Colony",
+                buildings: 2,
+                location: "Central Campus Area",
+                description: "Colony focused on library and study facilities"
+            },
+            {
+                id: 4,
+                number: "C004",
+                name: "Student Village Colony",
+                buildings: 5,
+                location: "West Campus Area",
+                description: "Colony with student accommodation and recreational facilities"
+            }
+        ];
+
+        // Sample data for buildings with colony association
+        const buildingsData = [
+            {
+                id: 1,
+                number: "B001",
+                name: "Main Campus Building",
+                colonyId: 1,
+                colonyName: "Main Campus Colony",
+                floorNames: ["Ground Floor", "First Floor", "Second Floor", "Third Floor", "Fourth Floor"],
+                roomNames: ["Classroom 101", "Classroom 102", "Laboratory 103", "Office 104", "Conference Room 105"],
+                description: "Primary academic building with classrooms and labs",
+                blueprints: {
+                    1: { 
+                        hasBlueprint: true, 
+                        imageUrl: "https://images.unsplash.com/photo-1577495508048-b635879837f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1179&q=80",
+                        description: "Ground floor layout showing main entrance and reception area"
+                    },
+                    2: { 
+                        hasBlueprint: true, 
+                        imageUrl: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1158&q=80",
+                        description: "First floor with classrooms and faculty offices"
+                    }
+                }
+            },
+            {
+                id: 2,
+                number: "B002",
+                name: "Science Complex",
+                colonyId: 1,
+                colonyName: "Main Campus Colony",
+                floorNames: ["Ground Floor", "First Floor", "Second Floor", "Third Floor"],
+                roomNames: ["Chemistry Lab 201", "Physics Lab 202", "Biology Lab 203", "Research Lab 204"],
+                description: "Dedicated to science departments and research",
+                blueprints: {
+                    1: { 
+                        hasBlueprint: true, 
+                        imageUrl: "https://images.unsplash.com/photo-1487956382158-bb926046304a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1172&q=80",
+                        description: "Chemistry and Physics laboratories floor plan"
+                    }
+                }
+            },
+            {
+                id: 3,
+                number: "B003",
+                name: "Library Wing",
+                colonyId: 3,
+                colonyName: "Library Gardens Colony",
+                floorNames: ["Ground Floor", "First Floor", "Second Floor"],
+                roomNames: ["Reading Room 301", "Study Area 302", "Computer Lab 303", "Archive 304"],
+                description: "Library and study spaces for students",
+                blueprints: {
+                    1: { 
+                        hasBlueprint: true, 
+                        imageUrl: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1169&q=80",
+                        description: "Main library floor with reading areas and book stacks"
+                    }
+                }
+            },
+            {
+                id: 4,
+                number: "B004",
+                name: "Student Center",
+                colonyId: 4,
+                colonyName: "Student Village Colony",
+                floorNames: ["Ground Floor", "First Floor"],
+                roomNames: ["Cafeteria 401", "Lounge 402", "Meeting Room 403", "Activity Room 404"],
+                description: "Student activities and social spaces",
+                blueprints: {}
+            }
+        ];
+        
+        // Current state
+        let currentColonyId = null;
+        let currentBuildingId = null;
+        let currentFloor = null;
+        let currentRoom = null;
+        let editingBuildingId = null;
+        
+        // DOM Elements
+        const colonySelect = document.getElementById('colony-select');
+        const buildingSelect = document.getElementById('building-select');
+        const floorSelect = document.getElementById('floor-select');
+        const roomSelect = document.getElementById('room-select');
+        const addBuildingBtn = document.getElementById('add-building-btn');
+        const selectionDisplay = document.getElementById('selection-display');
+        const displayColony = document.getElementById('display-colony');
+        const displayBuilding = document.getElementById('display-building');
+        const displayFloor = document.getElementById('display-floor');
+        const displayRoom = document.getElementById('display-room');
+        const displayRoomType = document.getElementById('display-room-type');
+        const buildingsTableBody = document.getElementById('buildings-table-body');
+        const emptyTableMessage = document.getElementById('empty-table-message');
+        const buildingSearch = document.getElementById('building-search');
+        const buildingModal = document.getElementById('building-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalClose = document.getElementById('modal-close');
+        const modalCancel = document.getElementById('modal-cancel');
+        const modalSave = document.getElementById('modal-save');
+        const buildingForm = document.getElementById('building-form');
+        const colonyAssign = document.getElementById('colony-assign');
+        const buildingName = document.getElementById('building-name');
+        const buildingNumber = document.getElementById('building-number');
+        const floorNamesContainer = document.getElementById('floor-names-container');
+        const roomNamesContainer = document.getElementById('room-names-container');
+        const addFloorBtn = document.getElementById('add-floor-btn');
+        const addRoomBtn = document.getElementById('add-room-btn');
+        const blueprintImg = document.getElementById('blueprint-img');
+        const blueprintPlaceholder = document.getElementById('blueprint-placeholder');
+        const blueprintMessage = document.getElementById('blueprint-message');
+        const blueprintInfo = document.getElementById('blueprint-info');
+        const blueprintDescription = document.getElementById('blueprint-description');
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Populate colony dropdown
+            populateColonyDropdown();
+            
+            // Populate buildings table
+            populateBuildingsTable();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Hide empty table message if there are buildings
+            toggleEmptyTableMessage();
+        });
+        
+        // Populate colony dropdown
+        function populateColonyDropdown() {
+            colonySelect.innerHTML = '<option value="">-- Select a Colony --</option>';
+            
+            coloniesData.forEach(colony => {
+                const option = document.createElement('option');
+                option.value = colony.id;
+                option.textContent = `${colony.name} (${colony.number})`;
+                colonySelect.appendChild(option);
+            });
+        }
+        
+        // Populate building dropdown based on selected colony
+        function populateBuildingDropdown(colonyId) {
+            buildingSelect.innerHTML = '<option value="">-- Select a Building --</option>';
+            buildingSelect.disabled = true;
+            floorSelect.disabled = true;
+            roomSelect.disabled = true;
+            
+            if (!colonyId) return;
+            
+            const colonyBuildings = buildingsData.filter(b => b.colonyId === parseInt(colonyId));
+            
+            // Enable building select if there are buildings
+            if (colonyBuildings.length > 0) {
+                buildingSelect.disabled = false;
+                
+                // Add building options
+                colonyBuildings.forEach(building => {
+                    const option = document.createElement('option');
+                    option.value = building.id;
+                    option.textContent = `${building.name} (${building.number})`;
+                    buildingSelect.appendChild(option);
+                });
+            }
+            
+            // Update colony display
+            const colony = coloniesData.find(c => c.id === parseInt(colonyId));
+            if (colony) {
+                displayColony.textContent = `${colony.name} (${colony.number})`;
+            }
+            
+            // Clear other displays
+            displayBuilding.textContent = 'Not selected';
+            displayFloor.textContent = 'Not selected';
+            displayRoom.textContent = 'Not selected';
+            displayRoomType.textContent = 'Not selected';
+        }
+        
+        // Populate floor dropdown based on selected building
+        function populateFloorDropdown(buildingId) {
+            floorSelect.innerHTML = '<option value="">-- Select a Floor --</option>';
+            floorSelect.disabled = true;
+            roomSelect.disabled = true;
+            
+            if (!buildingId) return;
+            
+            const building = buildingsData.find(b => b.id === parseInt(buildingId));
+            if (!building) return;
+            
+            // Enable floor select
+            floorSelect.disabled = false;
+            
+            // Update building display
+            displayBuilding.textContent = `${building.name} (${building.number})`;
+            
+            // Add floor options
+            building.floorNames.forEach((floorName, index) => {
+                const floorNumber = index + 1;
+                const option = document.createElement('option');
+                option.value = floorNumber;
+                option.textContent = `${floorName} (Floor ${floorNumber})`;
+                floorSelect.appendChild(option);
+            });
+        }
+        
+        // Populate room dropdown based on selected floor
+        function populateRoomDropdown(buildingId, floorNumber) {
+            roomSelect.innerHTML = '<option value="">-- Select a Room --</option>';
+            roomSelect.disabled = true;
+            
+            if (!buildingId || !floorNumber) return;
+            
+            const building = buildingsData.find(b => b.id === parseInt(buildingId));
+            if (!building) return;
+            
+            // Enable room select
+            roomSelect.disabled = false;
+            
+            // Update floor display
+            const floorIndex = parseInt(floorNumber) - 1;
+            displayFloor.textContent = building.floorNames[floorIndex] || `Floor ${floorNumber}`;
+            
+            // Distribute rooms evenly across floors
+            const roomsPerFloor = Math.ceil(building.roomNames.length / building.floorNames.length);
+            const startIndex = (floorNumber - 1) * roomsPerFloor;
+            const endIndex = Math.min(startIndex + roomsPerFloor, building.roomNames.length);
+            
+            // Add room options for this floor
+            for (let i = startIndex; i < endIndex; i++) {
+                const roomName = building.roomNames[i];
+                const option = document.createElement('option');
+                option.value = `${floorNumber}-${i}`;
+                option.textContent = roomName;
+                roomSelect.appendChild(option);
+            }
+        }
+        
+        // Update blueprint display based on selected building and floor
+        function updateBlueprintDisplay(buildingId, floorNumber) {
+            const building = buildingsData.find(b => b.id === parseInt(buildingId));
+            
+            if (!building || !floorNumber) {
+                blueprintPlaceholder.style.display = 'flex';
+                blueprintImg.classList.remove('active');
+                blueprintMessage.textContent = 'Select a building and floor to view blueprint';
+                blueprintInfo.style.display = 'none';
+                return;
+            }
+            
+            // Check if blueprint exists for this floor
+            const floorBlueprint = building.blueprints && building.blueprints[floorNumber];
+            
+            if (floorBlueprint && floorBlueprint.hasBlueprint) {
+                // Show blueprint image
+                blueprintPlaceholder.style.display = 'none';
+                blueprintImg.src = floorBlueprint.imageUrl;
+                blueprintImg.alt = `Blueprint for ${building.name}, Floor ${floorNumber}`;
+                blueprintImg.classList.add('active');
+                
+                // Show blueprint info
+                blueprintInfo.style.display = 'block';
+                blueprintDescription.textContent = floorBlueprint.description || `Floor ${floorNumber} layout for ${building.name}`;
+            } else {
+                // Show placeholder with message
+                blueprintPlaceholder.style.display = 'flex';
+                blueprintImg.classList.remove('active');
+                blueprintMessage.textContent = `No blueprint available for ${building.name}, Floor ${floorNumber}`;
+                blueprintInfo.style.display = 'none';
+            }
+        }
+        
+        // Populate buildings table
+        function populateBuildingsTable(filterText = '') {
+            buildingsTableBody.innerHTML = '';
+            
+            // Filter buildings if search text is provided
+            const filteredBuildings = buildingsData.filter(building => {
+                if (!filterText) return true;
+                
+                const searchLower = filterText.toLowerCase();
+                return building.name.toLowerCase().includes(searchLower) || 
+                       building.number.toLowerCase().includes(searchLower) ||
+                       building.colonyName.toLowerCase().includes(searchLower);
+            });
+            
+            // If no buildings match the filter
+            if (filteredBuildings.length === 0) {
+                toggleEmptyTableMessage(true);
+                return;
+            }
+            
+            toggleEmptyTableMessage(false);
+            
+            // Add rows for each building
+            filteredBuildings.forEach((building, index) => {
+                const row = document.createElement('tr');
+                
+                // Calculate totals
+                const totalFloors = building.floorNames.length;
+                const totalRooms = building.roomNames.length;
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><strong>${building.number}</strong></td>
+                    <td>${building.name}</td>
+                    <td>${building.colonyName}</td>
+                    <td>${totalFloors}</td>
+                    <td>${totalRooms}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary btn-sm edit-building" data-id="${building.id}">
+                                <i class="fa fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm delete-building" data-id="${building.id}">
+                                <i class="fa fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                buildingsTableBody.appendChild(row);
+            });
+            
+            // Add event listeners to buttons
+            document.querySelectorAll('.edit-building').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const buildingId = parseInt(this.getAttribute('data-id'));
+                    editBuilding(buildingId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-building').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const buildingId = parseInt(this.getAttribute('data-id'));
+                    deleteBuilding(buildingId);
+                });
+            });
+        }
+        
+        // Toggle empty table message
+        function toggleEmptyTableMessage(show = true) {
+            if (show) {
+                emptyTableMessage.style.display = 'block';
+                buildingsTableBody.innerHTML = '';
+            } else {
+                emptyTableMessage.style.display = 'none';
+            }
+        }
+        
+        // Edit building
+        function editBuilding(buildingId) {
+            const building = buildingsData.find(b => b.id === buildingId);
+            if (!building) return;
+            
+            // Set modal to edit mode
+            editingBuildingId = buildingId;
+            modalTitle.textContent = 'Edit Building';
+            
+            // Fill form with building data
+            colonyAssign.value = building.colonyId;
+            buildingName.value = building.name;
+            buildingNumber.value = building.number;
+            document.getElementById('building-description').value = building.description || '';
+            
+            // Clear and add floor names
+            floorNamesContainer.innerHTML = '';
+            building.floorNames.forEach(floorName => {
+                addDynamicInputField(floorNamesContainer, floorName);
+            });
+            
+            // Clear and add room names
+            roomNamesContainer.innerHTML = '';
+            building.roomNames.forEach(roomName => {
+                addDynamicInputField(roomNamesContainer, roomName);
+            });
+            
+            // Open modal
+            buildingModal.classList.add('active');
+        }
+        
+        // Delete building
+        function deleteBuilding(buildingId) {
+            if (confirm('Are you sure you want to delete this building? This action cannot be undone.')) {
+                // Find index of building to delete
+                const buildingIndex = buildingsData.findIndex(b => b.id === buildingId);
+                
+                if (buildingIndex !== -1) {
+                    // Remove from data array
+                    buildingsData.splice(buildingIndex, 1);
+                    
+                    // Refresh UI
+                    populateBuildingDropdown(currentColonyId);
+                    populateBuildingsTable();
+                    
+                    // Reset selection if deleted building was selected
+                    if (currentBuildingId === buildingId) {
+                        resetBuildingSelection();
+                    }
+                    
+                    alert('Building deleted successfully!');
+                }
+            }
+        }
+        
+        // Reset selection display
+        function resetSelection() {
+            currentColonyId = null;
+            currentBuildingId = null;
+            currentFloor = null;
+            currentRoom = null;
+            
+            colonySelect.value = '';
+            buildingSelect.innerHTML = '<option value="">-- Select a Building --</option>';
+            buildingSelect.disabled = true;
+            floorSelect.innerHTML = '<option value="">-- Select a Floor --</option>';
+            floorSelect.disabled = true;
+            roomSelect.innerHTML = '<option value="">-- Select a Room --</option>';
+            roomSelect.disabled = true;
+            
+            selectionDisplay.classList.remove('active');
+            updateBlueprintDisplay(null, null);
+            
+            // Clear all displays
+            displayColony.textContent = 'Not selected';
+            displayBuilding.textContent = 'Not selected';
+            displayFloor.textContent = 'Not selected';
+            displayRoom.textContent = 'Not selected';
+            displayRoomType.textContent = 'Not selected';
+        }
+        
+        // Reset only building selection
+        function resetBuildingSelection() {
+            currentBuildingId = null;
+            currentFloor = null;
+            currentRoom = null;
+            
+            buildingSelect.value = '';
+            floorSelect.innerHTML = '<option value="">-- Select a Floor --</option>';
+            floorSelect.disabled = true;
+            roomSelect.innerHTML = '<option value="">-- Select a Room --</option>';
+            roomSelect.disabled = true;
+            
+            displayBuilding.textContent = 'Not selected';
+            displayFloor.textContent = 'Not selected';
+            displayRoom.textContent = 'Not selected';
+            displayRoomType.textContent = 'Not selected';
+            
+            updateBlueprintDisplay(null, null);
+        }
+        
+        // Add dynamic input field
+        function addDynamicInputField(container, value = '') {
+            const inputItem = document.createElement('div');
+            inputItem.className = 'dynamic-input-item';
+            inputItem.innerHTML = `
+                <input type="text" class="form-control" placeholder="Enter name" value="${value}" required>
+                <button type="button" class="btn btn-danger btn-sm remove-input"><i class="fa fa-times"></i></button>
+            `;
+            
+            container.appendChild(inputItem);
+            
+            // Add event listener to remove button
+            inputItem.querySelector('.remove-input').addEventListener('click', function() {
+                // Don't remove if it's the last input
+                if (container.children.length > 1) {
+                    inputItem.remove();
+                } else {
+                    alert('At least one item is required.');
+                }
+            });
+        }
+        
+        // Open modal to add new building
+        function openAddBuildingModal() {
+            // Set modal to add mode
+            editingBuildingId = null;
+            modalTitle.textContent = 'Add New Building';
+            
+            // Clear form
+            buildingForm.reset();
+            
+            // Reset colony selection
+            colonyAssign.value = '';
+            
+            // Reset floor names to default
+            floorNamesContainer.innerHTML = '';
+            addDynamicInputField(floorNamesContainer, 'Ground Floor');
+            addDynamicInputField(floorNamesContainer, 'First Floor');
+            
+            // Reset room names to default
+            roomNamesContainer.innerHTML = '';
+            addDynamicInputField(roomNamesContainer, 'Classroom 101');
+            addDynamicInputField(roomNamesContainer, 'Office 102');
+            addDynamicInputField(roomNamesContainer, 'Laboratory 103');
+            
+            // Set default building number (find next available)
+            const usedNumbers = buildingsData.map(b => b.number);
+            let nextNumber = 'B001';
+            for (let i = 1; i <= 999; i++) {
+                const potentialNumber = 'B' + i.toString().padStart(3, '0');
+                if (!usedNumbers.includes(potentialNumber)) {
+                    nextNumber = potentialNumber;
+                    break;
+                }
+            }
+            buildingNumber.value = nextNumber;
+            
+            // Open modal
+            buildingModal.classList.add('active');
+        }
+        
+        // Save building (add or update)
+        function saveBuilding() {
+            // Validate form
+            if (!buildingForm.checkValidity()) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            // Get colony info
+            const colonyId = parseInt(colonyAssign.value);
+            const colony = coloniesData.find(c => c.id === colonyId);
+            if (!colony) {
+                alert('Please select a valid colony.');
+                return;
+            }
+            
+            // Get floor names
+            const floorInputs = floorNamesContainer.querySelectorAll('input');
+            const floorNames = Array.from(floorInputs).map(input => input.value.trim()).filter(value => value);
+            
+            if (floorNames.length === 0) {
+                alert('At least one floor name is required.');
+                return;
+            }
+            
+            // Get room names
+            const roomInputs = roomNamesContainer.querySelectorAll('input');
+            const roomNames = Array.from(roomInputs).map(input => input.value.trim()).filter(value => value);
+            
+            if (roomNames.length === 0) {
+                alert('At least one room name is required.');
+                return;
+            }
+            
+            // Check if building number is unique (if editing, exclude current building)
+            const buildingNum = buildingNumber.value.trim();
+            const isDuplicate = buildingsData.some(building => 
+                building.number === buildingNum && 
+                (editingBuildingId === null || building.id !== editingBuildingId)
+            );
+            
+            if (isDuplicate) {
+                alert('Building number must be unique. This number is already in use.');
+                return;
+            }
+            
+            // Create building object
+            const buildingData = {
+                id: editingBuildingId || buildingsData.length > 0 ? Math.max(...buildingsData.map(b => b.id)) + 1 : 1,
+                number: buildingNum,
+                name: buildingName.value.trim(),
+                colonyId: colonyId,
+                colonyName: colony.name,
+                floorNames: floorNames,
+                roomNames: roomNames,
+                description: document.getElementById('building-description').value.trim(),
+                blueprints: editingBuildingId ? buildingsData.find(b => b.id === editingBuildingId)?.blueprints || {} : {}
+            };
+            
+            if (editingBuildingId) {
+                // Update existing building
+                const buildingIndex = buildingsData.findIndex(b => b.id === editingBuildingId);
+                if (buildingIndex !== -1) {
+                    buildingsData[buildingIndex] = buildingData;
+                }
+            } else {
+                // Add new building
+                buildingsData.push(buildingData);
+            }
+            
+            // Update colony building count
+            updateColonyBuildingCount(colonyId);
+            
+            // Refresh UI
+            populateBuildingDropdown(currentColonyId);
+            populateBuildingsTable();
+            
+            // Close modal
+            buildingModal.classList.remove('active');
+            
+            // Show success message
+            alert(`Building ${editingBuildingId ? 'updated' : 'added'} successfully!`);
+            
+            // If this is a new building and we're viewing its colony, select it
+            if (!editingBuildingId && currentColonyId === colonyId) {
+                buildingSelect.value = buildingData.id;
+                buildingSelect.dispatchEvent(new Event('change'));
+            }
+        }
+        
+        // Update colony building count
+        function updateColonyBuildingCount(colonyId) {
+            const colonyBuildings = buildingsData.filter(b => b.colonyId === colonyId);
+            const colony = coloniesData.find(c => c.id === colonyId);
+            if (colony) {
+                colony.buildings = colonyBuildings.length;
+            }
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Colony selection change
+            colonySelect.addEventListener('change', function() {
+                const colonyId = this.value;
+                currentColonyId = colonyId;
+                
+                populateBuildingDropdown(colonyId);
+                
+                // Show/hide selection display
+                if (colonyId) {
+                    selectionDisplay.classList.add('active');
+                } else {
+                    selectionDisplay.classList.remove('active');
+                    resetBuildingSelection();
+                }
+                
+                // Update blueprint display
+                updateBlueprintDisplay(null, null);
+            });
+            
+            // Building selection change
+            buildingSelect.addEventListener('change', function() {
+                const buildingId = this.value;
+                currentBuildingId = buildingId;
+                
+                populateFloorDropdown(buildingId);
+                
+                // Update blueprint display
+                updateBlueprintDisplay(buildingId, null);
+            });
+            
+            // Floor selection change
+            floorSelect.addEventListener('change', function() {
+                const floorNumber = this.value;
+                currentFloor = floorNumber;
+                
+                populateRoomDropdown(currentBuildingId, floorNumber);
+                
+                // Update blueprint display
+                updateBlueprintDisplay(currentBuildingId, floorNumber);
+            });
+            
+            // Room selection change
+            roomSelect.addEventListener('change', function() {
+                const roomValue = this.value;
+                currentRoom = roomValue;
+                
+                // Update display
+                const selectedOption = this.options[this.selectedIndex];
+                if (roomValue && selectedOption) {
+                    displayRoom.textContent = selectedOption.text;
+                    displayRoomType.textContent = "N/A";
+                } else {
+                    displayRoom.textContent = 'Not selected';
+                    displayRoomType.textContent = 'Not selected';
+                }
+            });
+            
+            // Add building button
+            addBuildingBtn.addEventListener('click', openAddBuildingModal);
+            
+            // Search functionality
+            buildingSearch.addEventListener('input', function() {
+                populateBuildingsTable(this.value);
+            });
+            
+            // Modal controls
+            modalClose.addEventListener('click', () => {
+                buildingModal.classList.remove('active');
+            });
+            
+            modalCancel.addEventListener('click', () => {
+                buildingModal.classList.remove('active');
+            });
+            
+            // Close modal when clicking outside
+            buildingModal.addEventListener('click', (e) => {
+                if (e.target === buildingModal) {
+                    buildingModal.classList.remove('active');
+                }
+            });
+            
+            // Save building
+            modalSave.addEventListener('click', saveBuilding);
+            
+            // Add floor button
+            addFloorBtn.addEventListener('click', () => {
+                addDynamicInputField(floorNamesContainer);
+            });
+            
+            // Add room button
+            addRoomBtn.addEventListener('click', () => {
+                addDynamicInputField(roomNamesContainer);
+            });
+            
+            // Allow Enter key to save building in modal
+            buildingForm.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && buildingModal.classList.contains('active')) {
+                    e.preventDefault();
+                    saveBuilding();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

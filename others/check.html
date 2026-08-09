@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        .status-box {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+        }
+
+        .valid {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .invalid {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-color: #ffeeba;
+            color: #856404;
+        }
+
+        .token-info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+
+        .countdown {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            background: #007bff;
+            color: white;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button.danger {
+            background: #dc3545;
+        }
+
+        button.danger:hover {
+            background: #bd2130;
+        }
+
+        .cookie-list {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            word-break: break-all;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔑 Token Monitor</h1>
+
+        <div class="cookie-list" id="cookies">
+            Loading cookies...
+        </div>
+
+        <div class="status-box" id="accessTokenStatus">
+            Checking access token...
+        </div>
+
+        <div class="status-box" id="refreshTokenStatus">
+            Checking refresh token...
+        </div>
+
+        <div class="countdown" id="countdown">
+            --
+        </div>
+
+        <div class="token-info" id="tokenDetails">
+            Token details will appear here
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button onclick="checkTokens()">🔄 Refresh Status</button>
+            <button onclick="manualRefresh()">🔄 Try Manual Refresh</button>
+            <button class="danger" onclick="logout()">🚪 Logout</button>
+        </div>
+
+        <div style="margin-top: 20px; font-size: 12px; color: #666; text-align: center;">
+            <p>Access token expires in 1 minute. Watch the countdown!</p>
+        </div>
+    </div>
+
+    <script>
+        const api = axios.create({
+            baseURL: '/',
+            withCredentials: true
+        });
+
+        let countdownInterval;
+
+        async function checkTokens() {
+            // Show cookies
+            document.getElementById('cookies').innerHTML =
+                'Cookies: ' + (document.cookie || 'No cookies found');
+
+            // Check access token
+            try {
+                const accessRes = await api.get('/api/auth/token-status');
+                document.getElementById('accessTokenStatus').className = 'status-box valid';
+                document.getElementById('accessTokenStatus').innerHTML = `
+                    <strong>✅ Access Token: VALID</strong><br>
+                    Expires in: ${accessRes.data.expiresIn} seconds<br>
+                    Expires at: ${new Date(accessRes.data.expiresAt).toLocaleTimeString()}
+                `;
+
+                // Start countdown
+                startCountdown(accessRes.data.expiresIn);
+
+                // Show token details
+                document.getElementById('tokenDetails').innerHTML = `
+                    <strong>Token Payload:</strong><br>
+                    User ID: ${accessRes.data.user.id}<br>
+                    Email: ${accessRes.data.user.email}<br>
+                    Role: ${accessRes.data.user.role}<br>
+                    Token Version: ${accessRes.data.user.tokenVersion || 1}
+                `;
+            } catch (error) {
+                document.getElementById('accessTokenStatus').className = 'status-box invalid';
+                document.getElementById('accessTokenStatus').innerHTML = `
+                    <strong>❌ Access Token: INVALID</strong><br>
+                    Error: ${error.response?.data?.message || error.message}
+                `;
+                stopCountdown();
+            }
+
+            // Check refresh token
+            try {
+                const refreshRes = await api.post('/api/auth/check-refresh');
+                document.getElementById('refreshTokenStatus').className = 'status-box valid';
+                document.getElementById('refreshTokenStatus').innerHTML = `
+                    <strong>✅ Refresh Token: VALID</strong><br>
+                    Expires in: ${refreshRes.data.expiresIn} seconds<br>
+                    Expires at: ${new Date(refreshRes.data.expiresAt).toLocaleTimeString()}
+                `;
+            } catch (error) {
+                document.getElementById('refreshTokenStatus').className = 'status-box invalid';
+                document.getElementById('refreshTokenStatus').innerHTML = `
+                    <strong>❌ Refresh Token: INVALID</strong><br>
+                    Error: ${error.response?.data?.message || error.message}
+                `;
+            }
+        }
+
+        async function manualRefresh() {
+            try {
+                document.getElementById('tokenDetails').innerHTML = 'Attempting refresh...';
+                const res = await api.post('/api/auth/refresh');
+                document.getElementById('tokenDetails').innerHTML =
+                    '✅ Refresh successful! ' + JSON.stringify(res.data);
+                checkTokens(); // Re-check status
+            } catch (error) {
+                document.getElementById('tokenDetails').innerHTML =
+                    '❌ Refresh failed: ' + (error.response?.data?.message || error.message);
+            }
+        }
+
+        function startCountdown(seconds) {
+            stopCountdown();
+            const countdownEl = document.getElementById('countdown');
+
+            countdownInterval = setInterval(() => {
+                if (seconds <= 0) {
+                    countdownEl.innerHTML = '⏰ TOKEN EXPIRED';
+                    countdownEl.style.background = '#dc3545';
+                    stopCountdown();
+                    checkTokens(); // Re-check status
+                } else {
+                    const mins = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    countdownEl.innerHTML = `⏱️ Token expires in: ${mins}:${secs.toString().padStart(2, '0')}`;
+
+                    if (seconds < 10) {
+                        countdownEl.style.background = '#ffc107';
+                        countdownEl.style.color = '#000';
+                    }
+                }
+                seconds--;
+            }, 1000);
+        }
+
+        function stopCountdown() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+        }
+
+        async function logout() {
+            try {
+                await api.post('/api/auth/logout');
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        }
+
+        // Auto-check every 5 seconds
+        setInterval(checkTokens, 5000);
+
+        // Initial check
+        checkTokens();
+    </script>
+</body>
+
+</html>

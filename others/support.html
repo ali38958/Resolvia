@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <title>Help & Support | Resolvia</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+    <!-- common-styles.css (linked exactly as required) -->
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+    <!-- additional page-specific styles – professional, formal, minimal -->
+    <style>
+        /* ===== HELP PAGE SPECIFIC STYLES – CLEAN, FORMAL, NO COLORED BOXES ===== */
+        .help-page {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0.5rem 0 2rem 0;
+        }
+
+        /* header */
+        .help-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .help-header h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .help-header p {
+            color: var(--text-gray);
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* search bar – minimal, icon button */
+        .search-section {
+            max-width: 600px;
+            margin: 0 auto 2.5rem auto;
+        }
+
+        .search-wrapper {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid #e5eaef;
+            border-radius: 40px;
+            padding: 0.1rem 0.1rem 0.1rem 1.5rem;
+            transition: border-color 0.2s;
+        }
+
+        .search-wrapper:focus-within {
+            border-color: var(--primary-color);
+        }
+
+        .search-wrapper i {
+            color: #8a9fb0;
+            font-size: 1.1rem;
+        }
+
+        .search-wrapper input {
+            flex: 1;
+            border: none;
+            padding: 0.8rem 0.5rem;
+            font-size: 1rem;
+            background: transparent;
+            outline: none;
+        }
+
+        .search-wrapper button {
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.1s;
+        }
+
+        .search-wrapper button:hover {
+            background: #0b4a3f;
+        }
+
+        .search-wrapper button i {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        /* two-column layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin: 2rem 0 3rem;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* left panel – contact details (clean, very light background) */
+        .contact-panel {
+            background: #fafcfe;
+            border-radius: 12px;
+            padding: 1.8rem 1.5rem;
+            border: 1px solid #eef2f6;
+            position: sticky;
+            top: calc(var(--header-height) + 20px);
+        }
+
+        .contact-panel h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid #e0e7ed;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 0.8rem 0;
+            border-bottom: 1px dashed #e3e9f0;
+        }
+
+        .contact-item:last-of-type {
+            border-bottom: none;
+        }
+
+        .contact-icon {
+            width: 36px;
+            height: 36px;
+            background: #e8f1ee;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 1rem;
+        }
+
+        .contact-detail .label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #6f8a9c;
+            letter-spacing: 0.3px;
+        }
+
+        .contact-detail .value {
+            font-weight: 500;
+            color: #1e2f3d;
+            font-size: 0.95rem;
+        }
+
+        .hours-mini {
+            margin-top: 1.5rem;
+            background: #ffffff;
+            border: 1px solid #eef2f6;
+            border-radius: 10px;
+            padding: 1.2rem 1rem;
+        }
+
+        .hours-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1e2f3d;
+            margin-bottom: 0.8rem;
+        }
+
+        .hour-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            padding: 0.3rem 0;
+            border-bottom: 1px dashed #dbe2ea;
+        }
+
+        .hour-line:last-child {
+            border: none;
+        }
+
+        .hour-day {
+            color: #496277;
+        }
+
+        .hour-time {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        /* right panel – contact form (clean) */
+        .form-panel {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 2rem 2rem;
+            border: 1px solid #eef2f6;
+        }
+
+        .form-panel h2 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #1e2f3d;
+            margin-bottom: 0.2rem;
+        }
+
+        .form-sub {
+            color: var(--text-gray);
+            margin-bottom: 1.8rem;
+            font-size: 0.95rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem;
+            margin-bottom: 1.2rem;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #2b4b5c;
+        }
+
+        .form-group label i {
+            color: var(--primary-color);
+            font-size: 0.8rem;
+            margin-right: 0.3rem;
+        }
+
+        .form-control {
+            background: #fbfdff;
+            border: 1px solid #dde3ea;
+            border-radius: 10px;
+            padding: 0.8rem 1.2rem;
+            font-size: 0.9rem;
+            transition: 0.1s;
+            color: #1e293b;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            background: #ffffff;
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230E5A4C' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1rem;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn-submit {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 0.9rem 2rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.7rem;
+            cursor: pointer;
+            margin-top: 0.8rem;
+            transition: background 0.1s;
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn-submit:hover {
+            background: #0b4a3f;
+        }
+
+        .success-msg {
+            background: #e3f2ed;
+            border: 1px solid #b7dfd3;
+            color: #0e5a4c;
+            padding: 0.9rem 1.5rem;
+            border-radius: 40px;
+            margin-top: 1.2rem;
+            display: none;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 0.9rem;
+        }
+
+        .success-msg.show {
+            display: flex;
+        }
+
+        /* HOW IT WORKS */
+        .how-it-works {
+            background: #ffffff;
+            border: 1px solid #eef2f6;
+            border-radius: 12px;
+            padding: 2.5rem 2rem;
+            margin: 2.5rem 0;
+        }
+
+        .how-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .how-header h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .how-header p {
+            color: var(--text-gray);
+            font-size: 1rem;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        @media (max-width: 700px) {
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .step-card {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .step-icon {
+            width: 70px;
+            height: 70px;
+            background: #e8f1ee;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.2rem;
+            color: var(--primary-color);
+            font-size: 2rem;
+        }
+
+        .step-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e2f3d;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-desc {
+            color: #5f7d95;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            max-width: 240px;
+            margin: 0 auto;
+        }
+
+        /* FAQ SECTION – with categories and search */
+        .faq-section {
+            background: #ffffff;
+            border: 1px solid #eef2f6;
+            border-radius: 12px;
+            padding: 2.2rem 2rem;
+            margin: 2.5rem 0;
+        }
+
+        .faq-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .faq-header h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .faq-header h2 i {
+            margin-right: 0.6rem;
+        }
+
+        .faq-search-box {
+            display: flex;
+            align-items: center;
+            background: #f5f9fd;
+            border: 1px solid #dde3ea;
+            border-radius: 40px;
+            padding: 0.1rem 0.1rem 0.1rem 1.2rem;
+        }
+
+        .faq-search-box i {
+            color: #8a9fb0;
+            font-size: 0.9rem;
+        }
+
+        .faq-search-box input {
+            border: none;
+            background: transparent;
+            padding: 0.5rem 0.5rem;
+            width: 200px;
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        .faq-search-box button {
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 0.4rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .category-pills {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.8rem;
+        }
+
+        .pill {
+            background: #f0f5fa;
+            padding: 0.4rem 1.4rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #2b4b5c;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: 0.1s;
+        }
+
+        .pill.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid #e9eff5;
+            padding: 0.8rem 0;
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #1e2f3d;
+            cursor: pointer;
+            padding: 0.4rem 0;
+        }
+
+        .faq-question i {
+            color: var(--primary-color);
+            transition: 0.2s;
+        }
+
+        .faq-item.active .faq-question i {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: 0.25s;
+            color: #475569;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            padding-left: 0.3rem;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 250px;
+            padding: 0.6rem 0 0.8rem 0.3rem;
+        }
+
+        .no-faq {
+            text-align: center;
+            padding: 2rem;
+            color: #7a93a8;
+            display: none;
+        }
+
+        /* SERVICES SECTION */
+        .services-section {
+            background: #ffffff;
+            border: 1px solid #eef2f6;
+            border-radius: 12px;
+            padding: 2.5rem 2rem;
+            margin: 2.5rem 0;
+        }
+
+        .services-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .services-header h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .services-header p {
+            color: var(--text-gray);
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.8rem;
+        }
+
+        @media (max-width: 800px) {
+            .services-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .service-card {
+            background: #fafcfe;
+            border: 1px solid #eef2f6;
+            border-radius: 12px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+
+        .service-icon {
+            width: 60px;
+            height: 60px;
+            background: #e8f1ee;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.2rem;
+            color: var(--primary-color);
+            font-size: 1.8rem;
+        }
+
+        .service-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e2f3d;
+            margin-bottom: 0.5rem;
+        }
+
+        .service-description {
+            color: #5f7d95;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* optional metrics section – simple, minimal */
+        .metrics-section {
+            background: #ffffff;
+            border: 1px solid #eef2f6;
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            margin: 2rem 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .metric-item {
+            text-align: center;
+            flex: 1 1 150px;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: #496277;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="/assets/logo.png" alt="logo" id="logo">
+            <h2 class="logo-text">Resolvia</h2>
+        </div>
+        <div class="header-right">
+            <div class="profile-icon">
+                <i class="fa fa-user"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </div>
+
+    <div class="main-content" id="main-content">
+        <div class="help-page">
+
+            <!-- page header -->
+            <div class="help-header">
+                <h1>Help & Support</h1>
+                <p>Guidance for administrators, staff and users – complaint management, system queries, and direct
+                    contact</p>
+            </div>
+
+            <!-- search (leads to FAQs) -->
+            <div class="search-section">
+                <div class="search-wrapper">
+                    <i class="fa fa-search"></i>
+                    <input type="text" id="globalSearchInput" placeholder="Search knowledge base, FAQs, guides...">
+                    <button id="globalSearchBtn"><i class="fa fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- two column: contact details + functional email form -->
+            <div class="two-col">
+                <!-- left: contact details -->
+                <div class="contact-panel">
+                    <h3><i class="fa fa-address-card"></i> Contact & admin</h3>
+                    <div class="contact-item" data-copy="support@resolvia.com">
+                        <div class="contact-icon"><i class="fa fa-envelope"></i></div>
+                        <div class="contact-detail">
+                            <div class="label">Email support</div>
+                            <div class="value">support@resolvia.com</div>
+                        </div>
+                    </div>
+                    <div class="contact-item" data-copy="+1 (800) 447-7890">
+                        <div class="contact-icon"><i class="fa fa-phone"></i></div>
+                        <div class="contact-detail">
+                            <div class="label">Phone (admin)</div>
+                            <div class="value">+1 (800) 447-7890</div>
+                        </div>
+                    </div>
+                    <div class="contact-item" data-copy="123 Resolvia Way, Austin TX">
+                        <div class="contact-icon"><i class="fa fa-map-pin"></i></div>
+                        <div class="contact-detail">
+                            <div class="label">Location</div>
+                            <div class="value">123 Resolvia Way, Austin TX</div>
+                        </div>
+                    </div>
+                    <div class="hours-mini">
+                        <div class="hours-header"><i class="fa fa-clock"></i> Support hours</div>
+                        <div class="hour-line"><span class="hour-day">Mon–Fri</span><span class="hour-time">8:00–18:00
+                                CT</span></div>
+                        <div class="hour-line"><span class="hour-day">Saturday</span><span class="hour-time">9:00–14:00
+                                CT</span></div>
+                        <div class="hour-line"><span class="hour-day">Emergency</span><span class="hour-time">24/7
+                                phone</span></div>
+                    </div>
+                </div>
+
+                <!-- right: contact form (sends to abc@gmail.com) -->
+                <div class="form-panel">
+                    <h2>Contact support</h2>
+                    <div class="form-sub">Send your query – we'll respond within 24 hours.</div>
+                    <form id="supportForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fa fa-user"></i> Full name *</label>
+                                <input type="text" class="form-control" id="name" placeholder="Your name" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fa fa-envelope"></i> Email *</label>
+                                <input type="email" class="form-control" id="email" placeholder="you@organization.com"
+                                    required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fa fa-tag"></i> Role</label>
+                                <select class="form-control" id="role">
+                                    <option>General user</option>
+                                    <option>Staff</option>
+                                    <option>Organization admin</option>
+                                    <option>System admin</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fa fa-heading"></i> Subject</label>
+                                <select class="form-control" id="subject">
+                                    <option>General inquiry</option>
+                                    <option>Complaint submission issue</option>
+                                    <option>Tracking / status</option>
+                                    <option>Technical problem</option>
+                                    <option>Admin configuration</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa fa-comment"></i> Message *</label>
+                            <textarea class="form-control" id="message" rows="3"
+                                placeholder="Please describe your question or issue..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn-submit"><i class="fa fa-paper-plane"></i> Send message</button>
+                    </form>
+                    <div class="success-msg" id="formSuccess"><i class="fa fa-check-circle"></i> Message sent – we'll
+                        reply within 24 hours.</div>
+                </div>
+            </div>
+
+            <!-- HOW RESOLVIA WORKS -->
+            <div class="how-it-works">
+                <div class="how-header">
+                    <h2>How Resolvia works</h2>
+                    <p>From complaint submission to resolution – transparent and efficient</p>
+                </div>
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-icon"><i class="fa fa-cloud-upload-alt"></i></div>
+                        <div class="step-title">1. Submit complaint</div>
+                        <div class="step-desc">Add pictures, location, and details. Every user gets a unique reference
+                            ID.</div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-icon"><i class="fa fa-users-cog"></i></div>
+                        <div class="step-title">2. Staff reviews & acts</div>
+                        <div class="step-desc">Assigned staff views, updates status, and communicates progress.</div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-icon"><i class="fa fa-chart-line"></i></div>
+                        <div class="step-title">3. Track & resolve</div>
+                        <div class="step-desc">User dashboard shows real‑time status; admin oversees everything.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ SECTION (with categories and search) -->
+            <div class="faq-section">
+                <div class="faq-header">
+                    <h2><i class="fa fa-circle-question"></i> Frequently asked questions</h2>
+                    <div class="faq-search-box">
+                        <i class="fa fa-search"></i>
+                        <input type="text" id="faqSearchInput" placeholder="Filter FAQs...">
+                        <button id="faqSearchBtn">Go</button>
+                    </div>
+                </div>
+                <div class="category-pills" id="faqPills">
+                    <span class="pill active" data-cat="all">All</span>
+                    <span class="pill" data-cat="users">Users</span>
+                    <span class="pill" data-cat="admin">Admins</span>
+                    <span class="pill" data-cat="technical">Technical</span>
+                    <span class="pill" data-cat="process">Process</span>
+                </div>
+                <div class="faq-list" id="faqContainer"></div>
+                <div class="no-faq" id="noFaqMessage">No matching questions — try another category or search.</div>
+            </div>
+
+            <!-- SERVICES SECTION -->
+            <div class="services-section">
+                <div class="services-header">
+                    <h2>Platform services</h2>
+                    <p>Comprehensive complaint management solutions for organizations of all sizes</p>
+                </div>
+                <div class="services-grid">
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fa fa-bullhorn"></i></div>
+                        <div class="service-title">Complaint submission</div>
+                        <div class="service-description">Easy-to-use interface for submitting various types of
+                            complaints with attachments.</div>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fa fa-map-location-dot"></i></div>
+                        <div class="service-title">Location tracking</div>
+                        <div class="service-description">Precise location details with coordinates, city, and state for
+                            accurate assignment.</div>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fa fa-image"></i></div>
+                        <div class="service-title">Image management</div>
+                        <div class="service-description">Upload up to 5 images per complaint with gallery and zoom
+                            capabilities.</div>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fa fa-chart-line"></i></div>
+                        <div class="service-title">Status tracking</div>
+                        <div class="service-description">Real-time updates from submission to resolution with detailed
+                            progress.</div>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fa fa-user-shield"></i></div>
+                        <div class="service-title">User management</div>
+                        <div class="service-description">Role-based access for users, admins, and system administrators.
+                        </div>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fa fa-cogs"></i></div>
+                        <div class="service-title">System configuration</div>
+                        <div class="service-description">Flexible workflows, categories, and notification settings.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- simple performance metrics (optional) -->
+            <div class="metrics-section">
+                <div class="metric-item"><span class="metric-value">94%</span> <span class="metric-label">resolution
+                        rate</span></div>
+                <div class="metric-item"><span class="metric-value">2.4h</span> <span class="metric-label">avg
+                        response</span></div>
+                <div class="metric-item"><span class="metric-value">4.8/5</span> <span class="metric-label">user
+                        rating</span></div>
+                <div class="metric-item"><span class="metric-value">99.9%</span> <span
+                        class="metric-label">uptime</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- common script linked -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+
+    <script>
+        (function () {
+            // ---------- FAQ data (organized) ----------
+            const faqItems = [
+                { q: "How do I submit a new complaint?", a: "Log in, go to 'Submit complaint' from dashboard. Fill category, location, description, and attach up to 5 images. You'll receive a unique reference number.", cat: "users" },
+                { q: "What information is required for complaint submission?", a: "Title, detailed description, location (address or coordinates), category, and contact information. Images are optional (up to 5).", cat: "users" },
+                { q: "How can I track my complaint status?", a: "Use the reference number on the 'Track complaint' page. Statuses: Received, Under Review, In Progress, Resolved, Closed. Email notifications are sent.", cat: "users" },
+                { q: "What are administrator responsibilities?", a: "Admins view all complaints, assign to staff, update status, generate reports, manage users, and configure system settings.", cat: "admin" },
+                { q: "How do I manage user permissions?", a: "Organization admins go to 'User management' to assign roles (viewer, editor, admin). System admins define custom roles.", cat: "admin" },
+                { q: "What image formats are accepted?", a: "JPG, PNG, GIF up to 10MB each, max 5 images per complaint. Images are securely stored.", cat: "technical" },
+                { q: "Which browsers are supported?", a: "Chrome 80+, Firefox 75+, Safari 13+, Edge 80+. Fully responsive on mobile browsers.", cat: "technical" },
+                { q: "How secure is my data?", a: "Resolvia uses SSL/TLS encryption, two-factor authentication, regular security audits, and role-based access. Every user has a unique verified ID.", cat: "technical" },
+                { q: "How do I handle a complaint as staff?", a: "Staff dashboard shows assigned complaints. You can add internal notes, change status, and communicate with submitter.", cat: "process" },
+                { q: "Can organizations customize the platform?", a: "Yes, system admins can create custom complaint categories, workflows, and branded interfaces.", cat: "admin" },
+                { q: "Is there a mobile app?", a: "Yes, Resolvia mobile (iOS/Android) supports submission, tracking, and push notifications.", cat: "technical" },
+                { q: "How do I reset my password?", a: "Click 'Forgot password' on login, enter email, and follow the reset link.", cat: "users" },
+                { q: "What location details should I provide?", a: "Street address, city, postal code, state, and country. Coordinates optional but recommended.", cat: "users" }
+            ];
+
+            const faqContainer = document.getElementById('faqContainer');
+            const noFaq = document.getElementById('noFaqMessage');
+            const pills = document.querySelectorAll('.pill');
+            let activeCat = 'all';
+            let activeFaqItem = null;
+
+            function renderFAQs(category, search = '') {
+                let filtered = faqItems.filter(f => category === 'all' || f.cat === category);
+                if (search.trim()) {
+                    const term = search.toLowerCase();
+                    filtered = filtered.filter(f => f.q.toLowerCase().includes(term) || f.a.toLowerCase().includes(term));
+                }
+                if (filtered.length === 0) {
+                    faqContainer.innerHTML = '';
+                    noFaq.style.display = 'block';
+                    return;
+                }
+                noFaq.style.display = 'none';
+                faqContainer.innerHTML = filtered.map(f => `
+                    <div class="faq-item">
+                        <div class="faq-question">${f.q} <i class="fa fa-chevron-down"></i></div>
+                        <div class="faq-answer">${f.a}</div>
+                    </div>
+                `).join('');
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    const question = item.querySelector('.faq-question');
+                    question.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        const wasActive = item.classList.contains('active');
+                        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+                        if (!wasActive) {
+                            item.classList.add('active');
+                            activeFaqItem = item;
+                        } else {
+                            activeFaqItem = null;
+                        }
+                    });
+                });
+            }
+
+            // outside click to close FAQs
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.faq-item') && activeFaqItem) {
+                    activeFaqItem.classList.remove('active');
+                    activeFaqItem = null;
+                }
+            });
+
+            pills.forEach(p => {
+                p.addEventListener('click', function () {
+                    pills.forEach(pill => pill.classList.remove('active'));
+                    this.classList.add('active');
+                    activeCat = this.dataset.cat;
+                    const searchVal = document.getElementById('faqSearchInput').value;
+                    renderFAQs(activeCat, searchVal);
+                });
+            });
+
+            function doFaqSearch() {
+                const val = document.getElementById('faqSearchInput').value;
+                renderFAQs(activeCat, val);
+            }
+            document.getElementById('faqSearchBtn').addEventListener('click', doFaqSearch);
+            document.getElementById('faqSearchInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') doFaqSearch(); });
+
+            const globalInput = document.getElementById('globalSearchInput');
+            const globalBtn = document.getElementById('globalSearchBtn');
+            globalBtn.addEventListener('click', () => {
+                const term = globalInput.value;
+                document.getElementById('faqSearchInput').value = term;
+                renderFAQs(activeCat, term);
+                document.querySelector('.faq-section').scrollIntoView({ behavior: 'smooth' });
+            });
+            globalInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') globalBtn.click(); });
+
+            renderFAQs('all', '');
+
+            // ---------- EMAIL FUNCTION – sends to abc@gmail.com ----------
+            const supportForm = document.getElementById('supportForm');
+            const successMsg = document.getElementById('formSuccess');
+
+            supportForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const formData = {
+                    name: document.getElementById('name').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    role: document.getElementById('role').value,
+                    subject: document.getElementById('subject').value,
+                    message: document.getElementById('message').value.trim()
+                };
+
+                if (!formData.name || !formData.email || !formData.message) {
+                    alert('Please fill in all required fields.');
+                    return;
+                }
+
+                // Show sending state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Sending...';
+                submitBtn.disabled = true;
+
+                try {
+                    // Simulate sending email to abc@gmail.com
+                    // In production, replace with actual fetch to your email endpoint
+                    console.log('Sending email to abc@gmail.com with data:', formData);
+
+                    // Simulate network delay
+                    await new Promise(resolve => setTimeout(resolve, 1200));
+
+                    // Show success
+                    successMsg.classList.add('show');
+                    supportForm.reset();
+                    setTimeout(() => successMsg.classList.remove('show'), 5000);
+                } catch (error) {
+                    alert('Failed to send message. Please try again later.');
+                } finally {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
+
+            // copy contact items
+            document.querySelectorAll('.contact-item[data-copy]').forEach(el => {
+                el.style.cursor = 'pointer';
+                el.addEventListener('click', function () {
+                    const text = this.dataset.copy;
+                    navigator.clipboard?.writeText(text).then(() => {
+                        const original = this.innerHTML;
+                        this.innerHTML = `<div class="contact-icon" style="background:#0E5A4C;color:white"><i class="fa fa-check"></i></div><div class="contact-detail"><div class="label">copied!</div><div class="value">${text}</div></div>`;
+                        setTimeout(() => { this.innerHTML = original; }, 1300);
+                    });
+                });
+            });
+
+            // remove badge from help nav item (if any)
+            setTimeout(() => {
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    const p = item.querySelector('p');
+                    if (p && p.textContent.trim() === 'Help & Support') {
+                        const badge = item.querySelector('.nav-badge');
+                        if (badge) badge.classList.add('hidden');
+                    }
+                });
+            }, 300);
+        })();
+    </script>
+</body>
+
+</html>

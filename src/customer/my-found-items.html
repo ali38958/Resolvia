@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <title>Items Found — Resolvia</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+    <style>
+        /* ── Page-specific only ── */
+
+        /* Item cell */
+        .item-thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            object-fit: cover;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .item-thumb-placeholder {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .item-cell {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        /* View button */
+        .view-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: 0 var(--space-3);
+            height: 28px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--primary-mid);
+            background: var(--primary-light);
+            font-size: var(--text-xs);
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--primary);
+            transition: all var(--t-fast);
+        }
+
+        .view-btn:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        /* Detail modal */
+        .detail-header {
+            margin-bottom: var(--space-5);
+        }
+
+        .detail-header h3 {
+            font-size: var(--text-xl);
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0 0 var(--space-1);
+        }
+
+        .detail-header p {
+            font-size: var(--text-sm);
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: var(--space-4);
+            background: var(--bg-surface-2);
+            border-radius: var(--radius-md);
+            padding: var(--space-4);
+            margin-bottom: var(--space-5);
+        }
+
+        .detail-grid-item strong {
+            display: block;
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-1);
+        }
+
+        .detail-grid-item span {
+            font-size: var(--text-sm);
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .detail-section {
+            margin-bottom: var(--space-5);
+        }
+
+        .detail-section-label {
+            font-size: var(--text-xs);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: var(--space-2);
+        }
+
+        .detail-desc {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: var(--space-3);
+        }
+
+        .gallery-img {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: transform var(--t-fast), box-shadow var(--t-fast);
+        }
+
+        .gallery-img:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
+
+        .detail-footer {
+            padding-top: var(--space-4);
+            border-top: 1px solid var(--border);
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: calc(var(--header-height) + var(--space-4));
+            right: var(--space-5);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: 500;
+            z-index: 5000;
+            box-shadow: var(--shadow-lg);
+            min-width: 260px;
+            max-width: 380px;
+            animation: toast-in 0.25s ease;
+            border-left: 4px solid transparent;
+        }
+
+        @keyframes toast-in {
+            from {
+                transform: translateX(110%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.error {
+            background: var(--danger-light);
+            border-color: var(--danger);
+            color: #9f1239;
+        }
+
+        .toast-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.6;
+            font-size: 14px;
+            padding: 0;
+        }
+
+        /* Status badge overrides for submitted/pending */
+        .badge-blue {
+            background: #dbeafe;
+            color: #1d4ed8;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="/assets/logo.png" alt="Resolvia" id="logo">
+            <span class="logo-text">Resolvia</span>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" title="Toggle theme">
+                <i class="fa fa-moon icon-moon"></i>
+                <i class="fa fa-sun icon-sun"></i>
+            </button>
+            <div class="profile-icon"><i class="fa fa-user"></i></div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fa fa-sign-out-alt"></i><span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <nav class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </nav>
+
+    <main class="main-content" id="main-content">
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Items Found</h1>
+                <p class="page-subtitle">Browse and track found item reports</p>
+            </div>
+        </div>
+
+        <div class="table-toolbar">
+            <div class="input-group table-search">
+                <i class="fas fa-search input-icon"></i>
+                <input type="text" id="searchInput" class="form-control" placeholder="Search items…">
+            </div>
+            <div class="table-actions">
+                <select id="categoryFilter" class="form-control" style="width:auto;">
+                    <option value="">All Categories</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="documents">Documents</option>
+                    <option value="accessories">Accessories</option>
+                    <option value="clothing">Clothing</option>
+                    <option value="other">Other</option>
+                </select>
+                <select id="statusFilter" class="form-control" style="width:auto;">
+                    <option value="">All Statuses</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="pending">Pending</option>
+                </select>
+                <div class="flex items-center gap-2">
+                    <label class="form-label" style="margin:0;white-space:nowrap;">Show</label>
+                    <select id="entriesPerPage" class="form-control" style="width:80px;">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <button class="btn btn-secondary" id="searchBtn">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="itemsTable">
+                <thead>
+                    <tr>
+                        <th style="width:50px;text-align:center">#</th>
+                        <th>Item</th>
+                        <th style="width:120px">Category</th>
+                        <th style="width:110px">Found Date</th>
+                        <th>Location</th>
+                        <th style="width:100px;text-align:center">Status</th>
+                        <th style="width:80px;text-align:center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsTableBody"></tbody>
+            </table>
+
+            <div class="pagination">
+                <span class="pagination-info" id="paginationInfo">Showing 0–0 of 0 items</span>
+                <div class="pagination-controls">
+                    <button class="page-btn" id="prevPage" disabled><i class="fas fa-chevron-left"></i></button>
+                    <button class="page-btn" id="nextPage" disabled><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ── View Item Details Modal ── -->
+    <div class="modal-overlay" id="viewModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Item Details</h2>
+                <button class="modal-close" id="closeViewModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="itemDetails"></div>
+        </div>
+    </div>
+
+    <script src="/js/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+    <script>
+        const API_BASE_URL = '/api';
+        let itemsData = [];
+        let currentPage = 1, itemsPerPage = 10, totalPages = 0;
+
+        // ── Toast ──────────────────────────────────────────
+        function showToast(message, type = 'error') {
+            document.querySelectorAll('.toast').forEach(t => t.remove());
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas fa-circle-xmark"></i>
+                <span style="flex:1">${message}</span>
+                <button class="toast-close"><i class="fas fa-times"></i></button>
+            `;
+            document.body.appendChild(toast);
+            toast.querySelector('.toast-close').addEventListener('click', () => toast.remove());
+            setTimeout(() => toast?.remove(), 5000);
+        }
+
+        // ── Helpers ────────────────────────────────────────
+        function formatDate(d) {
+            if (!d) return '—';
+            return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+        function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+
+        function statusBadge(status) {
+            if (status === 'submitted') return `<span class="badge badge-blue">Submitted</span>`;
+            return `<span class="badge badge-gray">Pending</span>`;
+        }
+
+        // ── Fetch ──────────────────────────────────────────
+        async function fetchItems() {
+            const tbody = document.getElementById('itemsTableBody');
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding:var(--space-8)">
+                <div class="spinner" style="margin:0 auto"></div>
+            </td></tr>`;
+
+            try {
+                const { data: result } = await api.get(`${API_BASE_URL}/customer/my-found-items`, {
+                    params: {
+                        page: currentPage,
+                        limit: itemsPerPage,
+                        search: document.getElementById('searchInput').value,
+                        category: document.getElementById('categoryFilter').value,
+                        status: document.getElementById('statusFilter').value,
+                    }
+                });
+
+                if (!result.success) throw new Error(result.message || 'Failed to fetch items');
+                itemsData = result.data;
+                totalPages = result.pagination.totalPages;
+                renderTable(result.pagination);
+
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to load items. Please try again.');
+                tbody.innerHTML = `<tr><td colspan="7">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                        <p class="empty-title">Error loading data</p>
+                    </div>
+                </td></tr>`;
+            }
+        }
+
+        // ── Render ─────────────────────────────────────────
+        function renderTable(pagination) {
+            const tbody = document.getElementById('itemsTableBody');
+            tbody.innerHTML = '';
+
+            if (!itemsData.length) {
+                tbody.innerHTML = `<tr><td colspan="7">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-box-open"></i></div>
+                        <p class="empty-title">No items found</p>
+                        <p class="empty-text">Try adjusting your search or filters.</p>
+                    </div>
+                </td></tr>`;
+                updatePagination(pagination); return;
+            }
+
+            itemsData.forEach((item, i) => {
+                const rowNum = (pagination.page - 1) * pagination.limit + i + 1;
+                const thumb = item.images?.[0]
+                    ? `<img src="${item.images[0]}" alt="${item.name}" class="item-thumb"
+                           onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'item-thumb-placeholder',innerHTML:'<i class=\\'fas fa-box\\'></i>'}));">`
+                    : `<div class="item-thumb-placeholder"><i class="fas fa-box"></i></div>`;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="text-center text-muted">${rowNum}</td>
+                    <td>
+                        <div class="item-cell">
+                            ${thumb}
+                            <span class="font-semibold">${item.name}</span>
+                        </div>
+                    </td>
+                    <td class="text-secondary">${cap(item.category) || '—'}</td>
+                    <td class="text-secondary">${formatDate(item.date)}</td>
+                    <td class="text-secondary">${item.location || '—'}</td>
+                    <td class="text-center">${statusBadge(item.status)}</td>
+                    <td class="text-center">
+                        <button class="view-btn" data-id="${item.id}">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            updatePagination(pagination);
+        }
+
+        // ── Pagination ─────────────────────────────────────
+        function updatePagination({ page, limit, total, totalPages: tp }) {
+            const start = total > 0 ? (page - 1) * limit + 1 : 0;
+            const end = Math.min(page * limit, total);
+            document.getElementById('paginationInfo').textContent = `Showing ${start}–${end} of ${total} item${total !== 1 ? 's' : ''}`;
+
+            document.getElementById('prevPage').disabled = page === 1;
+            document.getElementById('nextPage').disabled = page >= tp || tp === 0;
+
+            const controls = document.querySelector('.pagination-controls');
+            controls.querySelectorAll('.page-btn:not(#prevPage):not(#nextPage)').forEach(b => b.remove());
+
+            let s = Math.max(1, page - 2), e = Math.min(tp, s + 4);
+            if (e - s + 1 < 5) s = Math.max(1, e - 4);
+
+            const nextBtn = document.getElementById('nextPage');
+            for (let p = s; p <= e; p++) {
+                if (p <= 0) continue;
+                const btn = document.createElement('button');
+                btn.className = `page-btn${p === page ? ' active' : ''}`;
+                btn.textContent = p;
+                btn.addEventListener('click', () => { currentPage = p; fetchItems(); });
+                controls.insertBefore(btn, nextBtn);
+            }
+        }
+
+        // ── View Item ──────────────────────────────────────
+        function viewItem(id) {
+            const item = itemsData.find(it => it.id === id);
+            if (!item) return;
+
+            let galleryHtml = '';
+            if (item.images?.length) {
+                galleryHtml = `
+                    <div class="detail-section">
+                        <p class="detail-section-label">Photos</p>
+                        <div class="gallery-grid">
+                            ${item.images.map(img => `<img src="${img}" alt="${item.name}" class="gallery-img"
+                                onclick="window.open('${img}','_blank')">`).join('')}
+                        </div>
+                    </div>`;
+            } else {
+                galleryHtml = `<div class="detail-section">
+                    <p class="detail-section-label">Photos</p>
+                    <p class="text-muted" style="font-style:italic;font-size:var(--text-sm)">No images uploaded</p>
+                </div>`;
+            }
+
+            document.getElementById('itemDetails').innerHTML = `
+                <div class="detail-header">
+                    <h3>${item.name}</h3>
+                    <p>ID: ${String(item.id).padStart(3, '0')}</p>
+                </div>
+
+                <div class="detail-grid">
+                    <div class="detail-grid-item">
+                        <strong>Category</strong>
+                        <span>${cap(item.category) || '—'}</span>
+                    </div>
+                    <div class="detail-grid-item">
+                        <strong>Found Date</strong>
+                        <span>${formatDate(item.date)}</span>
+                    </div>
+                    <div class="detail-grid-item">
+                        <strong>Location</strong>
+                        <span>${item.location || '—'}</span>
+                    </div>
+                    <div class="detail-grid-item">
+                        <strong>Status</strong>
+                        <span>${statusBadge(item.status)}</span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <p class="detail-section-label">Description</p>
+                    <p class="detail-desc">${item.description || 'No description provided.'}</p>
+                </div>
+
+                ${galleryHtml}
+
+                <div class="detail-footer">
+                    <i class="fas fa-info-circle"></i>
+                    Item reported on ${formatDate(item.date)} at ${item.location || '—'}
+                </div>
+            `;
+
+            document.getElementById('viewModal').classList.add('open');
+        }
+
+        // ── Init ───────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+
+            document.getElementById('searchBtn').addEventListener('click', () => { currentPage = 1; fetchItems(); });
+            document.getElementById('searchInput').addEventListener('keypress', e => {
+                if (e.key === 'Enter') { currentPage = 1; fetchItems(); }
+            });
+            document.getElementById('categoryFilter').addEventListener('change', () => { currentPage = 1; fetchItems(); });
+            document.getElementById('statusFilter').addEventListener('change', () => { currentPage = 1; fetchItems(); });
+            document.getElementById('entriesPerPage').addEventListener('change', function () {
+                itemsPerPage = +this.value; currentPage = 1; fetchItems();
+            });
+
+            document.getElementById('prevPage').addEventListener('click', () => { if (currentPage > 1) { currentPage--; fetchItems(); } });
+            document.getElementById('nextPage').addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; fetchItems(); } });
+
+            document.getElementById('closeViewModal').addEventListener('click', () =>
+                document.getElementById('viewModal').classList.remove('open'));
+            document.getElementById('viewModal').addEventListener('click', e => {
+                if (e.target === document.getElementById('viewModal'))
+                    document.getElementById('viewModal').classList.remove('open');
+            });
+
+            document.addEventListener('click', e => {
+                const btn = e.target.closest('.view-btn');
+                if (btn) viewItem(parseInt(btn.dataset.id));
+            });
+
+            fetchItems();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resolvia - Contact Us</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+
+    <!-- Preload the same background image for consistency -->
+    <link rel="preload" as="image" href="assets/building.jpg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --nutech-green: rgba(8, 81, 68, 0.94);
+            --nutech-solid: #085144;
+            --text-white: #ffffff;
+            --fallback-bg: #042a23;
+            --label-color: #085144;
+            --success: #4CAF50;
+            --error: #F44336;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body,
+        html {
+            height: 100%;
+            width: 100%;
+            background: var(--fallback-bg) url('assets/building.jpg') no-repeat center center/cover;
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        /* --- Panels --- */
+        .left-panel {
+            position: relative;
+            width: 50%;
+            color: var(--text-white);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .right-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 3;
+            background: transparent;
+        }
+
+        /* --- Wave Animation --- */
+        .wave-image {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: auto;
+            min-width: 100%;
+            object-fit: cover;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.7;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
+            animation: waveInFromLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes waveInFromLeft {
+            from {
+                transform: translateX(-150%);
+            }
+
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes waveOutLeft {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-150%);
+            }
+        }
+
+        .wave-exit {
+            animation: waveOutLeft 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+        }
+
+        /* --- Branding --- */
+        .content-wrapper {
+            max-width: 400px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .left-panel h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .left-panel h2 {
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            font-weight: 400;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .left-panel p {
+            margin-top: 15px;
+            opacity: 0.9;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo-circle {
+            width: clamp(120px, 15vw, 180px);
+            height: clamp(120px, 15vw, 180px);
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+            animation: floatLogo 6s ease-in-out infinite;
+            margin-bottom: 25px;
+        }
+
+        @keyframes floatLogo {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        /* --- Glass Card --- */
+        .contact-glass-card {
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: clamp(20px, 5vw, 40px);
+            border-radius: 28px;
+            width: 100%;
+            max-width: 520px;
+            color: white;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            transition: box-shadow 0.3s ease, opacity 0.5s ease, transform 0.5s ease;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .contact-glass-card:hover {
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .contact-glass-card h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+
+        /* --- Toggle Info Button --- */
+        .toggle-info-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.3rem;
+            backdrop-filter: blur(5px);
+            transition: all 0.2s ease;
+            z-index: 10;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-info-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(1.1);
+            border-color: white;
+        }
+
+        /* --- Floating Labels (matching login page) --- */
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            z-index: 2;
+            transition: color 0.3s ease;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .input-group.textarea-group i {
+            top: 25px;
+            transform: none;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 16px 0 8px 30px;
+            border: none;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+            background: transparent;
+            font-size: 1rem;
+            color: white;
+            outline: none;
+            transition: border-color 0.3s ease;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            resize: vertical;
+        }
+
+        .input-group textarea {
+            min-height: 100px;
+            padding: 22px 0 8px 30px;
+            line-height: 1.5;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            border-bottom-color: white;
+            border-bottom-width: 3px;
+        }
+
+        .input-group input:focus+label,
+        .input-group input:not(:placeholder-shown)+label,
+        .input-group textarea:focus+label,
+        .input-group textarea:not(:placeholder-shown)+label {
+            transform: translateY(-30px) scale(0.85);
+            color: white;
+            left: 30px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-group input:focus~i,
+        .input-group textarea:focus~i {
+            color: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .input-group.textarea-group textarea:focus~i,
+        .input-group.textarea-group textarea:not(:placeholder-shown)~i {
+            transform: none;
+        }
+
+        .input-group label {
+            position: absolute;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.9);
+            pointer-events: none;
+            transition: all 0.2s ease-out;
+            font-size: 1rem;
+            transform-origin: left top;
+            font-weight: 500;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-group.textarea-group label {
+            top: 22px;
+            transform: none;
+        }
+
+        .input-group input::placeholder,
+        .input-group textarea::placeholder {
+            color: transparent;
+        }
+
+        /* --- Character Counter --- */
+        .char-counter {
+            text-align: right;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        .char-counter.limit-reached {
+            color: #ffaa00;
+            font-weight: 600;
+        }
+
+        /* --- Contact Button --- */
+        .btn-contact {
+            width: 100%;
+            padding: 16px;
+            border-radius: 40px;
+            border: none;
+            background: white;
+            color: var(--nutech-solid);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            margin-top: 15px;
+        }
+
+        .btn-contact:hover:not(:disabled) {
+            background: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-contact:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-contact:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-contact.submitted {
+            background-color: var(--success);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* --- Contact Details Section --- */
+        .contact-details {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .contact-details.hidden {
+            display: none;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.95rem;
+            color: white;
+            word-break: break-word;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .detail-item i {
+            width: 24px;
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            text-align: center;
+        }
+
+        .detail-item a {
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px dotted rgba(255, 255, 255, 0.5);
+            transition: border-color 0.2s;
+        }
+
+        .detail-item a:hover {
+            border-bottom: 1px solid white;
+        }
+
+        /* --- Back Link --- */
+        .back-link {
+            display: inline-block;
+            margin-top: 25px;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            padding: 8px 16px;
+            border-radius: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .back-link i {
+            margin-right: 8px;
+        }
+
+        .back-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            gap: 12px;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* --- Notification Container (matching login) --- */
+        #notificationContainer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+
+        .notification {
+            padding: 15px 20px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .notification.success {
+            background: rgba(76, 175, 80, 0.95);
+        }
+
+        .notification.error {
+            background: rgba(244, 67, 54, 0.95);
+        }
+
+        .notification.info {
+            background: rgba(33, 150, 243, 0.95);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* --- Scrollbar Styling --- */
+        .contact-glass-card::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .contact-glass-card::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .contact-glass-card::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .contact-glass-card::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* --- RESPONSIVENESS (matching login) --- */
+        @media (max-width: 1024px) {
+            .left-panel {
+                width: 45%;
+            }
+        }
+
+        @media (max-width: 850px) {
+            .main-container {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+
+            .left-panel {
+                width: 100%;
+                padding: 60px 20px 40px 20px;
+                min-height: auto;
+                background-color: var(--nutech-green);
+            }
+
+            .right-panel {
+                width: 100%;
+                padding: 20px;
+                background: transparent;
+            }
+
+            .wave-image {
+                display: none;
+            }
+
+            .contact-glass-card {
+                max-width: 100%;
+                max-height: none;
+                overflow-y: visible;
+                backdrop-filter: blur(15px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .contact-glass-card {
+                padding: 25px 15px;
+                border-radius: 24px;
+            }
+
+            .contact-glass-card h2 {
+                font-size: 1.6rem;
+                margin-bottom: 20px;
+            }
+
+            .input-group {
+                margin-bottom: 20px;
+            }
+
+            .input-group input,
+            .input-group textarea {
+                font-size: 0.95rem;
+                padding: 14px 0 6px 28px;
+            }
+
+            .input-group.textarea-group textarea {
+                padding: 20px 0 6px 28px;
+            }
+
+            .input-group label {
+                left: 28px;
+                font-size: 0.95rem;
+            }
+
+            .input-group.textarea-group label {
+                top: 20px;
+            }
+
+            .input-group input:focus+label,
+            .input-group input:not(:placeholder-shown)+label,
+            .input-group textarea:focus+label,
+            .input-group textarea:not(:placeholder-shown)+label {
+                transform: translateY(-26px) scale(0.85);
+                left: 28px;
+            }
+
+            .input-group i {
+                font-size: 1rem;
+            }
+
+            .btn-contact {
+                padding: 14px;
+                font-size: 0.95rem;
+            }
+
+            .logo-circle {
+                margin-bottom: 15px;
+            }
+
+            .detail-item {
+                font-size: 0.85rem;
+                gap: 12px;
+            }
+
+            .detail-item i {
+                font-size: 1.1rem;
+            }
+
+            .toggle-info-btn {
+                top: 15px;
+                right: 20px;
+                width: 35px;
+                height: 35px;
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .contact-glass-card {
+                padding: 20px 12px;
+            }
+
+            .contact-glass-card h2 {
+                font-size: 1.4rem;
+            }
+
+            .input-group input,
+            .input-group textarea {
+                padding: 12px 0 5px 25px;
+                font-size: 0.85rem;
+            }
+
+            .input-group label {
+                left: 25px;
+                font-size: 0.85rem;
+            }
+
+            .input-group input:focus+label,
+            .input-group input:not(:placeholder-shown)+label,
+            .input-group textarea:focus+label,
+            .input-group textarea:not(:placeholder-shown)+label {
+                transform: translateY(-24px) scale(0.85);
+                left: 25px;
+            }
+
+            .btn-contact {
+                padding: 12px;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-height: 600px) and (orientation: landscape) {
+            .left-panel {
+                padding: 20px;
+            }
+
+            .logo-circle {
+                width: 80px;
+                height: 80px;
+                margin-bottom: 10px;
+            }
+
+            .contact-glass-card {
+                padding: 20px;
+            }
+
+            .input-group {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <div class="left-panel">
+            <div class="content-wrapper">
+                <img src="/assets/logo.png" alt="Logo" class="logo-circle" />
+                <h1>Resolvia</h1>
+                <h2>Complaint Management System</h2>
+                <p style="margin-top: 15px; opacity: 0.9;">We're here to help</p>
+            </div>
+            <!-- Wave image with transparency already set via CSS opacity -->
+            <img src="assets/wave1.svg" alt="" class="wave-image" id="wave">
+        </div>
+
+        <div class="right-panel">
+            <div class="contact-glass-card" id="contactCard">
+                <!-- Small toggle button in the top-right corner -->
+                <div class="toggle-info-btn" id="toggleInfoBtn" title="Show/hide contact details">
+                    <i class="fa-solid fa-circle-info"></i>
+                </div>
+
+                <h2 style="font-size: 2rem; margin-bottom: 20px; text-align: center;">Contact Us</h2>
+                <form id="contactForm">
+                    <!-- Name -->
+                    <div class="input-group">
+                        <input type="text" id="name" placeholder=" " required>
+                        <label for="name">Full Name</label>
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div class="input-group">
+                        <input type="tel" id="phone" placeholder=" " required>
+                        <label for="phone">Phone Number</label>
+                        <i class="fa-solid fa-phone"></i>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="input-group">
+                        <input type="email" id="email" placeholder=" " required>
+                        <label for="email">Email Address</label>
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
+
+                    <!-- Message with character limit -->
+                    <div class="input-group textarea-group">
+                        <textarea id="message" placeholder=" " maxlength="500" required></textarea>
+                        <label for="message">Your Message (max 500 chars)</label>
+                        <i class="fa-solid fa-message" style="top: 30px;"></i>
+                    </div>
+                    <div class="char-counter" id="charCounter">0/500</div>
+
+                    <!-- Submit button -->
+                    <button type="submit" class="btn-contact" id="submitBtn">Send Message</button>
+                </form>
+
+                <!-- === CONTACT INFORMATION SECTION (hidden by default, toggle with button) === -->
+                <div class="contact-details hidden" id="contactDetails">
+                    <div class="detail-item">
+                        <i class="fa-solid fa-envelope"></i>
+                        <span>Email: <a href="mailto:support@resolvia.com">support@resolvia.com</a></span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fa-solid fa-phone-alt"></i>
+                        <span>Phone: <a href="tel:+15551234567">+1 (555) 123-4567</a></span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span>Location: 123 Innovation Drive, Suite 400, San Francisco, CA 94105</span>
+                    </div>
+                </div>
+
+                <!-- subtle back to login / home link (optional) -->
+                <div style="text-align: center;">
+                    <a href="login.html" class="back-link" id="backToLogin">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // === TOGGLE CONTACT DETAILS ===
+        const toggleBtn = document.getElementById('toggleInfoBtn');
+        const contactDetails = document.getElementById('contactDetails');
+
+        toggleBtn.addEventListener('click', () => {
+            contactDetails.classList.toggle('hidden');
+            // Optional: change icon style based on state (just for fun)
+            if (contactDetails.classList.contains('hidden')) {
+                toggleBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+            } else {
+                toggleBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.35)';
+            }
+        });
+
+        // Character counter for message field
+        const messageInput = document.getElementById('message');
+        const charCounter = document.getElementById('charCounter');
+
+        function updateCharCounter() {
+            const len = messageInput.value.length;
+            charCounter.textContent = `${len}/500`;
+            if (len >= 500) {
+                charCounter.classList.add('limit-reached');
+            } else {
+                charCounter.classList.remove('limit-reached');
+            }
+        }
+        messageInput.addEventListener('input', updateCharCounter);
+        // Initialize counter
+        updateCharCounter();
+
+        // Create notification container (same as login page for consistency)
+        const notificationContainer = document.createElement('div');
+        notificationContainer.id = 'notificationContainer';
+        notificationContainer.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        `;
+        document.body.appendChild(notificationContainer);
+
+        // Show notification function (copied from login)
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                animation: slideIn 0.3s ease, fadeOut 0.3s ease 4.7s forwards;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            `;
+
+            if (type === 'success') {
+                notification.style.backgroundColor = '#4CAF50';
+            } else if (type === 'error') {
+                notification.style.backgroundColor = '#F44336';
+            } else {
+                notification.style.backgroundColor = '#2196F3';
+            }
+
+            const icon = document.createElement('i');
+            icon.className = type === 'success' ? 'fas fa-check-circle' :
+                type === 'error' ? 'fas fa-exclamation-circle' :
+                    'fas fa-info-circle';
+            notification.appendChild(icon);
+
+            const messageSpan = document.createElement('span');
+            messageSpan.textContent = message;
+            notification.appendChild(messageSpan);
+
+            notificationContainer.appendChild(notification);
+
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.animation = 'slideOut 0.3s ease forwards';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notificationContainer.removeChild(notification);
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
+
+        // Add CSS animations (if not already present)
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+            @keyframes fadeOut { to { opacity: 0; } }
+        `;
+        document.head.appendChild(style);
+
+        // Handle contact form submission
+        const contactForm = document.getElementById('contactForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        contactForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Basic validation (optional, but ensures fields are filled)
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const message = document.getElementById('message').value.trim();
+
+            if (!name || !phone || !email || !message) {
+                showNotification('Please fill in all fields', 'error');
+                return;
+            }
+
+            // Email format check (very basic)
+            if (!email.includes('@') || !email.includes('.')) {
+                showNotification('Please enter a valid email address', 'error');
+                return;
+            }
+
+            // Disable button and change text to "Submitting..."
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Submitting...';
+            submitBtn.disabled = true;
+
+            try {
+                // Simulate API call with a delay (replace with actual endpoint)
+                // Using a mock POST - replace URL with your actual backend endpoint
+                const response = await axios.post('/api/contact', {
+                    name: name,
+                    phone: phone,
+                    email: email,
+                    message: message
+                }, {
+                    withCredentials: true // if needed
+                });
+
+                // Handle success (you can adjust based on your API response structure)
+                // For demo, we assume success if status is 2xx
+                showNotification('Message sent successfully! We\'ll get back to you soon.', 'success');
+
+                // Change button to "Submitted!" and keep disabled
+                submitBtn.textContent = 'Submitted!';
+                submitBtn.classList.add('submitted');
+                // Optionally reset form
+                contactForm.reset();
+                updateCharCounter(); // reset char count
+
+                // (Optional) Prevent further submissions by leaving disabled.
+                // If you want to allow another submission later, you could re-enable after some time,
+                // but requirement says "once submitted make button unclickable like submitting and submitted when successful"
+                // So we keep it disabled and styled.
+
+            } catch (error) {
+                console.error('Contact form error:', error);
+
+                let errorMessage = 'Failed to send message. Please try again.';
+                if (error.response) {
+                    errorMessage = error.response.data.message || errorMessage;
+                } else if (error.request) {
+                    errorMessage = 'Unable to connect to server. Please check your connection.';
+                }
+
+                showNotification(errorMessage, 'error');
+
+                // Re-enable button on error so user can retry
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('submitted');
+            }
+        });
+
+        // Page Transition for back link (to login) with wave animation
+        const backLink = document.getElementById('backToLogin');
+        const wave = document.getElementById('wave');
+
+        if (backLink) {
+            backLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = this.href;
+
+                // Animate wave if visible on desktop
+                if (wave && window.innerWidth > 850) {
+                    wave.classList.add('wave-exit');
+                }
+
+                // Fade out card
+                document.getElementById('contactCard').style.opacity = '0';
+                document.getElementById('contactCard').style.transform = 'scale(0.95)';
+
+                setTimeout(() => {
+                    window.location.href = target;
+                }, 500);
+            });
+        }
+
+        // Optional: Enter key to submit? Not needed because form handles it.
+        // But for completeness, we can keep Enter behavior.
+        // No need for password toggle, so removed.
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <title>Location Management System</title>
+    <link rel="stylesheet" href="common-styles.css"> <!-- Common styles for header, menu, etc. -->
+    <style>
+        /* Location Management Specific Styles */
+        .location-management {
+            padding: 20px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            color: var(--primary-color);
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            color: var(--text-gray);
+            font-size: 16px;
+        }
+
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filters-container {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            max-width: 800px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            font-size: 14px;
+            color: var(--text-gray);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .filter-select {
+            padding: 12px 16px;
+            border: 2px solid var(--primary-transparent-10);
+            border-radius: 8px;
+            font-size: 15px;
+            background-color: white;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230E5A4C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+            padding-right: 40px;
+            cursor: pointer;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--primary-transparent-10);
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 2px solid var(--primary-transparent-10);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--primary-transparent-10);
+        }
+
+        .search-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .search-button:hover {
+            background-color: #0a473d;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(14, 90, 76, 0.2);
+        }
+
+        .add-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .add-button:hover {
+            background-color: #0a473d;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(14, 90, 76, 0.2);
+        }
+
+        /* Location Layout */
+        .location-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .location-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Blueprint Section */
+        .blueprint-section {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            overflow: hidden;
+        }
+
+        .blueprint-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8f9fa;
+        }
+
+        .blueprint-header h3 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .blueprint-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .blueprint-wrapper {
+            position: relative;
+            height: 500px;
+            background: #f9f9f9;
+            overflow: hidden;
+        }
+
+        .blueprint-image {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .blueprint-image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .blueprint-placeholder {
+            text-align: center;
+            color: var(--text-gray);
+        }
+
+        .blueprint-placeholder i {
+            font-size: 64px;
+            margin-bottom: 15px;
+            color: #e0e0e0;
+        }
+
+        .blueprint-placeholder p {
+            margin: 10px 0 20px;
+            font-size: 14px;
+        }
+
+        .room-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .room-marker {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+        }
+
+        .room-marker:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .marker-dot {
+            width: 16px;
+            height: 16px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .marker-label {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Floor Navigation */
+        .floor-navigation {
+            padding: 15px 20px;
+            border-top: 1px solid #e0e0e0;
+            background: #f8f9fa;
+        }
+
+        .floor-selector {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .floor-nav-btn {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .floor-nav-btn:hover {
+            background: var(--primary-transparent-10);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .floor-list {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            overflow-x: auto;
+            padding: 5px;
+        }
+
+        .floor-item {
+            min-width: 70px;
+            padding: 10px;
+            border-radius: 6px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .floor-item:hover {
+            border-color: var(--primary-color);
+            background: var(--primary-transparent-10);
+        }
+
+        .floor-item.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .floor-number {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .floor-label {
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        /* Rooms Section */
+        .rooms-section {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .rooms-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8f9fa;
+        }
+
+        .rooms-header h3 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rooms-count {
+            background: var(--primary-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Table Controls */
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 8px 20px;
+        }
+        
+        .entries-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-gray);
+            font-size: 13px;
+        }
+        
+        .entries-selector select {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: var(--text-light);
+            font-size: 13px;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+        
+        .entries-selector select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Table styles */
+        .table-container {
+            padding: 0 20px 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        
+        thead {
+            background-color: var(--primary-color);
+        }
+        
+        th {
+            padding: 12px 15px;
+            text-align: left;
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        th:last-child {
+            border-right: none;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+            transition: background-color 0.2s ease;
+        }
+        
+        tbody tr:hover {
+            background-color: var(--primary-transparent-10);
+        }
+        
+        td {
+            padding: 10px 15px;
+            color: var(--text-gray);
+            font-size: 13px;
+            border-right: 1px solid #e0e0e0;
+            vertical-align: middle;
+        }
+        
+        td:last-child {
+            border-right: none;
+        }
+        
+        /* Column widths for rooms table */
+        th:nth-child(1), td:nth-child(1) {
+            width: 80px; /* Room No. column */
+            text-align: center;
+        }
+
+        th:nth-child(2), td:nth-child(2) {
+            width: 200px; /* Room Name column */
+        }
+
+        th:nth-child(3), td:nth-child(3) {
+            width: 120px; /* Type column */
+        }
+
+        th:nth-child(4), td:nth-child(4) {
+            width: 100px; /* Status column */
+        }
+
+        th:nth-child(5), td:nth-child(5) {
+            width: 80px; /* Capacity column */
+            text-align: center;
+        }
+
+        th:nth-child(6), td:nth-child(6) {
+            width: 150px; /* Actions column */
+            text-align: center;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+        
+        .btn-view, .btn-edit, .btn-delete {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        
+        .btn-view {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .btn-view:hover {
+            background-color: #c8e6c9;
+            transform: translateY(-1px);
+        }
+        
+        .btn-edit {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #bbdefb;
+        }
+        
+        .btn-edit:hover {
+            background-color: #bbdefb;
+            transform: translateY(-1px);
+        }
+        
+        .btn-delete {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .btn-delete:hover {
+            background-color: #ffcdd2;
+            transform: translateY(-1px);
+        }
+
+        /* Badges */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-office {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .badge-meeting {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-storage {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .badge-lab {
+            background-color: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .badge-available {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-occupied {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .badge-maintenance {
+            background-color: #fff3e0;
+            color: #ef6c00;
+        }
+
+        /* No data message */
+        .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-gray);
+        }
+        
+        .no-data i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #e0e0e0;
+        }
+        
+        .no-data p {
+            font-size: 15px;
+            margin: 0;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 6px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--primary-color);
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            color: var(--text-light);
+            font-size: 16px;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: var(--text-light);
+            cursor: pointer;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+        
+        .close-modal:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #333;
+            font-weight: 500;
+            font-size: 13px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: border 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--primary-transparent-10);
+        }
+        
+        .form-control.select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230E5A4C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 14px;
+            padding-right: 35px;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0a473d;
+        }
+
+        /* Image upload styles */
+        .image-upload-container {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+            margin-bottom: 10px;
+        }
+        
+        .image-upload-container:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .image-upload-container.dragover {
+            border-color: var(--primary-color);
+            background-color: var(--primary-transparent-10);
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .upload-text {
+            color: var(--text-gray);
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .upload-subtext {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .image-preview {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .remove-image-btn {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 4px;
+            margin-top: 5px;
+        }
+        
+        .remove-image-btn:hover {
+            background-color: #ffcdd2;
+        }
+
+        /* Loading and Error States */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-gray);
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .error-message i {
+            font-size: 14px;
+        }
+
+        /* Mobile responsive styling */
+        @media (max-width: 768px) {
+            .location-management {
+                padding: 15px !important;
+            }
+            
+            .controls-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filters-container {
+                max-width: 100%;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .filter-group, .search-container {
+                width: 100%;
+                min-width: unset;
+            }
+
+            .add-button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .location-layout {
+                gap: 15px;
+                margin-top: 15px;
+            }
+
+            .blueprint-wrapper {
+                height: 350px;
+            }
+
+            .blueprint-header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+
+            .blueprint-controls {
+                justify-content: flex-start;
+            }
+
+            .floor-selector {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .floor-list {
+                order: 2;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .floor-nav-btn {
+                order: 1;
+            }
+
+            /* Table container with horizontal scroll */
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                border-radius: 4px;
+                padding: 0 15px 15px;
+            }
+            
+            .table-container::-webkit-scrollbar {
+                height: 4px;
+            }
+            
+            .table-container::-webkit-scrollbar-thumb {
+                background-color: var(--primary-color);
+                border-radius: 10px;
+            }
+            
+            table {
+                min-width: 600px;
+            }
+            
+            th, td {
+                padding: 8px 12px !important;
+                font-size: 12px !important;
+            }
+            
+            th {
+                padding: 10px 12px !important;
+                font-size: 11px !important;
+            }
+
+            /* Adjust column widths for mobile */
+            th:nth-child(1), td:nth-child(1) {
+                width: 60px;
+            }
+            
+            th:nth-child(2), td:nth-child(2) {
+                width: 150px;
+            }
+            
+            th:nth-child(3), td:nth-child(3) {
+                width: 100px;
+            }
+            
+            th:nth-child(4), td:nth-child(4) {
+                width: 80px;
+            }
+            
+            th:nth-child(5), td:nth-child(5) {
+                width: 60px;
+            }
+            
+            th:nth-child(6), td:nth-child(6) {
+                width: 120px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .location-management {
+                padding: 12px !important;
+            }
+
+            .page-header h1 {
+                font-size: 24px;
+            }
+
+            .search-button, .add-button {
+                padding: 10px 16px;
+                font-size: 15px;
+            }
+
+            .blueprint-wrapper {
+                height: 300px;
+            }
+
+            .marker-dot {
+                width: 12px;
+                height: 12px;
+            }
+
+            .marker-label {
+                font-size: 10px;
+                padding: 1px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="../assets/logo.png" alt="logo" id="logo">
+            <h2 class="logo-text">Resolvia</h2>
+        </div>
+
+        <div class="header-right">
+            <div class="profile-icon">
+                <i class="fa fa-user"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </div>
+
+    <div class="main-content" id="main-content">
+        <div class="location-management">
+            <div class="page-header">
+                <h1>Location Management</h1>
+                <p>Manage floors and rooms across all buildings</p>
+            </div>
+
+            <div class="controls-row">
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label for="colonyFilter">Filter by Colony</label>
+                        <select id="colonyFilter" class="filter-select">
+                            <option value="all">All Colonies</option>
+                            <option value="Alpha Colony">Alpha Colony</option>
+                            <option value="Beta Settlement">Beta Settlement</option>
+                            <option value="Gamma Outpost">Gamma Outpost</option>
+                            <option value="Delta Base">Delta Base</option>
+                            <option value="Epsilon Camp">Epsilon Camp</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="buildingFilter">Select Building</label>
+                        <select id="buildingFilter" class="filter-select">
+                            <option value="all">All Buildings</option>
+                            <option value="1">Residence Tower A</option>
+                            <option value="2">Administration Block</option>
+                            <option value="3">Medical Center</option>
+                            <option value="4">Storage Facility</option>
+                            <option value="5">Research Lab</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="floorFilter">Select Floor</label>
+                        <select id="floorFilter" class="filter-select">
+                            <option value="all">All Floors</option>
+                            <option value="ground">Ground Floor</option>
+                            <option value="1">Floor 1</option>
+                            <option value="2">Floor 2</option>
+                            <option value="3">Floor 3</option>
+                            <option value="4">Floor 4</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="search-container">
+                    <input type="text" 
+                           class="search-input" 
+                           placeholder="Search rooms by name, number, or type..."
+                           id="searchInput">
+                    <button class="search-button" id="searchButton">
+                        <i class="fa fa-search"></i>
+                        Search
+                    </button>
+                </div>
+            </div>
+
+            <div class="location-layout">
+                <!-- Blueprint Section -->
+                <div class="blueprint-section">
+                    <div class="blueprint-header">
+                        <h3><i class="fas fa-map"></i> Floor Blueprint: <span id="floorNameDisplay">Ground Floor</span></h3>
+                        <div class="blueprint-controls">
+                            <button class="btn-secondary" id="uploadBlueprintBtn">
+                                <i class="fas fa-upload"></i>
+                                Upload Blueprint
+                            </button>
+                            <button class="btn-secondary" id="manageFloorsBtn">
+                                <i class="fas fa-layer-group"></i>
+                                Manage Floors
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="blueprint-wrapper">
+                        <div class="blueprint-image" id="blueprintImage">
+                            <div class="blueprint-placeholder">
+                                <i class="fas fa-map-marked-alt"></i>
+                                <p>No blueprint uploaded for this floor</p>
+                                <button class="btn-primary" id="addBlueprintBtn">
+                                    <i class="fas fa-upload"></i>
+                                    Upload Blueprint Image
+                                </button>
+                            </div>
+                        </div>
+                        <div class="room-overlay" id="roomOverlay">
+                            <!-- Room markers will be added dynamically -->
+                        </div>
+                    </div>
+                    
+                    <div class="floor-navigation">
+                        <div class="floor-selector">
+                            <button class="floor-nav-btn" id="prevFloorBtn">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div class="floor-list" id="floorList">
+                                <!-- Floor items will be added dynamically -->
+                            </div>
+                            <button class="floor-nav-btn" id="nextFloorBtn">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rooms List Section -->
+                <div class="rooms-section">
+                    <div class="rooms-header">
+                        <h3><i class="fas fa-door-closed"></i> Rooms on <span id="currentFloorText">Ground Floor</span></h3>
+                        <div class="rooms-count">
+                            <span id="roomsCount">0 rooms</span>
+                        </div>
+                    </div>
+
+                    <div class="table-controls">
+                        <div class="entries-selector">
+                            <span>Show</span>
+                            <select id="entriesPerPage">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                            </select>
+                            <span>entries</span>
+                        </div>
+                        <button class="add-button" id="addRoomBtn">
+                            <i class="fa fa-plus"></i>
+                            Add Room
+                        </button>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="rooms-table" id="roomsTable">
+                            <thead>
+                                <tr>
+                                    <th>Room No.</th>
+                                    <th>Room Name</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Capacity</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="roomsTableBody">
+                                <!-- Rooms will be loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="no-data" id="noRoomsMessage" style="display: none;">
+                        <i class="fas fa-door-closed"></i>
+                        <p>No rooms found on this floor.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Room Details Modal -->
+    <div class="modal-overlay" id="roomDetailsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="roomDetailsTitle">Room Details</h2>
+                <button class="close-modal" id="closeRoomDetailsModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="room-details" id="roomDetailsContent">
+                    <!-- Room details will be populated by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="closeRoomDetailsBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Room Modal -->
+    <div class="modal-overlay" id="roomModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="roomModalTitle">Add New Room</h2>
+                <button class="close-modal" id="closeRoomModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="roomForm">
+                    <div class="form-group">
+                        <label for="roomNumber">Room Number *</label>
+                        <input type="text" id="roomNumber" class="form-input" placeholder="e.g., 101, A-12" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="roomName">Room Name *</label>
+                        <input type="text" id="roomName" class="form-input" placeholder="e.g., Conference Room, Office" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="roomType">Room Type *</label>
+                        <select id="roomType" class="form-input select" required>
+                            <option value="">Select type</option>
+                            <option value="office">Office</option>
+                            <option value="meeting">Meeting Room</option>
+                            <option value="conference">Conference Room</option>
+                            <option value="storage">Storage</option>
+                            <option value="lab">Laboratory</option>
+                            <option value="classroom">Classroom</option>
+                            <option value="server">Server Room</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="roomStatus">Status *</label>
+                        <select id="roomStatus" class="form-input select" required>
+                            <option value="available">Available</option>
+                            <option value="occupied">Occupied</option>
+                            <option value="maintenance">Under Maintenance</option>
+                            <option value="reserved">Reserved</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="roomCapacity">Capacity (Optional)</label>
+                        <input type="number" id="roomCapacity" class="form-input" 
+                               placeholder="e.g., 10" min="1" max="500">
+                    </div>
+                    <div class="form-group">
+                        <label for="roomDescription">Description (Optional)</label>
+                        <textarea id="roomDescription" class="form-input" 
+                                  placeholder="Enter room description" 
+                                  rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="roomCoordinates">Blueprint Coordinates (Optional)</label>
+                        <div class="form-help">Click on the blueprint to set coordinates</div>
+                        <div class="coordinates-input">
+                            <input type="number" id="coordX" class="form-input" placeholder="X position" min="0" max="100" step="1">
+                            <input type="number" id="coordY" class="form-input" placeholder="Y position" min="0" max="100" step="1">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelRoomBtn">Cancel</button>
+                <button type="button" class="btn-primary" id="saveRoomBtn">Save Room</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blueprint Upload Modal -->
+    <div class="modal-overlay" id="blueprintModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Upload Floor Blueprint</h2>
+                <button class="close-modal" id="closeBlueprintModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="blueprintFile">Blueprint Image *</label>
+                    <div class="image-upload-container" id="blueprintUploadContainer">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">Click to upload blueprint image</div>
+                        <div class="upload-subtext">or drag and drop</div>
+                        <div class="upload-subtext">PNG, JPG, GIF up to 10MB</div>
+                        <input type="file" id="blueprintFile" accept="image/*" style="display: none;">
+                        <img id="blueprintPreview" class="image-preview" alt="Preview">
+                    </div>
+                    <button type="button" class="remove-image-btn" id="removeBlueprintBtn">
+                        <i class="fas fa-trash"></i> Remove Image
+                    </button>
+                </div>
+                <div class="form-group">
+                    <label for="floorSelect">Select Floor *</label>
+                    <select id="floorSelect" class="form-input select">
+                        <option value="ground">Ground Floor</option>
+                        <option value="1">Floor 1</option>
+                        <option value="2">Floor 2</option>
+                        <option value="3">Floor 3</option>
+                        <option value="4">Floor 4</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelBlueprintBtn">Cancel</button>
+                <button type="button" class="btn-primary" id="saveBlueprintBtn">Upload Blueprint</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Floors Modal -->
+    <div class="modal-overlay" id="floorsModal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Manage Floors</h2>
+                <button class="close-modal" id="closeFloorsModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="floors-list" id="floorsList">
+                    <!-- Floors will be listed here -->
+                </div>
+                <button class="add-button" id="addFloorBtn" style="width: 100%; margin-top: 20px;">
+                    <i class="fa fa-plus"></i>
+                    Add New Floor
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="closeFloorsBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Confirm Delete</h3>
+                <button class="close-modal" id="closeDeleteModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage">Are you sure you want to delete this item? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelDeleteBtn">Cancel</button>
+                <button type="button" class="btn-primary" id="confirmDeleteBtn" style="background-color: #d32f2f;">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="common-script.js"></script>
+    <script>
+        // Location Management JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sample data
+            const buildings = [
+                { id: 1, name: "Residence Tower A", colony: "Alpha Colony", floors: 8 },
+                { id: 2, name: "Administration Block", colony: "Alpha Colony", floors: 4 },
+                { id: 3, name: "Medical Center", colony: "Beta Settlement", floors: 5 },
+                { id: 4, name: "Storage Facility", colony: "Gamma Outpost", floors: 2 },
+                { id: 5, name: "Research Lab", colony: "Delta Base", floors: 6 }
+            ];
+
+            const floors = [
+                { id: 1, number: 'ground', name: 'Ground Floor', buildingId: 1, blueprint: null },
+                { id: 2, number: '1', name: 'First Floor', buildingId: 1, blueprint: 'floor1.jpg' },
+                { id: 3, number: '2', name: 'Second Floor', buildingId: 1, blueprint: null },
+                { id: 4, number: 'ground', name: 'Ground Floor', buildingId: 2, blueprint: null },
+                { id: 5, number: '1', name: 'First Floor', buildingId: 2, blueprint: null }
+            ];
+
+            let rooms = [
+                { id: 1, number: '101', name: 'Conference Room A', type: 'meeting', status: 'available', capacity: 12, floorId: 1, buildingId: 1, x: 25, y: 30 },
+                { id: 2, number: '102', name: 'Office - Manager', type: 'office', status: 'occupied', capacity: 1, floorId: 1, buildingId: 1, x: 45, y: 30 },
+                { id: 3, number: '103', name: 'Storage Room', type: 'storage', status: 'available', capacity: null, floorId: 1, buildingId: 1, x: 35, y: 60 },
+                { id: 4, number: '201', name: 'Laboratory A', type: 'lab', status: 'maintenance', capacity: 8, floorId: 2, buildingId: 1, x: 40, y: 40 },
+                { id: 5, number: '202', name: 'Server Room', type: 'server', status: 'occupied', capacity: null, floorId: 2, buildingId: 1, x: 60, y: 50 }
+            ];
+
+            // DOM Elements
+            const colonyFilter = document.getElementById('colonyFilter');
+            const buildingFilter = document.getElementById('buildingFilter');
+            const floorFilter = document.getElementById('floorFilter');
+            const searchInput = document.getElementById('searchInput');
+            const searchButton = document.getElementById('searchButton');
+            const addRoomBtn = document.getElementById('addRoomBtn');
+            const uploadBlueprintBtn = document.getElementById('uploadBlueprintBtn');
+            const manageFloorsBtn = document.getElementById('manageFloorsBtn');
+            const addBlueprintBtn = document.getElementById('addBlueprintBtn');
+            const prevFloorBtn = document.getElementById('prevFloorBtn');
+            const nextFloorBtn = document.getElementById('nextFloorBtn');
+            const floorList = document.getElementById('floorList');
+            const floorNameDisplay = document.getElementById('floorNameDisplay');
+            const currentFloorText = document.getElementById('currentFloorText');
+            const roomsCount = document.getElementById('roomsCount');
+            const roomsTableBody = document.getElementById('roomsTableBody');
+            const roomOverlay = document.getElementById('roomOverlay');
+            const blueprintImage = document.getElementById('blueprintImage');
+            const noRoomsMessage = document.getElementById('noRoomsMessage');
+            
+            // Modal Elements
+            const roomModal = document.getElementById('roomModal');
+            const blueprintModal = document.getElementById('blueprintModal');
+            const floorsModal = document.getElementById('floorsModal');
+            const deleteModal = document.getElementById('deleteModal');
+            
+            // State variables
+            let currentBuildingId = 1;
+            let currentFloorId = 1;
+            let currentFloorIndex = 0;
+            let currentFloors = [];
+            let filteredRooms = [];
+            let currentItemId = null;
+            let isEditMode = false;
+            let deleteType = null;
+
+            // Initialize
+            function init() {
+                loadBuildings();
+                loadFloorsForBuilding(currentBuildingId);
+                loadRoomsForFloor(currentFloorId);
+                setupEventListeners();
+            }
+
+            function setupEventListeners() {
+                // Filters
+                colonyFilter.addEventListener('change', filterByColony);
+                buildingFilter.addEventListener('change', changeBuilding);
+                floorFilter.addEventListener('change', changeFloor);
+                searchButton.addEventListener('click', filterRooms);
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') filterRooms();
+                });
+
+                // Buttons
+                addRoomBtn.addEventListener('click', openAddRoomModal);
+                uploadBlueprintBtn.addEventListener('click', openBlueprintModal);
+                manageFloorsBtn.addEventListener('click', openFloorsModal);
+                addBlueprintBtn.addEventListener('click', openBlueprintModal);
+                prevFloorBtn.addEventListener('click', goToPrevFloor);
+                nextFloorBtn.addEventListener('click', goToNextFloor);
+
+                // Blueprint click for coordinates
+                blueprintImage.addEventListener('click', handleBlueprintClick);
+            }
+
+            function loadBuildings() {
+                buildings.forEach(building => {
+                    const option = document.createElement('option');
+                    option.value = building.id;
+                    option.textContent = building.name;
+                    buildingFilter.appendChild(option);
+                });
+            }
+
+            function loadFloorsForBuilding(buildingId) {
+                currentFloors = floors.filter(floor => floor.buildingId == buildingId);
+                currentFloorId = currentFloors.length > 0 ? currentFloors[0].id : null;
+                currentFloorIndex = 0;
+                
+                updateFloorList();
+                updateFloorFilter();
+                
+                if (currentFloors.length > 0) {
+                    loadRoomsForFloor(currentFloorId);
+                    updateFloorDisplay();
+                }
+            }
+
+            function updateFloorList() {
+                floorList.innerHTML = '';
+                
+                currentFloors.forEach((floor, index) => {
+                    const floorItem = document.createElement('div');
+                    floorItem.className = `floor-item ${index === currentFloorIndex ? 'active' : ''}`;
+                    floorItem.dataset.floorId = floor.id;
+                    floorItem.dataset.index = index;
+                    
+                    floorItem.innerHTML = `
+                        <span class="floor-number">${floor.number === 'ground' ? 'G' : floor.number}</span>
+                        <span class="floor-label">${floor.number === 'ground' ? 'Ground' : getOrdinal(parseInt(floor.number))}</span>
+                    `;
+                    
+                    floorItem.addEventListener('click', () => {
+                        currentFloorIndex = index;
+                        currentFloorId = floor.id;
+                        loadRoomsForFloor(currentFloorId);
+                        updateFloorDisplay();
+                        updateFloorList();
+                    });
+                    
+                    floorList.appendChild(floorItem);
+                });
+                
+                // Update navigation buttons
+                prevFloorBtn.disabled = currentFloorIndex === 0;
+                nextFloorBtn.disabled = currentFloorIndex === currentFloors.length - 1;
+            }
+
+            function updateFloorFilter() {
+                floorFilter.innerHTML = '<option value="all">All Floors</option>';
+                
+                currentFloors.forEach(floor => {
+                    const option = document.createElement('option');
+                    option.value = floor.id;
+                    option.textContent = floor.name;
+                    floorFilter.appendChild(option);
+                });
+            }
+
+            function loadRoomsForFloor(floorId) {
+                filteredRooms = rooms.filter(room => room.floorId == floorId);
+                
+                updateRoomsTable();
+                updateRoomMarkers();
+                updateRoomsCount();
+                
+                // Update blueprint
+                const currentFloor = currentFloors.find(f => f.id == floorId);
+                updateBlueprint(currentFloor);
+            }
+
+            function updateRoomsTable() {
+                roomsTableBody.innerHTML = '';
+                
+                if (filteredRooms.length === 0) {
+                    noRoomsMessage.style.display = 'block';
+                    return;
+                }
+                
+                noRoomsMessage.style.display = 'none';
+                
+                filteredRooms.forEach(room => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><strong>${room.number}</strong></td>
+                        <td>${room.name}</td>
+                        <td><span class="badge badge-${room.type}">${getRoomTypeLabel(room.type)}</span></td>
+                        <td><span class="badge badge-${room.status}">${getStatusLabel(room.status)}</span></td>
+                        <td>${room.capacity || '-'}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-view" onclick="openRoomDetails(${room.id})">
+                                    <i class="fa fa-eye"></i>
+                                </button>
+                                <button class="btn-edit" onclick="openEditRoomModal(${room.id})">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                                <button class="btn-delete" onclick="openDeleteModal('room', ${room.id}, '${room.name}')">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    roomsTableBody.appendChild(row);
+                });
+            }
+
+            function updateRoomMarkers() {
+                roomOverlay.innerHTML = '';
+                
+                filteredRooms.forEach(room => {
+                    if (room.x && room.y) {
+                        const marker = document.createElement('div');
+                        marker.className = 'room-marker';
+                        marker.style.top = `${room.y}%`;
+                        marker.style.left = `${room.x}%`;
+                        marker.dataset.roomId = room.id;
+                        
+                        marker.innerHTML = `
+                            <div class="marker-dot"></div>
+                            <div class="marker-label">${room.number}</div>
+                        `;
+                        
+                        marker.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            openRoomDetails(room.id);
+                        });
+                        
+                        roomOverlay.appendChild(marker);
+                    }
+                });
+            }
+
+            function updateBlueprint(floor) {
+                const placeholder = blueprintImage.querySelector('.blueprint-placeholder');
+                
+                if (floor.blueprint) {
+                    blueprintImage.innerHTML = `<img src="../assets/blueprints/${floor.blueprint}" alt="${floor.name} Blueprint">`;
+                    placeholder.style.display = 'none';
+                } else {
+                    placeholder.style.display = 'flex';
+                }
+                
+                floorNameDisplay.textContent = floor.name;
+                currentFloorText.textContent = floor.name;
+            }
+
+            function updateRoomsCount() {
+                roomsCount.textContent = `${filteredRooms.length} ${filteredRooms.length === 1 ? 'room' : 'rooms'}`;
+            }
+
+            function updateFloorDisplay() {
+                if (currentFloors[currentFloorIndex]) {
+                    const floor = currentFloors[currentFloorIndex];
+                    floorNameDisplay.textContent = floor.name;
+                    currentFloorText.textContent = floor.name;
+                }
+            }
+
+            function goToPrevFloor() {
+                if (currentFloorIndex > 0) {
+                    currentFloorIndex--;
+                    currentFloorId = currentFloors[currentFloorIndex].id;
+                    loadRoomsForFloor(currentFloorId);
+                    updateFloorDisplay();
+                    updateFloorList();
+                }
+            }
+
+            function goToNextFloor() {
+                if (currentFloorIndex < currentFloors.length - 1) {
+                    currentFloorIndex++;
+                    currentFloorId = currentFloors[currentFloorIndex].id;
+                    loadRoomsForFloor(currentFloorId);
+                    updateFloorDisplay();
+                    updateFloorList();
+                }
+            }
+
+            function filterByColony() {
+                const colony = colonyFilter.value;
+                if (colony === 'all') {
+                    // Reset building filter
+                    buildingFilter.value = 'all';
+                    loadFloorsForBuilding(currentBuildingId);
+                } else {
+                    // Filter buildings by colony
+                    const building = buildings.find(b => b.colony === colony);
+                    if (building) {
+                        buildingFilter.value = building.id;
+                        currentBuildingId = building.id;
+                        loadFloorsForBuilding(building.id);
+                    }
+                }
+            }
+
+            function changeBuilding() {
+                const buildingId = buildingFilter.value;
+                if (buildingId !== 'all') {
+                    currentBuildingId = parseInt(buildingId);
+                    loadFloorsForBuilding(currentBuildingId);
+                }
+            }
+
+            function changeFloor() {
+                const floorId = floorFilter.value;
+                if (floorId !== 'all') {
+                    const index = currentFloors.findIndex(f => f.id == floorId);
+                    if (index !== -1) {
+                        currentFloorIndex = index;
+                        currentFloorId = parseInt(floorId);
+                        loadRoomsForFloor(currentFloorId);
+                        updateFloorDisplay();
+                        updateFloorList();
+                    }
+                }
+            }
+
+            function filterRooms() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                
+                if (!searchTerm) {
+                    filteredRooms = rooms.filter(room => room.floorId == currentFloorId);
+                } else {
+                    filteredRooms = rooms.filter(room => 
+                        room.floorId == currentFloorId &&
+                        (room.number.toLowerCase().includes(searchTerm) ||
+                         room.name.toLowerCase().includes(searchTerm) ||
+                         room.type.toLowerCase().includes(searchTerm))
+                    );
+                }
+                
+                updateRoomsTable();
+                updateRoomsCount();
+            }
+
+            function handleBlueprintClick(e) {
+                const rect = blueprintImage.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                const y = ((e.clientY - rect.top) / rect.height) * 100;
+                
+                // If we're in add/edit room mode, update coordinates
+                if (isEditMode && currentItemId) {
+                    document.getElementById('coordX').value = Math.round(x);
+                    document.getElementById('coordY').value = Math.round(y);
+                    showNotification('Coordinates updated! Click Save to confirm.', 'info');
+                }
+            }
+
+            // Modal Functions
+            window.openRoomDetails = function(roomId) {
+                const room = rooms.find(r => r.id === roomId);
+                if (!room) return;
+                
+                // Open room details modal (implementation depends on your modal structure)
+                console.log('Open room details:', room);
+                // You would implement the modal opening here
+            };
+
+            function openAddRoomModal() {
+                isEditMode = false;
+                currentItemId = null;
+                document.getElementById('roomModalTitle').textContent = 'Add New Room';
+                document.getElementById('roomForm').reset();
+                roomModal.classList.add('active');
+            }
+
+            window.openEditRoomModal = function(roomId) {
+                isEditMode = true;
+                currentItemId = roomId;
+                
+                const room = rooms.find(r => r.id === roomId);
+                if (!room) return;
+                
+                document.getElementById('roomModalTitle').textContent = 'Edit Room';
+                document.getElementById('roomNumber').value = room.number;
+                document.getElementById('roomName').value = room.name;
+                document.getElementById('roomType').value = room.type;
+                document.getElementById('roomStatus').value = room.status;
+                document.getElementById('roomCapacity').value = room.capacity || '';
+                document.getElementById('roomDescription').value = room.description || '';
+                document.getElementById('coordX').value = room.x || '';
+                document.getElementById('coordY').value = room.y || '';
+                
+                roomModal.classList.add('active');
+            };
+
+            function openBlueprintModal() {
+                blueprintModal.classList.add('active');
+            }
+
+            function openFloorsModal() {
+                const floorsList = document.getElementById('floorsList');
+                floorsList.innerHTML = '';
+                
+                currentFloors.forEach(floor => {
+                    const floorDiv = document.createElement('div');
+                    floorDiv.className = 'floor-item-modal';
+                    floorDiv.innerHTML = `
+                        <div class="floor-info">
+                            <span class="floor-number">${floor.number === 'ground' ? 'G' : floor.number}</span>
+                            <span class="floor-name">${floor.name}</span>
+                            <span class="floor-blueprint">${floor.blueprint ? 'Blueprint uploaded' : 'No blueprint'}</span>
+                        </div>
+                        <div class="floor-actions">
+                            <button class="btn-edit" onclick="editFloor(${floor.id})">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="btn-delete" onclick="openDeleteModal('floor', ${floor.id}, '${floor.name}')">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    floorsList.appendChild(floorDiv);
+                });
+                
+                floorsModal.classList.add('active');
+            }
+
+            window.editFloor = function(floorId) {
+                // Implement floor editing
+                console.log('Edit floor:', floorId);
+            };
+
+            window.openDeleteModal = function(type, id, name) {
+                deleteType = type;
+                currentItemId = id;
+                
+                let message = '';
+                if (type === 'room') {
+                    message = `Are you sure you want to delete room "${name}"? This action cannot be undone.`;
+                } else if (type === 'floor') {
+                    message = `Are you sure you want to delete floor "${name}"? All rooms on this floor will also be deleted.`;
+                }
+                
+                document.getElementById('deleteMessage').textContent = message;
+                deleteModal.classList.add('active');
+            };
+
+            // Helper functions
+            function getOrdinal(n) {
+                const s = ["th", "st", "nd", "rd"];
+                const v = n % 100;
+                return n + (s[(v - 20) % 10] || s[v] || s[0]);
+            }
+
+            function getRoomTypeLabel(type) {
+                const types = {
+                    'office': 'Office',
+                    'meeting': 'Meeting',
+                    'conference': 'Conference',
+                    'storage': 'Storage',
+                    'lab': 'Laboratory',
+                    'classroom': 'Classroom',
+                    'server': 'Server Room',
+                    'other': 'Other'
+                };
+                return types[type] || type;
+            }
+
+            function getStatusLabel(status) {
+                const statuses = {
+                    'available': 'Available',
+                    'occupied': 'Occupied',
+                    'maintenance': 'Maintenance',
+                    'reserved': 'Reserved'
+                };
+                return statuses[status] || status;
+            }
+
+            function showNotification(message, type) {
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 80px;
+                    right: 20px;
+                    padding: 15px 25px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 10000;
+                    animation: slideIn 0.3s ease;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                `;
+                
+                if (type === 'success') {
+                    notification.style.backgroundColor = 'var(--primary-color)';
+                } else if (type === 'info') {
+                    notification.style.backgroundColor = '#2196F3';
+                } else {
+                    notification.style.backgroundColor = '#FF9800';
+                }
+                
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+            }
+
+            // Initialize the application
+            init();
+
+            // Add CSS for animations
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                @keyframes slideOut {
+                    from {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                }
+                .floor-item-modal {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 12px;
+                    border: 1px solid #e0e0e0;
+                    border-radius: 6px;
+                    margin-bottom: 10px;
+                }
+                .floor-info {
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                }
+                .floor-number {
+                    background: var(--primary-color);
+                    color: white;
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: 600;
+                }
+                .floor-name {
+                    font-weight: 500;
+                }
+                .floor-blueprint {
+                    font-size: 12px;
+                    color: var(--text-gray);
+                }
+                .floor-actions {
+                    display: flex;
+                    gap: 8px;
+                }
+                .coordinates-input {
+                    display: flex;
+                    gap: 10px;
+                }
+                .coordinates-input .form-input {
+                    flex: 1;
+                }
+                .form-help {
+                    font-size: 12px;
+                    color: var(--text-gray);
+                    margin-bottom: 8px;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>

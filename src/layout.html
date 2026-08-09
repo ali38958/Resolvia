@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <title>Resolvia</title>
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+</head>
+
+<body>
+
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control" aria-label="Toggle menu"></i>
+            <img src="/assets/logo.png" alt="Resolvia" id="logo">
+            <span class="logo-text">Resolvia</span>
+        </div>
+
+        <div class="header-right">
+            <!-- Theme toggle -->
+            <button id="theme-toggle" aria-label="Toggle theme" title="Toggle dark mode">
+                <i class="fa fa-moon icon-moon"></i>
+                <i class="fa fa-sun icon-sun"></i>
+            </button>
+
+            <!-- Profile -->
+            <div class="profile-icon" title="My Profile">
+                <i class="fa fa-user"></i>
+            </div>
+
+            <!-- Logout -->
+            <button class="logout-btn" id="logout-btn" aria-label="Logout">
+                <i class="fa fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <nav class="navigation-menu" id="navigation-menu" aria-label="Main navigation">
+        <ul id="nav-list"></ul>
+    </nav>
+
+    <main class="main-content" id="main-content">
+        <!-- Page content injected here -->
+    </main>
+
+    <script src="/public/js/common-script.js"></script>
+
+</body>
+
+</html>

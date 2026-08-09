@@ -1,0 +1,1904 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Complaint | NUTECH Complaint System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e88e5;
+            --primary-dark: #1565c0;
+            --secondary: #ff9800;
+            --secondary-dark: #f57c00;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --dark: #1e2a38;
+            --light: #f5f7fa;
+            --gray: #e0e0e0;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: #333;
+            min-height: 100vh;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(30, 136, 229, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 152, 0, 0.05) 0%, transparent 20%);
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            height: 70px;
+            background-color: var(--dark);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 8px rgba(30, 136, 229, 0.3);
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo-subtext {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: -3px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        /* ===== NOTIFICATION ICON ===== */
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 20px;
+            color: white;
+            transition: var(--transition);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .notification-icon:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger);
+            color: white;
+            font-size: 11px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid var(--dark);
+        }
+
+        .notification-box {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 55px;
+            width: 320px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        .notification-header {
+            padding: 15px 20px;
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-header h4 {
+            font-weight: 600;
+        }
+
+        .notification-header span {
+            font-size: 12px;
+            opacity: 0.9;
+            cursor: pointer;
+        }
+
+        .notification-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .notification-item:hover {
+            background-color: rgba(30, 136, 229, 0.05);
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-icon-item {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .notification-icon-item.info {
+            background-color: rgba(30, 136, 229, 0.1);
+            color: var(--primary);
+        }
+
+        /* ===== PROFILE ===== */
+        .profile {
+            position: relative;
+        }
+
+        .profile-img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                linear-gradient(135deg, var(--primary), var(--secondary)) border-box;
+            transition: var(--transition);
+        }
+
+        .profile-img:hover {
+            transform: scale(1.05);
+        }
+
+        .profile-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 60px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            width: 200px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .profile-header {
+            padding: 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .profile-info h4 {
+            font-size: 14px;
+            color: var(--dark);
+        }
+
+        .profile-info p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .profile-menu a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            text-decoration: none;
+            color: #555;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .profile-menu a:hover {
+            background-color: rgba(30, 136, 229, 0.05);
+            color: var(--primary);
+        }
+
+        .profile-menu a i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .profile-menu .logout {
+            color: var(--danger);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* ===== LAYOUT ===== */
+        .container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 250px;
+            background-color: white;
+            height: calc(100vh - 70px);
+            padding: 25px 0;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.03);
+            position: sticky;
+            top: 70px;
+            z-index: 90;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 25px;
+        }
+
+        .sidebar-section h3 {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #888;
+            padding: 0 25px 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 25px;
+            color: #555;
+            text-decoration: none;
+            font-size: 14px;
+            transition: var(--transition);
+            position: relative;
+            margin: 3px 0;
+        }
+
+        .sidebar a:hover {
+            background-color: rgba(30, 136, 229, 0.05);
+            color: var(--primary);
+        }
+
+        .sidebar a.active {
+            background-color: rgba(30, 136, 229, 0.1);
+            color: var(--primary);
+            font-weight: 600;
+            border-right: 4px solid var(--primary);
+        }
+
+        .sidebar a i {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .sidebar a .badge {
+            margin-left: auto;
+            background-color: var(--secondary);
+            color: white;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        /* ===== PAGE HEADER ===== */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-title-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--danger), #c62828);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .page-title-text h1 {
+            font-size: 28px;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .page-title-text p {
+            color: #777;
+            font-size: 14px;
+        }
+
+        /* ===== EMERGENCY BANNER ===== */
+        .emergency-banner {
+            background: linear-gradient(to right, var(--danger), #c62828);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.2);
+        }
+
+        .emergency-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .emergency-icon {
+            font-size: 32px;
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .emergency-text h3 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .emergency-text p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .emergency-btn {
+            background-color: white;
+            color: var(--danger);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+
+        .emergency-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+        }
+
+        /* ===== FORM CONTAINER ===== */
+        .form-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .form-header {
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 25px 30px;
+        }
+
+        .form-header h2 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .form-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .form-body {
+            padding: 30px;
+        }
+
+        /* ===== FORM STYLES ===== */
+        .form-section {
+            margin-bottom: 40px;
+        }
+
+        .form-section h3 {
+            font-size: 18px;
+            color: var(--dark);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-section h3 i {
+            color: var(--primary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: var(--danger);
+            margin-left: 3px;
+        }
+
+        .form-group .hint {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: var(--transition);
+            background-color: #f9fafc;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
+            background-color: white;
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-control.error {
+            border-color: var(--danger);
+            background-color: rgba(244, 67, 54, 0.05);
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        /* ===== COMPLAINT SEVERITY ===== */
+        .severity-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .severity-option {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background-color: white;
+        }
+
+        .severity-option:hover {
+            border-color: var(--primary);
+            background-color: rgba(30, 136, 229, 0.05);
+        }
+
+        .severity-option.selected {
+            border-color: var(--primary);
+            background-color: rgba(30, 136, 229, 0.1);
+            box-shadow: 0 5px 15px rgba(30, 136, 229, 0.1);
+        }
+
+        .severity-icon {
+            font-size: 28px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .severity-option.low .severity-icon {
+            color: var(--success);
+        }
+
+        .severity-option.medium .severity-icon {
+            color: var(--warning);
+        }
+
+        .severity-option.high .severity-icon {
+            color: var(--danger);
+        }
+
+        .severity-option.critical .severity-icon {
+            color: #8e24aa;
+        }
+
+        .severity-option h4 {
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+
+        .severity-option p {
+            font-size: 12px;
+            color: #777;
+        }
+
+        /* ===== UPLOAD AREA ===== */
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            background-color: #f9fafc;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background-color: rgba(30, 136, 229, 0.05);
+        }
+
+        .upload-area i {
+            font-size: 48px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .upload-area h4 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .upload-area p {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 15px;
+        }
+
+        .upload-btn {
+            background-color: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .upload-btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .upload-preview {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .preview-item {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* ===== FORM FOOTER ===== */
+        .form-footer {
+            padding: 25px 30px;
+            background-color: #f9fafc;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .form-notes {
+            flex: 1;
+            font-size: 13px;
+            color: #777;
+        }
+
+        .form-notes i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(30, 136, 229, 0.3);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #d32f2f;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: var(--dark);
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f5f7fa;
+            border-color: #ccc;
+        }
+
+        .btn-lg {
+            padding: 16px 32px;
+            font-size: 16px;
+        }
+
+        /* ===== SUCCESS MESSAGE ===== */
+        .success-message {
+            display: none;
+            background: linear-gradient(to right, var(--success), #2e7d32);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            align-items: center;
+            gap: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .success-icon {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .success-content h3 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .success-content p {
+            opacity: 0.9;
+            font-size: 15px;
+            margin-bottom: 15px;
+        }
+
+        .reference-id {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 16px;
+            letter-spacing: 1px;
+            display: inline-block;
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 220px;
+            }
+
+            .main {
+                padding: 25px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: static;
+                padding: 15px 0;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 5px;
+            }
+
+            .sidebar-section {
+                display: none;
+            }
+
+            .sidebar a {
+                padding: 10px 15px;
+                border-radius: 8px;
+                margin: 2px;
+                font-size: 13px;
+            }
+
+            .sidebar a .badge {
+                display: none;
+            }
+
+            .main {
+                padding: 20px;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .emergency-banner {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .emergency-btn {
+                align-self: stretch;
+            }
+
+            .form-body {
+                padding: 20px;
+            }
+
+            .form-footer {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .severity-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            header {
+                padding: 0 20px;
+                height: 65px;
+            }
+
+            .logo-text {
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .notification-box {
+                width: 280px;
+                right: -20px;
+            }
+
+            .success-message {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .severity-options {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.5s ease;
+        }
+
+        /* ===== COMPLAINT TYPES ===== */
+        .complaint-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .complaint-type {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background-color: white;
+        }
+
+        .complaint-type:hover {
+            border-color: var(--primary);
+            background-color: rgba(30, 136, 229, 0.05);
+        }
+
+        .complaint-type.selected {
+            border-color: var(--primary);
+            background-color: rgba(30, 136, 229, 0.1);
+            box-shadow: 0 5px 15px rgba(30, 136, 229, 0.1);
+        }
+
+        .complaint-type i {
+            font-size: 28px;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .complaint-type h4 {
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div>
+                <div class="logo-text">Complaint Reporting System</div>
+                <div class="logo-subtext">NUTECH University</div>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="notification-icon" onclick="toggleNotifications()">
+                <i class="fas fa-bell"></i>
+                <div class="notification-badge">2</div>
+            </div>
+
+            <div class="notification-box" id="notifications">
+                <div class="notification-header">
+                    <h4>Notifications</h4>
+                    <span onclick="markAllAsRead()">Mark all as read</span>
+                </div>
+                <div class="notification-item">
+                    <div class="notification-icon-item info">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h5>Complaint Update</h5>
+                        <p>Your complaint #C-2023-045 is under investigation</p>
+                        <div class="notification-time">2 hours ago</div>
+                    </div>
+                </div>
+                <div class="notification-item">
+                    <div class="notification-icon-item info">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h5>Safety Reminder</h5>
+                        <p>Always report suspicious activities immediately</p>
+                        <div class="notification-time">1 day ago</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80"
+                    class="profile-img" onclick="toggleProfile()">
+                <div class="profile-menu" id="profileMenu">
+                    <div class="profile-header">
+                        <img
+                            src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80">
+                        <div class="profile-info">
+                            <h4>Alex Johnson</h4>
+                            <p>Student • NUTECH</p>
+                        </div>
+                    </div>
+                    <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+                    <a href="#"><i class="fas fa-user-shield"></i> My Complaints</a>
+                    <a href="#"><i class="fas fa-cog"></i> Settings</a>
+                    <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <h3>Navigation</h3>
+                <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="#" class="active"><i class="fas fa-exclamation-triangle"></i> Report Complaint</a>
+                <a href="view-complaints.html"><i class="fas fa-clipboard-list"></i> View Complaints</a>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Quick Actions</h3>
+                <a href="emergency.html"><i class="fas fa-ambulance"></i> Emergency <span class="badge">24/7</span></a>
+                <a href="anonymous-report.html"><i class="fas fa-user-secret"></i> Anonymous Report</a>
+                <a href="safety-tips.html"><i class="fas fa-shield-alt"></i> Safety Tips</a>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Support</h3>
+                <a href="my-reports.html"><i class="fas fa-history"></i> My Reports <span class="badge">3</span></a>
+                <a href="#"><i class="fas fa-phone-alt"></i> Contact Security</a>
+                <a href="#"><i class="fas fa-question-circle"></i> Help Center</a>
+            </div>
+        </div>
+
+        <div class="main">
+            <!-- Emergency Banner -->
+            <div class="emergency-banner">
+                <div class="emergency-content">
+                    <div class="emergency-icon">
+                        <i class="fas fa-phone-alt"></i>
+                    </div>
+                    <div class="emergency-text">
+                        <h3>Emergency Contact</h3>
+                        <p>For immediate assistance or life-threatening situations</p>
+                    </div>
+                </div>
+                <button class="emergency-btn" onclick="callEmergency()">
+                    <i class="fas fa-phone"></i> Call Security: 911
+                </button>
+            </div>
+
+            <!-- Success Message (Hidden by default) -->
+            <div class="success-message" id="successMessage">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="success-content">
+                    <h3>Complaint Submitted Successfully!</h3>
+                    <p>Your complaint has been registered with the security department. You will receive updates on the investigation.</p>
+                    <div class="reference-id">Complaint ID: <strong>COMP-2023-085</strong></div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-secondary" onclick="printReport()">
+                        <i class="fas fa-print"></i> Print Report
+                    </button>
+                    <button class="btn btn-primary" onclick="goToDashboard()">
+                        <i class="fas fa-home"></i> Go to Dashboard
+                    </button>
+                </div>
+            </div>
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-title">
+                    <div class="page-title-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="page-title-text">
+                        <h1>File a Complaint</h1>
+                        <p>Report incidents, safety concerns, or violations to campus security</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Container -->
+            <div class="form-container" id="complaintForm">
+                <div class="form-header">
+                    <h2>Complaint Details</h2>
+                    <p>Provide accurate information to help us address your concern effectively</p>
+                </div>
+
+                <form id="complaintReportForm">
+                    <div class="form-body">
+                        <!-- Section 1: Complaint Type -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-filter"></i> Type of Complaint <span class="required">*</span></h3>
+                            <div class="complaint-types">
+                                <div class="complaint-type" onclick="selectComplaintType('theft')" id="type-theft">
+                                    <i class="fas fa-gem"></i>
+                                    <h4>Theft/Loss</h4>
+                                </div>
+                                <div class="complaint-type" onclick="selectComplaintType('harassment')" id="type-harassment">
+                                    <i class="fas fa-user-shield"></i>
+                                    <h4>Harassment</h4>
+                                </div>
+                                <div class="complaint-type" onclick="selectComplaintType('property')" id="type-property">
+                                    <i class="fas fa-building"></i>
+                                    <h4>Property Damage</h4>
+                                </div>
+                                <div class="complaint-type" onclick="selectComplaintType('safety')" id="type-safety">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <h4>Safety Hazard</h4>
+                                </div>
+                                <div class="complaint-type" onclick="selectComplaintType('noise')" id="type-noise">
+                                    <i class="fas fa-volume-up"></i>
+                                    <h4>Noise Complaint</h4>
+                                </div>
+                                <div class="complaint-type" onclick="selectComplaintType('other')" id="type-other">
+                                    <i class="fas fa-ellipsis-h"></i>
+                                    <h4>Other</h4>
+                                </div>
+                            </div>
+                            <input type="hidden" id="complaintType" required>
+                            <div class="error-message" id="complaintTypeError">Please select a complaint type</div>
+                        </div>
+
+                        <!-- Section 2: Basic Information -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-info-circle"></i> Incident Details</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Complaint Title <span class="required">*</span></label>
+                                    <input type="text" class="form-control" id="complaintTitle" 
+                                           placeholder="Brief description of the incident" 
+                                           required>
+                                    <div class="error-message" id="complaintTitleError">Please enter a complaint title</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Date of Incident <span class="required">*</span></label>
+                                    <input type="date" class="form-control" id="incidentDate" required>
+                                    <div class="error-message" id="incidentDateError">Please select the incident date</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Time of Incident <span class="required">*</span></label>
+                                    <input type="time" class="form-control" id="incidentTime" required>
+                                    <div class="error-message" id="incidentTimeError">Please select the incident time</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Location <span class="required">*</span></label>
+                                    <select class="form-control" id="incidentLocation" required>
+                                        <option value="">Select location</option>
+                                        <option value="campus-grounds">Campus Grounds</option>
+                                        <option value="library">Library</option>
+                                        <option value="cafeteria">Cafeteria</option>
+                                        <option value="dormitory">Dormitory/Hostel</option>
+                                        <option value="classroom">Classroom Building</option>
+                                        <option value="parking">Parking Area</option>
+                                        <option value="sports-complex">Sports Complex</option>
+                                        <option value="admin-building">Admin Building</option>
+                                        <option value="off-campus">Off Campus</option>
+                                        <option value="online">Online/Virtual</option>
+                                    </select>
+                                    <div class="error-message" id="incidentLocationError">Please select a location</div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Specific Location Details <span class="required">*</span></label>
+                                <input type="text" class="form-control" id="specificLocation" 
+                                       placeholder="e.g., Room 205, Building C, Near main entrance, etc." 
+                                       required>
+                                <div class="error-message" id="specificLocationError">Please provide specific location details</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Detailed Description <span class="required">*</span></label>
+                                <textarea class="form-control" id="incidentDescription" 
+                                          placeholder="Describe the incident in detail. Include what happened, who was involved, what you saw/heard, and any other relevant information." 
+                                          required></textarea>
+                                <div class="error-message" id="incidentDescriptionError">Please provide a detailed description</div>
+                                <div class="hint">Be as specific as possible. Include dates, times, names, and any other relevant details.</div>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Severity & Urgency -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-exclamation"></i> Severity & Urgency <span class="required">*</span></h3>
+                            <div class="severity-options">
+                                <div class="severity-option low" onclick="selectSeverity('low')" id="severity-low">
+                                    <span class="severity-icon"><i class="fas fa-info-circle"></i></span>
+                                    <h4>Low</h4>
+                                    <p>Minor issue, no immediate threat</p>
+                                </div>
+                                <div class="severity-option medium" onclick="selectSeverity('medium')" id="severity-medium">
+                                    <span class="severity-icon"><i class="fas fa-exclamation-circle"></i></span>
+                                    <h4>Medium</h4>
+                                    <p>Concerning but not urgent</p>
+                                </div>
+                                <div class="severity-option high" onclick="selectSeverity('high')" id="severity-high">
+                                    <span class="severity-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                                    <h4>High</h4>
+                                    <p>Serious, requires attention</p>
+                                </div>
+                                <div class="severity-option critical" onclick="selectSeverity('critical')" id="severity-critical">
+                                    <span class="severity-icon"><i class="fas fa-skull-crossbones"></i></span>
+                                    <h4>Critical</h4>
+                                    <p>Emergency, immediate response needed</p>
+                                </div>
+                            </div>
+                            <input type="hidden" id="incidentSeverity" required>
+                            <div class="error-message" id="incidentSeverityError">Please select severity level</div>
+                            <div class="hint">Select the level that best describes the urgency of your complaint</div>
+                        </div>
+
+                        <!-- Section 4: People Involved -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-users"></i> People Involved</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Number of People Involved</label>
+                                    <select class="form-control" id="peopleCount">
+                                        <option value="">Select number</option>
+                                        <option value="1">1 Person</option>
+                                        <option value="2">2 People</option>
+                                        <option value="3-5">3-5 People</option>
+                                        <option value="6-10">6-10 People</option>
+                                        <option value="10+">More than 10</option>
+                                        <option value="unknown">Unknown</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Are you a victim/witness?</label>
+                                    <select class="form-control" id="involvementType">
+                                        <option value="victim">Victim</option>
+                                        <option value="witness">Witness</option>
+                                        <option value="reporter">Third-party reporter</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Description of People Involved</label>
+                                <textarea class="form-control" id="peopleDescription" 
+                                          placeholder="Describe the people involved (if known): physical appearance, clothing, names, relationship to you, etc."></textarea>
+                                <div class="hint">Do not include names if you wish to remain anonymous or if you're unsure</div>
+                            </div>
+                        </div>
+
+                        <!-- Section 5: Evidence & Documentation -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-camera"></i> Evidence & Documentation</h3>
+                            
+                            <div class="form-group">
+                                <label>Upload Evidence</label>
+                                <div class="upload-area" onclick="document.getElementById('fileInput').click()" id="uploadArea">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <h4>Click to upload evidence</h4>
+                                    <p>Photos, videos, documents, or screenshots related to the incident</p>
+                                    <button type="button" class="upload-btn">Choose Files</button>
+                                    <input type="file" id="fileInput" accept="image/*,video/*,.pdf,.doc,.docx" multiple style="display: none;" onchange="handleFileUpload()">
+                                </div>
+                                <div class="hint">Upload photos, videos, or documents (Max 10MB each). All evidence is kept confidential.</div>
+                            </div>
+
+                            <div class="upload-preview" id="uploadPreview">
+                                <!-- Preview items will be added here -->
+                            </div>
+
+                            <div class="form-group">
+                                <label>Witness Information (if any)</label>
+                                <textarea class="form-control" id="witnessInfo" 
+                                          placeholder="Names and contact information of witnesses (if they consent to being contacted)"></textarea>
+                                <div class="hint">Only include witness information if they have agreed to be contacted</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Additional Evidence Details</label>
+                                <textarea class="form-control" id="evidenceDetails" 
+                                          placeholder="Describe any additional evidence not uploaded, such as CCTV footage availability, physical evidence location, etc."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Section 6: Reporter Information -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-user"></i> Your Information</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Your Full Name <span class="required">*</span></label>
+                                    <input type="text" class="form-control" id="reporterName" 
+                                           value="Alex Johnson" required>
+                                    <div class="error-message" id="reporterNameError">Please enter your name</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Student/Staff ID <span class="required">*</span></label>
+                                    <input type="text" class="form-control" id="reporterId" 
+                                           value="NUTECH-2021-045" required>
+                                    <div class="error-message" id="reporterIdError">Please enter your ID</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Email Address <span class="required">*</span></label>
+                                    <input type="email" class="form-control" id="reporterEmail" 
+                                           value="alex.j@nutech.edu.pk" required>
+                                    <div class="error-message" id="reporterEmailError">Please enter a valid email</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Phone Number <span class="required">*</span></label>
+                                    <input type="tel" class="form-control" id="reporterPhone" 
+                                           value="+92 300 1234567" required>
+                                    <div class="error-message" id="reporterPhoneError">Please enter your phone number</div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                    <input type="checkbox" id="anonymousReport">
+                                    <label for="anonymousReport" style="font-weight: normal; font-size: 14px;">
+                                        Submit anonymously (your identity will not be disclosed)
+                                    </label>
+                                </div>
+                                <div class="hint">Anonymous reports are still investigated but may limit follow-up options</div>
+                            </div>
+
+                            <div class="form-group">
+                                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                    <input type="checkbox" id="contactPermission">
+                                    <label for="contactPermission" style="font-weight: normal; font-size: 14px;">
+                                        I give permission to be contacted for follow-up questions
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 7: Additional Information -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-edit"></i> Additional Information</h3>
+                            <div class="form-group">
+                                <label>Has this been reported elsewhere?</label>
+                                <textarea class="form-control" id="previousReports" 
+                                          placeholder="If you have reported this incident to other authorities (police, administration, etc.), please provide details"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Desired Outcome/Resolution</label>
+                                <textarea class="form-control" id="desiredOutcome" 
+                                          placeholder="What resolution or outcome are you seeking?"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                    <input type="checkbox" id="termsAgreement" required>
+                                    <label for="termsAgreement" style="font-weight: normal; font-size: 14px;">
+                                        I confirm that the information provided is accurate to the best of my knowledge. I understand that false reporting may result in disciplinary action.
+                                        <span class="required">*</span>
+                                    </label>
+                                </div>
+                                <div class="error-message" id="termsAgreementError">You must agree to the terms</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-footer">
+                        <div class="form-notes">
+                            <p><i class="fas fa-shield-alt"></i> <strong>Confidentiality:</strong> 
+                            All reports are treated with strict confidentiality. Your information is protected.</p>
+                            <p><i class="fas fa-clock"></i> <strong>Response Time:</strong> 
+                            High severity complaints receive immediate attention. All complaints are acknowledged within 24 hours.</p>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                                <i class="fas fa-redo"></i> Reset Form
+                            </button>
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="fas fa-paper-plane"></i> Submit Complaint
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Selected values
+        let selectedComplaintType = '';
+        let selectedSeverity = '';
+        let uploadedFiles = [];
+
+        // Form validation and submission
+        document.getElementById('complaintReportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (validateForm()) {
+                submitComplaint();
+            }
+        });
+
+        // Select complaint type
+        function selectComplaintType(type) {
+            selectedComplaintType = type;
+            
+            // Remove selected class from all
+            document.querySelectorAll('.complaint-type').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked
+            document.getElementById(`type-${type}`).classList.add('selected');
+            document.getElementById('complaintType').value = type;
+        }
+
+        // Select severity level
+        function selectSeverity(level) {
+            selectedSeverity = level;
+            
+            // Remove selected class from all
+            document.querySelectorAll('.severity-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked
+            document.getElementById(`severity-${level}`).classList.add('selected');
+            document.getElementById('incidentSeverity').value = level;
+        }
+
+        // Form validation function
+        function validateForm() {
+            let isValid = true;
+            const fields = [
+                { id: 'complaintTitle', errorId: 'complaintTitleError' },
+                { id: 'incidentDate', errorId: 'incidentDateError' },
+                { id: 'incidentTime', errorId: 'incidentTimeError' },
+                { id: 'incidentLocation', errorId: 'incidentLocationError' },
+                { id: 'specificLocation', errorId: 'specificLocationError' },
+                { id: 'incidentDescription', errorId: 'incidentDescriptionError' },
+                { id: 'reporterName', errorId: 'reporterNameError' },
+                { id: 'reporterId', errorId: 'reporterIdError' },
+                { id: 'reporterEmail', errorId: 'reporterEmailError' },
+                { id: 'reporterPhone', errorId: 'reporterPhoneError' }
+            ];
+
+            // Reset all errors
+            fields.forEach(field => {
+                document.getElementById(field.id).classList.remove('error');
+                document.getElementById(field.errorId).style.display = 'none';
+            });
+
+            // Check required fields
+            fields.forEach(field => {
+                const element = document.getElementById(field.id);
+                const errorElement = document.getElementById(field.errorId);
+                
+                if (!element.value.trim()) {
+                    element.classList.add('error');
+                    errorElement.style.display = 'block';
+                    isValid = false;
+                    
+                    // Add shake animation
+                    element.classList.add('shake');
+                    setTimeout(() => {
+                        element.classList.remove('shake');
+                    }, 500);
+                }
+                
+                // Special validation for email
+                if (field.id === 'reporterEmail' && element.value.trim()) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(element.value)) {
+                        element.classList.add('error');
+                        errorElement.textContent = 'Please enter a valid email address';
+                        errorElement.style.display = 'block';
+                        isValid = false;
+                    }
+                }
+            });
+
+            // Check complaint type
+            if (!selectedComplaintType) {
+                document.getElementById('complaintTypeError').style.display = 'block';
+                isValid = false;
+                
+                document.querySelector('.complaint-types').classList.add('shake');
+                setTimeout(() => {
+                    document.querySelector('.complaint-types').classList.remove('shake');
+                }, 500);
+            }
+
+            // Check severity
+            if (!selectedSeverity) {
+                document.getElementById('incidentSeverityError').style.display = 'block';
+                isValid = false;
+                
+                document.querySelector('.severity-options').classList.add('shake');
+                setTimeout(() => {
+                    document.querySelector('.severity-options').classList.remove('shake');
+                }, 500);
+            }
+
+            // Check terms agreement
+            const termsCheckbox = document.getElementById('termsAgreement');
+            const termsError = document.getElementById('termsAgreementError');
+            
+            if (!termsCheckbox.checked) {
+                termsError.style.display = 'block';
+                isValid = false;
+                
+                termsCheckbox.parentElement.classList.add('shake');
+                setTimeout(() => {
+                    termsCheckbox.parentElement.classList.remove('shake');
+                }, 500);
+            }
+
+            return isValid;
+        }
+
+        // Submit complaint function
+        function submitComplaint() {
+            // Get form data
+            const formData = {
+                complaintType: selectedComplaintType,
+                title: document.getElementById('complaintTitle').value,
+                incidentDate: document.getElementById('incidentDate').value,
+                incidentTime: document.getElementById('incidentTime').value,
+                location: document.getElementById('incidentLocation').value,
+                specificLocation: document.getElementById('specificLocation').value,
+                description: document.getElementById('incidentDescription').value,
+                severity: selectedSeverity,
+                peopleCount: document.getElementById('peopleCount').value,
+                involvementType: document.getElementById('involvementType').value,
+                peopleDescription: document.getElementById('peopleDescription').value,
+                witnessInfo: document.getElementById('witnessInfo').value,
+                evidenceDetails: document.getElementById('evidenceDetails').value,
+                reporterName: document.getElementById('reporterName').value,
+                reporterId: document.getElementById('reporterId').value,
+                reporterEmail: document.getElementById('reporterEmail').value,
+                reporterPhone: document.getElementById('reporterPhone').value,
+                anonymous: document.getElementById('anonymousReport').checked,
+                contactPermission: document.getElementById('contactPermission').checked,
+                previousReports: document.getElementById('previousReports').value,
+                desiredOutcome: document.getElementById('desiredOutcome').value,
+                evidenceFiles: uploadedFiles.length,
+                timestamp: new Date().toISOString()
+            };
+
+            // In a real application, you would send this data to a server
+            console.log('Complaint data:', formData);
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Show success message
+                document.getElementById('successMessage').style.display = 'flex';
+                document.getElementById('complaintForm').style.display = 'none';
+                
+                // Generate random complaint ID
+                const complaintId = 'COMP-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+                document.querySelector('.reference-id strong').textContent = complaintId;
+                
+                // Update notification badge
+                const badge = document.querySelector('.notification-badge');
+                const currentCount = parseInt(badge.textContent) || 0;
+                badge.textContent = currentCount + 1;
+                
+                // Show success notification
+                alert(`Complaint submitted successfully!\n\nComplaint ID: ${complaintId}\n\nA security officer will review your complaint and contact you if necessary.`);
+                
+                // If critical severity, show emergency alert
+                if (selectedSeverity === 'critical') {
+                    setTimeout(() => {
+                        alert('URGENT: Due to the critical nature of your complaint, security personnel have been alerted and will respond immediately.');
+                    }, 1000);
+                }
+            }, 1500);
+        }
+
+        // File upload handling
+        function handleFileUpload() {
+            const fileInput = document.getElementById('fileInput');
+            const files = Array.from(fileInput.files);
+            
+            // Validate file count
+            if (uploadedFiles.length + files.length > 10) {
+                alert('Maximum 10 files allowed. Please select fewer files.');
+                fileInput.value = '';
+                return;
+            }
+            
+            // Validate file size and type
+            const validFiles = files.filter(file => {
+                if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                    alert(`File "${file.name}" exceeds 10MB size limit.`);
+                    return false;
+                }
+                const validTypes = ['image/', 'video/', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                const isValidType = validTypes.some(type => file.type.startsWith(type));
+                if (!isValidType) {
+                    alert(`File "${file.name}" is not a supported file type. Please upload images, videos, PDFs, or Word documents.`);
+                    return false;
+                }
+                return true;
+            });
+            
+            // Add to uploaded files
+            uploadedFiles.push(...validFiles);
+            
+            // Update preview
+            updateFilePreview();
+            
+            // Reset file input
+            fileInput.value = '';
+        }
+
+        function updateFilePreview() {
+            const previewContainer = document.getElementById('uploadPreview');
+            previewContainer.innerHTML = '';
+            
+            uploadedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'preview-item';
+                    
+                    if (file.type.startsWith('image/')) {
+                        previewItem.innerHTML = `
+                            <img src="${e.target.result}" alt="Preview">
+                            <button type="button" class="preview-remove" onclick="removeFile(${index})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                    } else if (file.type.startsWith('video/')) {
+                        previewItem.innerHTML = `
+                            <video src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;"></video>
+                            <button type="button" class="preview-remove" onclick="removeFile(${index})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                    } else {
+                        previewItem.innerHTML = `
+                            <div style="width: 100%; height: 100%; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-file" style="font-size: 32px; color: #666;"></i>
+                            </div>
+                            <button type="button" class="preview-remove" onclick="removeFile(${index})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                    }
+                    previewContainer.appendChild(previewItem);
+                };
+                
+                reader.readAsDataURL(file);
+            });
+            
+            // Update upload area text if files are uploaded
+            const uploadArea = document.getElementById('uploadArea');
+            if (uploadedFiles.length > 0) {
+                uploadArea.querySelector('h4').textContent = `${uploadedFiles.length} file(s) uploaded`;
+                uploadArea.querySelector('p').textContent = 'Click to add more evidence or drag & drop';
+            }
+        }
+
+        function removeFile(index) {
+            uploadedFiles.splice(index, 1);
+            updateFilePreview();
+        }
+
+        // Drag and drop functionality
+        const uploadArea = document.getElementById('uploadArea');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            uploadArea.style.borderColor = 'var(--primary)';
+            uploadArea.style.backgroundColor = 'rgba(30, 136, 229, 0.1)';
+        }
+
+        function unhighlight() {
+            uploadArea.style.borderColor = '#ddd';
+            uploadArea.style.backgroundColor = '#f9fafc';
+        }
+
+        uploadArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            document.getElementById('fileInput').files = files;
+            handleFileUpload();
+        }
+
+        // Emergency call function
+        function callEmergency() {
+            if (confirm('This will initiate an emergency call to campus security. Only use for genuine emergencies. Continue?')) {
+                alert('EMERGENCY CALL INITIATED\n\nSecurity has been alerted and will respond immediately.\n\nStay on the line if possible and provide your location.');
+                // In a real app, this would trigger an actual emergency call
+            }
+        }
+
+        // Reset form function
+        function resetForm() {
+            if (confirm('Are you sure you want to reset the form? All entered data will be lost.')) {
+                document.getElementById('complaintReportForm').reset();
+                selectedComplaintType = '';
+                selectedSeverity = '';
+                uploadedFiles = [];
+                updateFilePreview();
+                
+                // Reset file input
+                document.getElementById('fileInput').value = '';
+                
+                // Reset selection states
+                document.querySelectorAll('.complaint-type').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                document.querySelectorAll('.severity-option').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                
+                // Reset upload area text
+                const uploadArea = document.getElementById('uploadArea');
+                uploadArea.querySelector('h4').textContent = 'Click to upload evidence';
+                uploadArea.querySelector('p').textContent = 'Photos, videos, documents, or screenshots related to the incident';
+                
+                // Reset errors
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.style.display = 'none';
+                });
+                document.querySelectorAll('.form-control').forEach(el => {
+                    el.classList.remove('error');
+                });
+                
+                // Set default date to today
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('incidentDate').value = today;
+                document.getElementById('incidentDate').max = today; // Can't select future dates
+                
+                // Set default time to current time
+                const now = new Date();
+                const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+                document.getElementById('incidentTime').value = currentTime;
+            }
+        }
+
+        // Success message actions
+        function printReport() {
+            alert('Printing complaint report...\nIn a real application, this would generate a printable report.');
+        }
+
+        function goToDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+
+        // Initialize page
+        window.onload = function() {
+            // Set default dates
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('incidentDate').value = today;
+            document.getElementById('incidentDate').max = today;
+            
+            // Set default time to current time
+            const now = new Date();
+            const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('incidentTime').value = currentTime;
+            
+            // Auto-select default values
+            selectComplaintType('theft');
+            selectSeverity('medium');
+        };
+
+        // Toggle notifications dropdown
+        function toggleNotifications() {
+            const box = document.getElementById("notifications");
+            box.style.display = box.style.display === "block" ? "none" : "block";
+            document.getElementById("profileMenu").style.display = "none";
+        }
+
+        // Toggle profile dropdown
+        function toggleProfile() {
+            const menu = document.getElementById("profileMenu");
+            menu.style.display = menu.style.display === "block" ? "none" : "block";
+            document.getElementById("notifications").style.display = "none";
+        }
+
+        // Mark all notifications as read
+        function markAllAsRead() {
+            const badge = document.querySelector('.notification-badge');
+            badge.textContent = '0';
+            badge.style.backgroundColor = '#999';
+            document.getElementById("notifications").style.display = 'none';
+        }
+
+        // Close dropdowns when clicking outside
+        window.onclick = function(event) {
+            if (!event.target.matches('.profile-img') && !event.target.matches('.notification-icon')) {
+                document.getElementById("profileMenu").style.display = "none";
+                document.getElementById("notifications").style.display = "none";
+            }
+        };
+    </script>
+
+</body>
+
+</html>

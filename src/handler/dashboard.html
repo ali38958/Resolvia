@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <title>Handler Dashboard — Resolvia</title>
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        /* ── Page-specific only ── */
+
+        /* Welcome */
+        .welcome-name {
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 3px 14px;
+            border-radius: var(--radius-full);
+            font-weight: 500;
+            font-size: var(--text-xl);
+        }
+
+        .date-line {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            margin-top: var(--space-2);
+        }
+
+        .date-line i {
+            color: var(--primary);
+        }
+
+        /* Stat card click cursor */
+        .stat-card {
+            cursor: pointer;
+        }
+
+        /* White icon fix for solid-bg stat icons */
+        .stat-icon[style*="background"] {
+            color: #fff !important;
+        }
+
+        /* Chart panel */
+        .chart-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            box-shadow: var(--shadow-xs);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: var(--text-sm);
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .panel-title i {
+            font-size: 16px;
+            color: var(--accent);
+        }
+
+        /* Period toggle */
+        .period-toggle {
+            display: flex;
+            background: var(--bg-surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+            padding: 3px;
+        }
+
+        .period-opt {
+            padding: 4px 16px;
+            font-size: var(--text-xs);
+            font-weight: 600;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all var(--t-fast);
+            border: none;
+            background: none;
+        }
+
+        .period-opt.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Filter chips */
+        .filter-chips {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+            margin: var(--space-3) 0;
+        }
+
+        .f-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--bg-surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+            padding: 4px 12px;
+            font-size: var(--text-xs);
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all var(--t-fast);
+            opacity: 0.5;
+        }
+
+        .f-chip.active {
+            background: var(--primary-light);
+            border-color: var(--primary-mid);
+            color: var(--text-primary);
+            opacity: 1;
+        }
+
+        .f-chip i {
+            font-size: 9px;
+        }
+
+        .f-chip[data-filter="pending"] i {
+            color: #E67E22;
+        }
+
+        .f-chip[data-filter="in-progress"] i {
+            color: var(--info);
+        }
+
+        .f-chip[data-filter="on-hold"] i {
+            color: #9B59B6;
+        }
+
+        .f-chip[data-filter="completed"] i {
+            color: var(--success);
+        }
+
+        .f-chip[data-filter="rejected"] i {
+            color: var(--danger);
+        }
+
+        .f-chip[data-filter="cancelled"] i {
+            color: var(--text-secondary);
+        }
+
+        /* Chart canvas wrappers */
+        .chart-canvas-wrap {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .chart-canvas-wrap canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* Category legend */
+        .cat-legend {
+            margin-top: var(--space-4);
+            max-height: 180px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) var(--bg-surface-2);
+        }
+
+        .cat-legend::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .cat-legend::-webkit-scrollbar-track {
+            background: var(--bg-surface-2);
+            border-radius: 8px;
+        }
+
+        .cat-legend::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 8px;
+        }
+
+        .legend-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-2) var(--space-3);
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background var(--t-fast);
+            font-size: var(--text-sm);
+        }
+
+        .legend-row:hover {
+            background: var(--bg-surface-2);
+        }
+
+        .legend-row.hidden {
+            opacity: 0.45;
+            text-decoration: line-through;
+        }
+
+        .legend-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: var(--radius-full);
+            flex-shrink: 0;
+            margin-right: var(--space-2);
+        }
+
+        .legend-name {
+            flex: 1;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .legend-count {
+            font-weight: 700;
+            color: var(--accent);
+            margin-right: var(--space-2);
+        }
+
+        .legend-pct {
+            color: var(--text-secondary);
+            font-size: var(--text-xs);
+            min-width: 42px;
+            text-align: right;
+        }
+
+        /* Quick access cards */
+        .quick-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--t-base);
+            box-shadow: var(--shadow-xs);
+        }
+
+        .quick-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            background: var(--bg-surface-2);
+        }
+
+        .quick-card .qc-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: var(--radius-md);
+            margin: 0 auto var(--space-3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .quick-card .qc-title {
+            font-size: var(--text-sm);
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .quick-card .qc-sub {
+            font-size: var(--text-xs);
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: calc(var(--header-height) + var(--space-4));
+            right: var(--space-5);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: 500;
+            z-index: 5000;
+            box-shadow: var(--shadow-lg);
+            min-width: 240px;
+            animation: toast-in 0.25s ease;
+            border-left: 4px solid var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        @keyframes toast-in {
+            from {
+                transform: translateX(110%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1100px) {
+            .analytics-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .stats-row-1 {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+
+            .stats-row-2 {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            .stats-row-1,
+            .stats-row-2,
+            .quick-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="/assets/logo.png" alt="Resolvia" id="logo">
+            <span class="logo-text">Resolvia</span>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" title="Toggle theme">
+                <i class="fa fa-moon icon-moon"></i>
+                <i class="fa fa-sun icon-sun"></i>
+            </button>
+            <div class="profile-icon"><i class="fa fa-user"></i></div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fa fa-sign-out-alt"></i><span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <nav class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </nav>
+
+    <main class="main-content" id="main-content">
+
+        <!-- Welcome -->
+        <div style="margin-bottom:var(--space-6);">
+            <h1
+                style="font-size:var(--text-2xl);font-weight:700;color:var(--text-primary);margin-bottom:var(--space-1);">
+                Welcome back, <span class="welcome-name" id="handlerName">Handler <i class="fas fa-headset"></i></span>
+            </h1>
+            <div class="date-line"><i class="far fa-calendar-alt"></i><span id="currentDate"></span></div>
+        </div>
+
+        <!-- Stat Row 1: Complaints -->
+        <div class="stats-row-1" id="complaintStatsRow"
+            style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);margin-bottom:var(--space-4);">
+            <div class="stat-card" onclick="nav('/handler/all-complaints')">
+                <div class="stat-icon" style="background:#0E5A4C;color:#fff"><i class="fas fa-ticket-alt"></i></div>
+                <div class="stat-info">
+                    <p class="stat-value" id="statTotal">—</p>
+                    <p class="stat-label">Total Complaints</p>
+                </div>
+            </div>
+            <div class="stat-card" onclick="nav('/handler/all-complaints?status=pending')">
+                <div class="stat-icon" style="background:#E67E22;color:#fff"><i class="fas fa-hourglass-half"></i></div>
+                <div class="stat-info">
+                    <p class="stat-value" id="statPending">—</p>
+                    <p class="stat-label">Pending</p>
+                </div>
+            </div>
+            <div class="stat-card" onclick="nav('/handler/all-complaints?status=inprogress')">
+                <div class="stat-icon" style="background:var(--info);color:#fff"><i class="fas fa-sync-alt"></i></div>
+                <div class="stat-info">
+                    <p class="stat-value" id="statInProgress">—</p>
+                    <p class="stat-label">In Progress</p>
+                </div>
+            </div>
+            <div class="stat-card" onclick="nav('/handler/all-complaints?status=completed')">
+                <div class="stat-icon" style="background:var(--success);color:#fff"><i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <p class="stat-value" id="statCompleted">—</p>
+                    <p class="stat-label">Completed</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stat Row 2: Found Items -->
+        <div class="stats-row-2"
+            style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4);margin-bottom:var(--space-6);">
+            <div class="stat-card" onclick="nav('/handler/found-items')">
+                <div class="stat-icon" style="background:#9B59B6;color:#fff"><i class="fas fa-box-open"></i></div>
+                <div class="stat-info">
+                    <p class="stat-value" id="statFoundTotal">—</p>
+                    <p class="stat-label">Total Found Items</p>
+                </div>
+            </div>
+            <div class="stat-card" onclick="nav('/handler/found-items?status=Returned')">
+                <div class="stat-icon" style="background:var(--success);color:#fff"><i
+                        class="fas fa-hand-holding-heart"></i></div>
+                <div class="stat-info">
+                    <p class="stat-value" id="statReturned">—</p>
+                    <p class="stat-label">Returned</p>
+                </div>
+            </div>
+            <div class="stat-card" onclick="nav('/handler/found-items?status=Pending')">
+                <div class="stat-icon" style="background:#00BCD4;color:#fff"><i class="fas fa-clock"></i></div>
+                <div class="stat-info">
+                    <p class="stat-value" id="statPendingClaims">—</p>
+                    <p class="stat-label">Pending Claims</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics -->
+        <div class="analytics-grid"
+            style="display:grid;grid-template-columns:1.5fr 1fr;gap:var(--space-5);margin-bottom:var(--space-6);">
+
+            <!-- Trend Chart -->
+            <div class="chart-panel">
+                <div
+                    style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2);">
+                    <span class="panel-title"><i class="fas fa-chart-line"></i> Complaint Trends by Status</span>
+                    <div class="period-toggle">
+                        <button class="period-opt active" id="weekToggle" onclick="refreshData('week')">Week</button>
+                        <button class="period-opt" id="monthToggle" onclick="refreshData('month')">Month</button>
+                    </div>
+                </div>
+                <div class="filter-chips">
+                    <span class="f-chip active" data-filter="pending" onclick="toggleFilter(this,'pending')"><i
+                            class="fas fa-circle"></i> Pending</span>
+                    <span class="f-chip active" data-filter="in-progress" onclick="toggleFilter(this,'in-progress')"><i
+                            class="fas fa-circle"></i> In Progress</span>
+                    <span class="f-chip active" data-filter="on-hold" onclick="toggleFilter(this,'on-hold')"><i
+                            class="fas fa-circle"></i> On Hold</span>
+                    <span class="f-chip active" data-filter="completed" onclick="toggleFilter(this,'completed')"><i
+                            class="fas fa-circle"></i> Completed</span>
+                    <span class="f-chip active" data-filter="rejected" onclick="toggleFilter(this,'rejected')"><i
+                            class="fas fa-circle"></i> Rejected</span>
+                    <span class="f-chip active" data-filter="cancelled" onclick="toggleFilter(this,'cancelled')"><i
+                            class="fas fa-circle"></i> Cancelled</span>
+                </div>
+                <div class="chart-canvas-wrap" style="height:300px;">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Pie Chart + Legend -->
+            <div class="chart-panel">
+                <span class="panel-title" style="margin-bottom:var(--space-4);display:flex;">
+                    <i class="fas fa-chart-pie"></i> Complaints by Category
+                </span>
+                <div class="chart-canvas-wrap" style="height:220px;">
+                    <canvas id="categoryPieChart"></canvas>
+                </div>
+                <div class="cat-legend" id="categoryLegend"></div>
+            </div>
+        </div>
+
+        <!-- Quick Access -->
+        <div class="quick-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);">
+            <div class="quick-card" onclick="nav('/handler/natures')">
+                <div class="qc-icon" style="background:rgba(155,89,182,0.12);color:#9B59B6"><i class="fas fa-leaf"></i>
+                </div>
+                <div class="qc-title">Add Natures</div>
+                <div class="qc-sub">Create new nature category</div>
+            </div>
+            <div class="quick-card" onclick="nav('/handler/found-items')">
+                <div class="qc-icon" style="background:rgba(230,126,34,0.12);color:#E67E22"><i
+                        class="fas fa-box-open"></i></div>
+                <div class="qc-title">View Found Items</div>
+                <div class="qc-sub">Browse all found items</div>
+            </div>
+            <div class="quick-card" onclick="nav('/handler/all-complaints')">
+                <div class="qc-icon" style="background:var(--info-light);color:var(--info)"><i class="fas fa-list"></i>
+                </div>
+                <div class="qc-title">View Complaints</div>
+                <div class="qc-sub">Manage complaints</div>
+            </div>
+            <div class="quick-card" onclick="nav('/handler/profile')">
+                <div class="qc-icon" style="background:var(--success-light);color:var(--success)"><i
+                        class="fas fa-user-cog"></i></div>
+                <div class="qc-title">View Profile</div>
+                <div class="qc-sub">Your account details</div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="/js/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+    <script>
+        Chart.register(ChartDataLabels);
+
+        let trendChart, categoryPieChart;
+        const PIE_COLORS = ['#3498DB', '#E67E22', '#9B59B6', '#F39C12', '#E74C3C', '#1ABC9C', '#2ECC71', '#E91E63', '#00BCD4', '#FF9800'];
+        let catData = { labels: [], values: [], hidden: [] };
+
+        // ── Helpers ────────────────────────────────────────
+        function nav(url) { window.location.href = url; }
+
+        function showToast(message) {
+            document.querySelectorAll('.toast').forEach(t => t.remove());
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.innerHTML = `<i class="fas fa-info-circle"></i><span>${message}</span>`;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+
+        // ── Date ───────────────────────────────────────────
+        document.getElementById('currentDate').textContent =
+            new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        // ── Charts ─────────────────────────────────────────
+        function getTickColor() {
+            return getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() || '#8fa0c0';
+        }
+        function getGridColor() {
+            return getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || '#2e3650';
+        }
+
+        function initTrendChart(chartData) {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            if (trendChart) trendChart.destroy();
+            const COLORS = ['#E67E22', '#3498DB', '#9B59B6', '#27AE60', '#E74C3C', '#7F8C8D'];
+            const tickColor = getTickColor();
+            const gridColor = getGridColor();
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: chartData.datasets.map((ds, i) => ({
+                        ...ds,
+                        borderColor: COLORS[i % COLORS.length],
+                        backgroundColor: 'transparent',
+                        tension: 0.3,
+                        pointRadius: 3,
+                        borderWidth: 2,
+                        hidden: false
+                    }))
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: gridColor },
+                            ticks: { color: tickColor, font: { size: 11 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: tickColor, font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initPieChart() {
+            const ctx = document.getElementById('categoryPieChart').getContext('2d');
+            if (categoryPieChart) categoryPieChart.destroy();
+            categoryPieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: catData.labels,
+                    datasets: [{ data: catData.values, backgroundColor: PIE_COLORS, borderWidth: 0 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            color: '#fff',
+                            font: { weight: 'bold', size: 10 },
+                            formatter: (v, ctx) => {
+                                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                const pct = (v / total * 100).toFixed(1);
+                                return pct > 5 ? pct + '%' : '';
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderLegend() {
+            const total = catData.values.reduce((a, b) => a + b, 0);
+            document.getElementById('categoryLegend').innerHTML = catData.labels.map((label, i) => {
+                const pct = total ? (catData.values[i] / total * 100).toFixed(1) : 0;
+                return `<div class="legend-row ${catData.hidden[i] ? 'hidden' : ''}" onclick="toggleCategory(${i})">
+                    <div style="display:flex;align-items:center;">
+                        <span class="legend-dot" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></span>
+                        <span class="legend-name">${label}</span>
+                    </div>
+                    <div>
+                        <span class="legend-count">${catData.values[i]}</span>
+                        <span class="legend-pct">(${pct}%)</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        window.toggleCategory = function (i) {
+            catData.hidden[i] = !catData.hidden[i];
+            if (categoryPieChart) {
+                categoryPieChart.getDatasetMeta(0).data[i].hidden = catData.hidden[i];
+                categoryPieChart.update();
+            }
+            renderLegend();
+        };
+
+        // ── Filters ────────────────────────────────────────
+        window.toggleFilter = function (el, filterType) {
+            el.classList.toggle('active');
+            if (!trendChart) return;
+            const keys = ['pending', 'in-progress', 'on-hold', 'completed', 'rejected', 'cancelled'];
+            const idx = keys.indexOf(filterType);
+            if (idx !== -1 && trendChart.data.datasets[idx]) {
+                trendChart.data.datasets[idx].hidden = !el.classList.contains('active');
+                trendChart.update();
+            }
+        };
+
+        // ── Data fetch ─────────────────────────────────────
+        async function refreshData(period = 'week') {
+            document.getElementById('weekToggle').classList.toggle('active', period === 'week');
+            document.getElementById('monthToggle').classList.toggle('active', period !== 'week');
+
+            try {
+                const { data: res } = await api.get(`/api/handler/dashboard-summary?period=${period}`);
+                if (!res.success) return;
+                const d = res.data;
+
+                if (d.userInfo) {
+                    document.getElementById('handlerName').innerHTML =
+                        `${d.userInfo.name} <i class="fas fa-headset"></i>`;
+                }
+                if (d.stats) {
+                    document.getElementById('statTotal').textContent = d.stats.total ?? '—';
+                    document.getElementById('statPending').textContent = d.stats.pending ?? '—';
+                    document.getElementById('statInProgress').textContent = d.stats.inProgress ?? '—';
+                    document.getElementById('statCompleted').textContent = d.stats.completed ?? '—';
+                }
+                if (d.foundStats) {
+                    document.getElementById('statFoundTotal').textContent = d.foundStats.total ?? '—';
+                    document.getElementById('statReturned').textContent = d.foundStats.returned ?? '—';
+                    document.getElementById('statPendingClaims').textContent = d.foundStats.pendingClaims ?? '—';
+                }
+                if (d.chartData) initTrendChart(d.chartData);
+                if (d.categories) {
+                    catData.labels = d.categories.map(c => c.label);
+                    catData.values = d.categories.map(c => c.value);
+                    catData.hidden = new Array(d.categories.length).fill(false);
+                    initPieChart(); renderLegend();
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to load dashboard data');
+            }
+        }
+
+        // ── Init ───────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshData('week');
+
+            // Re-render charts when theme changes so axis tick colors update
+            const observer = new MutationObserver(() => {
+                if (trendChart) {
+                    const tc = getTickColor(), gc = getGridColor();
+                    trendChart.options.scales.y.grid.color = gc;
+                    trendChart.options.scales.y.ticks.color = tc;
+                    trendChart.options.scales.x.ticks.color = tc;
+                    trendChart.update();
+                }
+            });
+            observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        });
+    </script>
+</body>
+
+</html>

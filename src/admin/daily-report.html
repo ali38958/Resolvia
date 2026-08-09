@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <title>Daily Report — Resolvia</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        /* ── Page-specific only — all tokens from common-styles ── */
+
+        /* ── Stat cards row ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-4);
+            margin-bottom: var(--space-6);
+        }
+
+        .stat-card-btn {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-5) var(--space-5);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: transform var(--t-fast), box-shadow var(--t-fast);
+            text-align: left;
+        }
+
+        .stat-card-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-card-btn:active {
+            transform: translateY(0);
+        }
+
+        .stat-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-2);
+        }
+
+        .stat-icon {
+            font-size: 2.2rem;
+            color: var(--primary);
+            transition: transform var(--t-fast);
+        }
+
+        .stat-card-btn:hover .stat-icon {
+            transform: scale(1.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        /* ── Date bar ── */
+        .date-bar {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+            padding: var(--space-2) var(--space-4);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .date-bar input[type="date"] {
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--text-primary);
+            outline: none;
+            width: 148px;
+        }
+
+        .date-bar input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.5;
+        }
+
+        .btn-today {
+            background: var(--primary-bg);
+            color: var(--primary);
+            border: none;
+            border-radius: var(--radius-full);
+            padding: var(--space-1) var(--space-3);
+            font-size: var(--text-xs);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+            transition: background var(--t-fast), color var(--t-fast);
+            white-space: nowrap;
+        }
+
+        .btn-today:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-today.hidden {
+            display: none;
+        }
+
+        /* ── Pie chart cards ── */
+        .pie-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: var(--space-5);
+            margin-bottom: var(--space-6);
+        }
+
+        .chart-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-5);
+            box-shadow: var(--shadow-sm);
+            transition: transform var(--t-fast), box-shadow var(--t-fast);
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .chart-card-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-4);
+            padding-bottom: var(--space-3);
+            border-bottom: 2px solid var(--accent-light, #BFFFF3);
+        }
+
+        .chart-card-header h3 {
+            font-size: var(--text-base);
+            font-weight: 600;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .pie-wrap {
+            height: 240px;
+            width: 100%;
+            position: relative;
+            margin-bottom: var(--space-3);
+        }
+
+        .chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+            justify-content: center;
+            background: var(--bg-surface-2);
+            border-radius: var(--radius-full);
+            padding: var(--space-2) var(--space-3);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+            font-size: var(--text-xs);
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 3px var(--space-2);
+            border-radius: var(--radius-full);
+            transition: background var(--t-fast);
+        }
+
+        .legend-item:hover {
+            background: var(--primary-bg);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: var(--radius-sm);
+            flex-shrink: 0;
+        }
+
+        .legend-count {
+            font-weight: 700;
+            color: var(--primary);
+            margin-left: 2px;
+        }
+
+        /* ── Action bar ── */
+        .action-bar {
+            display: inline-flex;
+            /* shrinks to content but stays inside flow */
+            flex-wrap: wrap;
+            align-items: center;
+            gap: var(--space-3);
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+            padding: var(--space-2) var(--space-4);
+            box-shadow: var(--shadow-sm);
+            max-width: 100%;
+            /* never wider than its container */
+            margin-bottom: var(--space-6);
+        }
+
+        .action-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius-full);
+            font-size: var(--text-sm);
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            background: var(--bg-surface-2);
+            color: var(--text-primary);
+            transition: background var(--t-fast), color var(--t-fast);
+        }
+
+        .action-chip i {
+            color: var(--primary);
+            transition: color var(--t-fast);
+        }
+
+        .action-chip:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .action-chip:hover i {
+            color: #fff;
+        }
+
+        .action-chip.active {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .action-chip.active i {
+            color: #fff;
+        }
+
+        .chip-divider {
+            width: 1px;
+            height: 28px;
+            background: var(--border-strong);
+            margin: 0 var(--space-1);
+        }
+
+        /* ── Daily panels grid ── */
+        .daily-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: var(--space-5);
+            margin-bottom: var(--space-6);
+        }
+
+        .daily-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-5);
+            box-shadow: var(--shadow-sm);
+            overflow-x: auto;
+            transition: opacity var(--t-base);
+        }
+
+        .panel-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-4);
+        }
+
+        .panel-head h4 {
+            font-size: var(--text-sm);
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin: 0;
+        }
+
+        .badge-count {
+            background: var(--primary);
+            color: #fff;
+            border-radius: var(--radius-full);
+            padding: 3px 10px;
+            font-size: var(--text-xs);
+            font-weight: 700;
+        }
+
+        /* ── Status table ── */
+        .status-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--text-xs);
+            min-width: 560px;
+        }
+
+        .status-table th {
+            text-align: center;
+            padding: 10px var(--space-2);
+            background: var(--bg-surface-2);
+            color: var(--primary);
+            font-weight: 700;
+            border-bottom: 2px solid var(--border-strong);
+            white-space: nowrap;
+        }
+
+        .status-table th:first-child {
+            text-align: left;
+        }
+
+        .status-table td {
+            padding: 10px var(--space-2);
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .status-table td:first-child {
+            text-align: left;
+            font-weight: 600;
+            background: var(--bg-surface-2);
+            border-right: 2px solid var(--border-strong);
+        }
+
+        .status-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-table tbody tr {
+            cursor: pointer;
+            transition: background var(--t-fast);
+        }
+
+        .status-table tbody tr:hover {
+            background: var(--primary-bg);
+        }
+
+        .count-pill {
+            background: var(--primary-bg);
+            color: var(--primary);
+            border-radius: var(--radius-full);
+            padding: 3px 10px;
+            font-size: var(--text-xs);
+            font-weight: 700;
+            display: inline-block;
+            min-width: 28px;
+            transition: background var(--t-fast), color var(--t-fast), transform var(--t-fast);
+        }
+
+        .count-pill:hover {
+            background: var(--primary);
+            color: #fff;
+            transform: scale(1.08);
+        }
+
+        .view-all-btn {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: var(--space-3);
+        }
+
+        /* ── Analytics grid ── */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+            gap: var(--space-5);
+            margin-bottom: var(--space-6);
+        }
+
+        .analytics-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-5);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .analytics-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-4);
+        }
+
+        .analytics-head h4 {
+            font-size: var(--text-sm);
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin: 0;
+        }
+
+        .toggle-group {
+            display: flex;
+            background: var(--bg-surface-2);
+            border-radius: var(--radius-full);
+            padding: 3px;
+            gap: 2px;
+        }
+
+        .toggle-btn {
+            padding: 4px 14px;
+            font-size: var(--text-xs);
+            font-weight: 600;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            color: var(--text-muted);
+            border: none;
+            background: none;
+            transition: background var(--t-fast), color var(--t-fast), box-shadow var(--t-fast);
+        }
+
+        .toggle-btn.active {
+            background: var(--bg-surface);
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .bar-chart-wrap {
+            flex: 1;
+            min-height: 180px;
+            position: relative;
+        }
+
+        /* ── Summary list ── */
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-2) 0;
+            border-bottom: 1px solid var(--border);
+            font-size: var(--text-sm);
+        }
+
+        .summary-row:last-of-type {
+            border-bottom: none;
+        }
+
+        .summary-row span {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            color: var(--text-secondary);
+        }
+
+        .summary-row strong {
+            color: var(--text-primary);
+            font-size: var(--text-base);
+        }
+
+        .peak-box {
+            background: var(--bg-surface-2);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3) var(--space-4);
+            margin-top: var(--space-3);
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            top: calc(var(--header-height) + var(--space-4));
+            right: var(--space-5);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: 500;
+            z-index: 5000;
+            box-shadow: var(--shadow-lg);
+            min-width: 220px;
+            max-width: 360px;
+            animation: toast-in 0.25s ease;
+            border-left: 4px solid transparent;
+        }
+
+        @keyframes toast-in {
+            from {
+                transform: translateX(110%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            background: var(--success-light);
+            border-color: var(--success);
+            color: #166534;
+        }
+
+        .toast.error {
+            background: var(--danger-light);
+            border-color: var(--danger);
+            color: #9f1239;
+        }
+
+        .toast.info {
+            background: var(--info-light);
+            border-color: var(--info);
+            color: #1e40af;
+        }
+
+        .toast-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.6;
+            font-size: 15px;
+            padding: 0;
+        }
+
+        /* ── Prevent page-level horizontal scroll ── */
+        /* Grids with fixed min-widths (status tables) must not
+           escape the main-content boundary */
+        .main-content {
+            overflow-x: hidden;
+            /* clip children; panels scroll internally */
+            min-width: 0;
+            /* allow the element to shrink in flex/grid parents */
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .daily-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pie-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        /* ── Print ── */
+        @media print {
+            @page {
+                size: A4;
+                margin: 1.2cm;
+            }
+
+            header,
+            .navigation-menu,
+            .action-bar,
+            .view-all-btn,
+            .toast,
+            .modal-overlay,
+            .btn-today,
+            .page-actions {
+                display: none !important;
+            }
+
+            .main-content {
+                display: block !important;
+                width: 100% !important;
+                margin: 0 !important;
+            }
+
+            .stat-card-btn,
+            .chart-card,
+            .daily-panel,
+            .analytics-card {
+                box-shadow: none !important;
+                border: 1px solid #e2eaf2 !important;
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                zoom: 0.93;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="/assets/logo.png" alt="Resolvia" id="logo">
+            <span class="logo-text">Resolvia</span>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" title="Toggle theme">
+                <i class="fa fa-moon icon-moon"></i>
+                <i class="fa fa-sun icon-sun"></i>
+            </button>
+            <div class="profile-icon"><i class="fa fa-user"></i></div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fa fa-sign-out-alt"></i><span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <nav class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </nav>
+
+    <main class="main-content" id="main-content">
+
+        <!-- ── Page header ── -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">📋 Daily Report</h1>
+                <p class="page-subtitle">Complaints &amp; found items overview for a selected date</p>
+            </div>
+            <div class="page-actions" style="display:flex;gap:var(--space-3);align-items:center;flex-wrap:wrap;">
+                <button class="btn btn-secondary" id="printReportBtn">
+                    <i class="fas fa-print"></i> Print Report
+                </button>
+                <div class="date-bar">
+                    <i class="fas fa-calendar-alt" style="color:var(--primary);"></i>
+                    <input type="date" id="reportDate">
+                    <button class="btn-today" id="todayBtn">
+                        <i class="fas fa-calendar-day"></i> Today
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Stat cards ── -->
+        <div class="stats-grid">
+            <button class="stat-card-btn" id="statComplaints">
+                <div class="stat-top">
+                    <span class="stat-value" id="valComplaints">—</span>
+                    <i class="far fa-message stat-icon"></i>
+                </div>
+                <div class="stat-label">Complaints</div>
+            </button>
+            <button class="stat-card-btn" id="statItems">
+                <div class="stat-top">
+                    <span class="stat-value" id="valItems">—</span>
+                    <i class="fas fa-search stat-icon"></i>
+                </div>
+                <div class="stat-label">Found Items</div>
+            </button>
+            <button class="stat-card-btn" id="statBuildings">
+                <div class="stat-top">
+                    <span class="stat-value" id="valBuildings">—</span>
+                    <i class="fas fa-building stat-icon"></i>
+                </div>
+                <div class="stat-label">Buildings (total)</div>
+            </button>
+            <button class="stat-card-btn" id="statRooms">
+                <div class="stat-top">
+                    <span class="stat-value" id="valRooms">—</span>
+                    <i class="fas fa-door-open stat-icon"></i>
+                </div>
+                <div class="stat-label">Rooms</div>
+            </button>
+        </div>
+
+        <!-- ── Pie charts ── -->
+        <div class="pie-row">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <i class="fas fa-exclamation-triangle" style="color:#dc3545;font-size:1.2rem;"></i>
+                    <h3>Complaints by Status</h3>
+                </div>
+                <div class="pie-wrap"><canvas id="complaintsPie"></canvas></div>
+                <div class="chart-legend" id="complaintsLegend"></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <i class="fas fa-search" style="color:var(--primary);font-size:1.2rem;"></i>
+                    <h3>Found Items by Status</h3>
+                </div>
+                <div class="pie-wrap"><canvas id="itemsPie"></canvas></div>
+                <div class="chart-legend" id="itemsLegend"></div>
+            </div>
+        </div>
+
+        <!-- ── Action bar ── -->
+        <div class="action-bar">
+            <button class="action-chip" id="refreshBtn">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <button class="action-chip" id="exportPdfBtn">
+                <i class="fas fa-file-pdf"></i> Export PDF
+            </button>
+            <div class="chip-divider"></div>
+            <button class="action-chip" id="chipComplaints">
+                <i class="fas fa-filter"></i> Complaints
+            </button>
+            <button class="action-chip" id="chipItems">
+                <i class="fas fa-filter"></i> Found Items
+            </button>
+            <button class="action-chip active" id="chipAll">
+                <i class="fas fa-eye"></i> Show All
+            </button>
+        </div>
+
+        <!-- ── Status tables ── -->
+        <div class="daily-grid">
+            <!-- Complaints panel -->
+            <div class="daily-panel" id="complaintsPanel">
+                <div class="panel-head">
+                    <h4>
+                        <i class="fas fa-exclamation-triangle" style="color:#dc3545;"></i>
+                        Complaints · <span id="complaintsDateLbl"></span>
+                    </h4>
+                    <span class="badge-count" id="complaintsBadge">—</span>
+                </div>
+                <table class="status-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Pending</th>
+                            <th>In Progress</th>
+                            <th>On Hold</th>
+                            <th>Completed</th>
+                            <th>Rejected</th>
+                            <th>Cancelled</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="complaintsBody">
+                        <tr>
+                            <td colspan="8" style="text-align:center;padding:var(--space-6);">
+                                <div class="spinner" style="margin:0 auto;"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="view-all-btn">
+                    <button class="btn btn-secondary btn-sm" id="viewAllComplaints">
+                        <i class="fas fa-eye"></i> View All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Items panel -->
+            <div class="daily-panel" id="itemsPanel">
+                <div class="panel-head">
+                    <h4>
+                        <i class="fas fa-search" style="color:var(--primary);"></i>
+                        Found Items · <span id="itemsDateLbl"></span>
+                    </h4>
+                    <span class="badge-count" id="itemsBadge">—</span>
+                </div>
+                <table class="status-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Pending</th>
+                            <th>Collected</th>
+                            <th>Returned</th>
+                            <th>Unavailable</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsBody">
+                        <tr>
+                            <td colspan="6" style="text-align:center;padding:var(--space-6);">
+                                <div class="spinner" style="margin:0 auto;"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="view-all-btn">
+                    <button class="btn btn-secondary btn-sm" id="viewAllItems">
+                        <i class="fas fa-eye"></i> View All
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Analytics ── -->
+        <div class="analytics-grid">
+            <!-- Bar chart -->
+            <div class="analytics-card">
+                <div class="analytics-head">
+                    <h4>
+                        <i class="fas fa-chart-bar"></i>
+                        Hourly Activity — <span id="activityDateLbl"></span>
+                    </h4>
+                    <div class="toggle-group">
+                        <button class="toggle-btn" id="togComplaints">Complaints</button>
+                        <button class="toggle-btn" id="togItems">Found Items</button>
+                        <button class="toggle-btn active" id="togBoth">Both</button>
+                    </div>
+                </div>
+                <div class="bar-chart-wrap">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="analytics-card">
+                <div class="analytics-head">
+                    <h4><i class="fas fa-clock"></i> Summary — <span id="summaryDateLbl"></span></h4>
+                </div>
+                <div class="summary-row">
+                    <span><i class="fas fa-exclamation-circle" style="color:#e74c3c;"></i> Total complaints</span>
+                    <strong id="sumTotalComplaints">—</strong>
+                </div>
+                <div class="summary-row">
+                    <span><i class="fas fa-check-circle" style="color:#2ecc71;"></i> Resolved complaints</span>
+                    <strong id="sumResolved">—</strong>
+                </div>
+                <div class="summary-row">
+                    <span><i class="fas fa-search" style="color:var(--primary);"></i> Found items</span>
+                    <strong id="sumFoundItems">—</strong>
+                </div>
+                <div class="summary-row">
+                    <span><i class="fas fa-box" style="color:#f39c12;"></i> Collected items</span>
+                    <strong id="sumCollected">—</strong>
+                </div>
+                <div class="summary-row">
+                    <span><i class="fas fa-undo-alt" style="color:#3498db;"></i> Returned items</span>
+                    <strong id="sumReturned">—</strong>
+                </div>
+                <div class="peak-box" id="peakBox">
+                    <i class="fas fa-fire" style="color:var(--primary);"></i>
+                    <span>Peak hour: <strong id="peakHourVal">—</strong></span>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ══ COMPLAINTS MODAL ══════════════════════ -->
+    <div class="modal-overlay" id="complaintsModal">
+        <div class="modal" style="max-width:800px;">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-exclamation-triangle" style="color:#dc3545;margin-right:8px;"></i>
+                    All Complaints by Category
+                </h2>
+                <button class="modal-close" id="closeComplaintsModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="overflow-x:auto;padding:var(--space-4);">
+                <table class="status-table" style="min-width:600px;">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Pending</th>
+                            <th>In Progress</th>
+                            <th>On Hold</th>
+                            <th>Completed</th>
+                            <th>Rejected</th>
+                            <th>Cancelled</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allComplaintsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ ITEMS MODAL ═══════════════════════════ -->
+    <div class="modal-overlay" id="itemsModal">
+        <div class="modal" style="max-width:660px;">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-search" style="color:var(--primary);margin-right:8px;"></i>
+                    All Found Items by Category
+                </h2>
+                <button class="modal-close" id="closeItemsModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="overflow-x:auto;padding:var(--space-4);">
+                <table class="status-table" style="min-width:480px;">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Pending</th>
+                            <th>Collected</th>
+                            <th>Returned</th>
+                            <th>Unavailable</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allItemsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+    <script>
+        (function () {
+            // ── State ───────────────────────────────────────────
+            let data = {
+                complaints: {
+                    total: 0,
+                    statusCounts: { Pending: 0, 'In Progress': 0, 'On Hold': 0, Completed: 0, Rejected: 0, Cancelled: 0 },
+                    byCategory: {}
+                },
+                items: {
+                    total: 0,
+                    statusCounts: { Pending: 0, Collected: 0, Returned: 0, Unavailable: 0 },
+                    byCategory: {}
+                },
+                summary: {
+                    totalComplaints: 0, resolvedComplaints: 0,
+                    foundItems: 0, collectedItems: 0, returnedItems: 0,
+                    peakHour: 'N/A'
+                },
+                buildings: 0,
+                rooms: 0
+            };
+
+            let barChart, cPie, iPie;
+
+            const C_COLORS = {
+                Pending: '#f39c12', 'In Progress': '#3498db', 'On Hold': '#e67e22',
+                Completed: '#2ecc71', Rejected: '#e74c3c', Cancelled: '#95a5a6'
+            };
+            const I_COLORS = {
+                Pending: '#f39c12', Collected: '#2ecc71',
+                Returned: '#3498db', Unavailable: '#e74c3c'
+            };
+
+            // ── Toast ───────────────────────────────────────────
+            function showToast(message, type = 'info') {
+                document.querySelectorAll('.toast').forEach(t => t.remove());
+                const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i>
+                <span style="flex:1">${message}</span>
+                <button class="toast-close"><i class="fas fa-times"></i></button>`;
+                document.body.appendChild(toast);
+                toast.querySelector('.toast-close').addEventListener('click', () => toast.remove());
+                setTimeout(() => toast?.remove(), 3000);
+            }
+
+            // ── Date helpers ────────────────────────────────────
+            function today() {
+                return new Date().toISOString().split('T')[0];
+            }
+
+            function getDate() {
+                return document.getElementById('reportDate').value;
+            }
+
+            function syncDateLabels() {
+                const d = getDate();
+                ['complaintsDateLbl', 'itemsDateLbl', 'activityDateLbl', 'summaryDateLbl'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = d;
+                });
+                const todayBtn = document.getElementById('todayBtn');
+                todayBtn.classList.toggle('hidden', d === today());
+            }
+
+            function initDate() {
+                const url = new URLSearchParams(window.location.search).get('date');
+                document.getElementById('reportDate').value = url || today();
+                syncDateLabels();
+            }
+
+            // ── Pie charts ──────────────────────────────────────
+            function buildPie(canvasId, statusCounts, colorMap) {
+                const ctx = document.getElementById(canvasId)?.getContext('2d');
+                if (!ctx) return null;
+                return new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(statusCounts),
+                        datasets: [{
+                            data: Object.values(statusCounts),
+                            backgroundColor: Object.keys(statusCounts).map(k => colorMap[k] || '#95a5a6'),
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => {
+                                        const v = ctx.raw || 0;
+                                        const t = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                        return `${ctx.label}: ${v} (${t ? ((v / t) * 100).toFixed(1) : 0}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function updateLegend(containerId, statusCounts, colorMap, type) {
+                const el = document.getElementById(containerId);
+                if (!el) return;
+                const total = Object.values(statusCounts).reduce((a, b) => a + b, 0);
+                el.innerHTML = Object.entries(statusCounts).map(([s, n]) => {
+                    const pct = total ? ((n / total) * 100).toFixed(1) : '0.0';
+                    return `<span class="legend-item" data-type="${type}" data-status="${s}">
+                    <span class="legend-dot" style="background:${colorMap[s] || '#95a5a6'};"></span>
+                    ${s} <span class="legend-count">${n} (${pct}%)</span>
+                </span>`;
+                }).join('');
+            }
+
+            function updatePies() {
+                if (cPie) {
+                    cPie.data.labels = Object.keys(data.complaints.statusCounts);
+                    cPie.data.datasets[0].data = Object.values(data.complaints.statusCounts);
+                    cPie.data.datasets[0].backgroundColor = cPie.data.labels.map(k => C_COLORS[k] || '#95a5a6');
+                    cPie.update();
+                }
+                if (iPie) {
+                    iPie.data.labels = Object.keys(data.items.statusCounts);
+                    iPie.data.datasets[0].data = Object.values(data.items.statusCounts);
+                    iPie.data.datasets[0].backgroundColor = iPie.data.labels.map(k => I_COLORS[k] || '#95a5a6');
+                    iPie.update();
+                }
+                updateLegend('complaintsLegend', data.complaints.statusCounts, C_COLORS, 'complaints');
+                updateLegend('itemsLegend', data.items.statusCounts, I_COLORS, 'items');
+            }
+
+            // ── Bar chart ───────────────────────────────────────
+            function initBarChart() {
+                const ctx = document.getElementById('barChart')?.getContext('2d');
+                if (!ctx) return;
+                const hrs = Array.from({ length: 24 }, (_, i) => `${i}:00`);
+                barChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: hrs,
+                        datasets: [
+                            { label: 'Complaints', data: new Array(24).fill(0), backgroundColor: '#e74c3c', borderRadius: 4 },
+                            { label: 'Found Items', data: new Array(24).fill(0), backgroundColor: 'var(--primary, #0E5A4C)', borderRadius: 4 }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: '#e2eaf2' }, ticks: { stepSize: 1, precision: 0 } },
+                            x: {
+                                grid: { display: false }, ticks: {
+                                    maxRotation: 45, minRotation: 45,
+                                    callback: (val, i) => i % 2 === 0 ? val : ''
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function setChartView(view) {
+                if (!barChart) return;
+                barChart.data.datasets[0].hidden = view === 'items';
+                barChart.data.datasets[1].hidden = view === 'complaints';
+                barChart.update();
+            }
+
+            // ── Render tables ───────────────────────────────────
+            function renderComplaintsTable(tbodyId, cats) {
+                const el = document.getElementById(tbodyId);
+                if (!el) return;
+                const entries = Object.entries(cats).filter(([, s]) => s.total > 0);
+                if (!entries.length) {
+                    el.innerHTML = `<tr><td colspan="8">
+                    <div class="empty-state" style="padding:var(--space-4);">
+                        <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                        <p class="empty-title">No complaints</p>
+                    </div></td></tr>`;
+                    return;
+                }
+                el.innerHTML = entries.map(([cat, s]) => `
+                <tr>
+                    <td>${cat}</td>
+                    <td><span class="count-pill">${s.Pending || 0}</span></td>
+                    <td><span class="count-pill">${s['In Progress'] || 0}</span></td>
+                    <td><span class="count-pill">${s['On Hold'] || 0}</span></td>
+                    <td><span class="count-pill">${s.Completed || 0}</span></td>
+                    <td><span class="count-pill">${s.Rejected || 0}</span></td>
+                    <td><span class="count-pill">${s.Cancelled || 0}</span></td>
+                    <td><strong>${s.total}</strong></td>
+                </tr>`).join('');
+            }
+
+            function renderItemsTable(tbodyId, cats) {
+                const el = document.getElementById(tbodyId);
+                if (!el) return;
+                const entries = Object.entries(cats).filter(([, s]) => s.total > 0);
+                if (!entries.length) {
+                    el.innerHTML = `<tr><td colspan="6">
+                    <div class="empty-state" style="padding:var(--space-4);">
+                        <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                        <p class="empty-title">No found items</p>
+                    </div></td></tr>`;
+                    return;
+                }
+                el.innerHTML = entries.map(([cat, s]) => `
+                <tr>
+                    <td>${cat}</td>
+                    <td><span class="count-pill">${s.Pending || 0}</span></td>
+                    <td><span class="count-pill">${s.Collected || 0}</span></td>
+                    <td><span class="count-pill">${s.Returned || 0}</span></td>
+                    <td><span class="count-pill">${s.Unavailable || 0}</span></td>
+                    <td><strong>${s.total}</strong></td>
+                </tr>`).join('');
+            }
+
+            function renderAll() {
+                // Stat cards
+                document.getElementById('valComplaints').textContent = data.complaints.total;
+                document.getElementById('valItems').textContent = data.items.total;
+                document.getElementById('valBuildings').textContent = data.buildings;
+                document.getElementById('valRooms').textContent = data.rooms;
+
+                // Badges
+                document.getElementById('complaintsBadge').textContent = `${data.complaints.total} total`;
+                document.getElementById('itemsBadge').textContent = `${data.items.total} found`;
+
+                // Summary
+                document.getElementById('sumTotalComplaints').textContent = data.summary.totalComplaints;
+                document.getElementById('sumResolved').textContent = data.summary.resolvedComplaints;
+                document.getElementById('sumFoundItems').textContent = data.summary.foundItems;
+                document.getElementById('sumCollected').textContent = data.summary.collectedItems;
+                document.getElementById('sumReturned').textContent = data.summary.returnedItems;
+                document.getElementById('peakHourVal').textContent = data.summary.peakHour;
+
+                // Tables
+                renderComplaintsTable('complaintsBody', data.complaints.byCategory);
+                renderItemsTable('itemsBody', data.items.byCategory);
+                renderComplaintsTable('allComplaintsBody', data.complaints.byCategory);
+                renderItemsTable('allItemsBody', data.items.byCategory);
+
+                // Pies
+                updatePies();
+            }
+
+            // ── API ─────────────────────────────────────────────
+            async function fetchData(date) {
+                showToast(`Loading data for ${date}…`, 'info');
+                try {
+                    const { data: res } = await window.api.get('/api/handler/daily-report', { params: { date } });
+                    if (!res.success) throw new Error(res.message);
+                    const d = res.data;
+
+                    data.complaints.total = d.summary.complaints.total;
+                    data.complaints.statusCounts = {
+                        Pending: d.summary.complaints.pending,
+                        'In Progress': d.summary.complaints.inprogress,
+                        'On Hold': d.summary.complaints.onhold,
+                        Completed: d.summary.complaints.completed,
+                        Rejected: d.summary.complaints.rejected,
+                        Cancelled: d.summary.complaints.cancelled
+                    };
+                    data.complaints.byCategory = d.categoryMatrix.complaints;
+
+                    data.items.total = d.summary.items.total;
+                    data.items.statusCounts = {
+                        Pending: d.summary.items.pending,
+                        Collected: d.summary.items.collected,
+                        Returned: d.summary.items.returned,
+                        Unavailable: d.summary.items.unavailable
+                    };
+                    data.items.byCategory = d.categoryMatrix.foundItems;
+
+                    data.summary = {
+                        totalComplaints: d.summary.complaints.total,
+                        resolvedComplaints: d.summary.complaints.completed,
+                        foundItems: d.summary.items.total,
+                        collectedItems: d.summary.items.collected,
+                        returnedItems: d.summary.items.returned,
+                        peakHour: 'N/A'
+                    };
+
+                    // Peak hour
+                    const activity = d.hourlyTrend.map(t => t.complaints + t.foundItems);
+                    const maxVal = Math.max(...activity);
+                    if (maxVal > 0) {
+                        const idxs = activity.reduce((acc, v, i) => (v === maxVal ? [...acc, i] : acc), []);
+                        if (idxs.length > 1) {
+                            data.summary.peakHour = `${d.hourlyTrend[idxs[0]].hour}–${d.hourlyTrend[idxs[idxs.length - 1]].hour}`;
+                        } else {
+                            const h = parseInt(d.hourlyTrend[idxs[0]].hour);
+                            data.summary.peakHour = `${d.hourlyTrend[idxs[0]].hour}–${h + 1}:00`;
+                        }
+                    } else {
+                        data.summary.peakHour = 'No activity';
+                    }
+
+                    data.buildings = d.buildings?.total || 0;
+                    data.rooms = d.rooms?.total || 0;
+
+                    // Bar chart update
+                    if (barChart) {
+                        barChart.data.datasets[0].data = d.hourlyTrend.map(t => t.complaints);
+                        barChart.data.datasets[1].data = d.hourlyTrend.map(t => t.foundItems);
+                        barChart.update();
+                    }
+
+                    renderAll();
+                    showToast(`Data loaded for ${date}`, 'success');
+                } catch (err) {
+                    console.error(err);
+                    showToast('Failed to load data. Check your connection.', 'error');
+                }
+            }
+
+            // ── Modal helpers ───────────────────────────────────
+            function openModal(id) {
+                document.getElementById(id).classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+            function closeModal(id) {
+                document.getElementById(id).classList.remove('open');
+                document.body.style.overflow = '';
+            }
+
+            // ── Init ────────────────────────────────────────────
+            document.addEventListener('DOMContentLoaded', () => {
+                initDate();
+                initBarChart();
+
+                // Build empty pies first
+                cPie = buildPie('complaintsPie', data.complaints.statusCounts, C_COLORS);
+                iPie = buildPie('itemsPie', data.items.statusCounts, I_COLORS);
+
+                // Fetch real data
+                fetchData(getDate());
+
+                // ── Date controls ──
+                document.getElementById('reportDate').addEventListener('change', function () {
+                    const d = this.value;
+                    const url = new URL(window.location);
+                    url.searchParams.set('date', d);
+                    window.history.pushState({}, '', url);
+                    syncDateLabels();
+                    fetchData(d);
+                });
+
+                document.getElementById('todayBtn').addEventListener('click', () => {
+                    const t = today();
+                    document.getElementById('reportDate').value = t;
+                    const url = new URL(window.location);
+                    url.searchParams.set('date', t);
+                    window.history.pushState({}, '', url);
+                    syncDateLabels();
+                    fetchData(t);
+                });
+
+                window.addEventListener('popstate', () => {
+                    const d = new URLSearchParams(window.location.search).get('date') || today();
+                    document.getElementById('reportDate').value = d;
+                    syncDateLabels();
+                    fetchData(d);
+                });
+
+                // ── Print ──
+                document.getElementById('printReportBtn').addEventListener('click', () => {
+                    showToast('Preparing report…', 'info');
+                    setTimeout(() => window.print(), 400);
+                });
+
+                // ── Action chips ──
+                document.getElementById('refreshBtn').addEventListener('click', () => fetchData(getDate()));
+
+                document.getElementById('exportPdfBtn').addEventListener('click', () => {
+                    showToast('Generating PDF…', 'info');
+                    setTimeout(() => showToast('PDF ready!', 'success'), 1500);
+                });
+
+                const setChipFilter = (show) => {
+                    document.getElementById('complaintsPanel').style.display = (show === 'all' || show === 'complaints') ? '' : 'none';
+                    document.getElementById('itemsPanel').style.display = (show === 'all' || show === 'items') ? '' : 'none';
+                };
+
+                ['chipComplaints', 'chipItems', 'chipAll'].forEach(id => {
+                    document.getElementById(id).addEventListener('click', function () {
+                        document.querySelectorAll('.action-chip').forEach(c => c.classList.remove('active'));
+                        this.classList.add('active');
+                        const view = id === 'chipComplaints' ? 'complaints' : id === 'chipItems' ? 'items' : 'all';
+                        setChipFilter(view);
+                    });
+                });
+
+                // ── Toggle chart view ──
+                ['togComplaints', 'togItems', 'togBoth'].forEach(id => {
+                    document.getElementById(id).addEventListener('click', function () {
+                        document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        const v = id === 'togComplaints' ? 'complaints' : id === 'togItems' ? 'items' : 'both';
+                        setChartView(v);
+                    });
+                });
+
+                // ── View all ──
+                document.getElementById('viewAllComplaints').addEventListener('click', () => openModal('complaintsModal'));
+                document.getElementById('viewAllItems').addEventListener('click', () => openModal('itemsModal'));
+
+                document.getElementById('closeComplaintsModal').addEventListener('click', () => closeModal('complaintsModal'));
+                document.getElementById('closeItemsModal').addEventListener('click', () => closeModal('itemsModal'));
+
+                ['complaintsModal', 'itemsModal'].forEach(id => {
+                    document.getElementById(id).addEventListener('click', e => {
+                        if (e.target === document.getElementById(id)) closeModal(id);
+                    });
+                });
+
+                document.addEventListener('keydown', e => {
+                    if (e.key === 'Escape') {
+                        ['complaintsModal', 'itemsModal'].forEach(id => {
+                            if (document.getElementById(id).classList.contains('open')) closeModal(id);
+                        });
+                    }
+                });
+
+                // ── Legend clicks ──
+                document.addEventListener('click', e => {
+                    const li = e.target.closest('.legend-item[data-type]');
+                    if (!li) return;
+                    showToast(`Filtered: ${li.dataset.type} — ${li.dataset.status}`, 'info');
+                });
+
+                // ── Stat card clicks ──
+                ['statComplaints', 'statItems', 'statBuildings', 'statRooms'].forEach(id => {
+                    document.getElementById(id).addEventListener('click', function () {
+                        const val = this.querySelector('.stat-value').textContent;
+                        const label = this.querySelector('.stat-label').textContent;
+                        showToast(`${label}: ${val}`, 'info');
+                    });
+                });
+            });
+
+        })();
+    </script>
+</body>
+
+</html>

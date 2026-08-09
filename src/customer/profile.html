@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <title>My Profile — Resolvia</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+    <style>
+        /* ── Page-specific styles only ── */
+
+        /* Profile hero banner */
+        .profile-hero {
+            background: linear-gradient(135deg, var(--primary) 0%, #072e26 100%);
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            display: flex;
+            align-items: center;
+            gap: var(--space-6);
+            margin-bottom: var(--space-6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        @media (max-width: 640px) {
+            .profile-hero {
+                flex-direction: column;
+                text-align: center;
+                padding: var(--space-6) var(--space-5);
+            }
+        }
+
+        /* Avatar */
+        .avatar-wrap {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .profile-avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: var(--radius-full);
+            object-fit: cover;
+            border: 4px solid rgba(255, 255, 255, 0.25);
+            display: block;
+            background: rgba(255, 255, 255, 0.1);
+            transition: opacity var(--t-fast);
+        }
+
+        .avatar-upload-btn {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 34px;
+            height: 34px;
+            border-radius: var(--radius-full);
+            background: var(--accent);
+            color: #fff;
+            border: 2px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 13px;
+            transition: transform var(--t-fast), background var(--t-fast);
+            z-index: 1;
+        }
+
+        .avatar-upload-btn:hover {
+            transform: scale(1.1);
+            background: var(--accent-hover);
+        }
+
+        /* Hero text */
+        .hero-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .hero-name {
+            font-size: var(--text-3xl);
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+            margin-bottom: var(--space-2);
+            line-height: 1.2;
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 640px) {
+            .hero-meta {
+                justify-content: center;
+            }
+        }
+
+        .hero-role {
+            font-size: var(--text-sm);
+            color: rgba(255, 255, 255, 0.75);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .hero-status {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: 4px var(--space-3);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-full);
+            font-size: var(--text-xs);
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.03em;
+        }
+
+        .hero-status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+        }
+
+        /* Profile fields grid */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+        }
+
+        @media (max-width: 768px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Individual field card */
+        .profile-field {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            transition: border-color var(--t-fast), box-shadow var(--t-fast), background-color var(--t-base);
+        }
+
+        .profile-field:hover {
+            border-color: var(--border-strong);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .field-label {
+            font-size: var(--text-xs);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+        }
+
+        .field-label i {
+            color: var(--primary);
+            width: 14px;
+            text-align: center;
+        }
+
+        .field-value {
+            font-size: var(--text-md);
+            font-weight: 500;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-3);
+            min-height: 28px;
+        }
+
+        /* Static / ID display */
+        .field-static {
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: var(--text-sm);
+            background: var(--bg-surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: var(--space-1) var(--space-3);
+            display: inline-block;
+        }
+
+        /* Editable row */
+        .editable-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            flex: 1;
+        }
+
+        .editable-text {
+            flex: 1;
+            color: var(--text-primary);
+            font-size: var(--text-sm);
+        }
+
+        .field-edit-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--bg-surface-2);
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all var(--t-fast);
+            flex-shrink: 0;
+        }
+
+        .field-edit-btn:hover {
+            background: var(--primary-light);
+            border-color: var(--primary-mid);
+            color: var(--primary);
+        }
+
+        /* Edit mode row */
+        .edit-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            flex: 1;
+        }
+
+        .edit-row .form-control {
+            flex: 1;
+            height: 36px;
+        }
+
+        .edit-save-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 var(--space-3);
+            height: 32px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: var(--primary);
+            color: #fff;
+            font-size: var(--text-xs);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--t-fast), transform var(--t-fast);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .edit-save-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .edit-save-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Verify button — info colour */
+        .edit-verify-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 var(--space-3);
+            height: 32px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: var(--info);
+            color: #fff;
+            font-size: var(--text-xs);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--t-fast), transform var(--t-fast);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .edit-verify-btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .edit-cancel-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-strong);
+            background: var(--bg-surface);
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all var(--t-fast);
+            flex-shrink: 0;
+        }
+
+        .edit-cancel-btn:hover {
+            background: var(--danger-light);
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        /* Password dots */
+        .password-dots {
+            font-size: 20px;
+            letter-spacing: 4px;
+            color: var(--text-muted);
+            line-height: 1;
+        }
+
+        /* OTP input */
+        .otp-input {
+            width: 100%;
+            padding: var(--space-3);
+            font-size: var(--text-xl);
+            text-align: center;
+            letter-spacing: 8px;
+            border: 1.5px solid var(--border-strong);
+            border-radius: var(--radius-md);
+            font-family: var(--font-mono);
+            color: var(--text-primary);
+            background: var(--bg-surface);
+            transition: border-color var(--t-fast), box-shadow var(--t-fast);
+            outline: none;
+        }
+
+        .otp-input:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: calc(var(--header-height) + var(--space-4));
+            right: var(--space-5);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: 500;
+            z-index: 5000;
+            box-shadow: var(--shadow-lg);
+            min-width: 260px;
+            max-width: 380px;
+            animation: toast-in 0.25s ease;
+            border-left: 4px solid transparent;
+        }
+
+        @keyframes toast-in {
+            from {
+                transform: translateX(110%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            background: var(--success-light);
+            border-color: var(--success);
+            color: #166534;
+        }
+
+        .toast.error {
+            background: var(--danger-light);
+            border-color: var(--danger);
+            color: #9f1239;
+        }
+
+        .toast.info {
+            background: var(--info-light);
+            border-color: var(--info);
+            color: #1e40af;
+        }
+
+        .toast-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.6;
+            font-size: 14px;
+            padding: 0;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="/assets/logo.png" alt="Resolvia" id="logo">
+            <span class="logo-text">Resolvia</span>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" title="Toggle theme">
+                <i class="fa fa-moon icon-moon"></i>
+                <i class="fa fa-sun icon-sun"></i>
+            </button>
+            <div class="profile-icon"><i class="fa fa-user"></i></div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fa fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <nav class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </nav>
+
+    <main class="main-content" id="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">My Profile</h1>
+                <p class="page-subtitle">Manage your account information and preferences</p>
+            </div>
+        </div>
+
+        <!-- Hero Banner -->
+        <div class="profile-hero">
+            <div class="avatar-wrap">
+                <img src="/assets/customers/default.png" alt="Profile" class="profile-avatar" id="profileImage"
+                    onerror="this.onerror=null;this.src='/assets/default%20user%20icon.png';">
+                <label for="avatarInput" class="avatar-upload-btn" title="Change photo">
+                    <i class="fas fa-camera"></i>
+                </label>
+                <input type="file" id="avatarInput" accept="image/*" style="display:none;">
+            </div>
+            <div class="hero-info">
+                <div class="hero-name" id="displayFullName">
+                    <span class="skeleton skeleton-title" style="width:200px;height:28px;display:inline-block;"></span>
+                </div>
+                <div class="hero-meta">
+                    <span class="hero-role">
+                        <i class="fas fa-user-circle"></i>
+                        <span>Customer</span>
+                    </span>
+                    <span class="hero-status">
+                        <span class="hero-status-dot"></span>
+                        <span>Active</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Fields Grid -->
+        <div class="profile-grid">
+
+            <!-- Customer ID — static -->
+            <div class="profile-field">
+                <div class="field-label"><i class="fas fa-id-card"></i> Customer ID</div>
+                <div class="field-value">
+                    <span class="field-static" id="displayCustomerId">
+                        <span class="skeleton skeleton-text" style="width:80px;display:inline-block;"></span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Full Name — editable -->
+            <div class="profile-field">
+                <div class="field-label"><i class="fas fa-user"></i> Full Name</div>
+                <div class="field-value">
+                    <div class="editable-row" id="nameContainer">
+                        <span class="editable-text" id="displayName">
+                            <span class="skeleton skeleton-text" style="width:130px;display:inline-block;"></span>
+                        </span>
+                        <button class="field-edit-btn" id="nameEditBtn" title="Edit name">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email — editable with OTP -->
+            <div class="profile-field">
+                <div class="field-label">
+                    <i class="fas fa-envelope"></i> Email Address
+                    <span class="badge badge-blue" style="margin-left:auto;font-size:9px;padding:2px 6px;">OTP
+                        verified</span>
+                </div>
+                <div class="field-value">
+                    <div class="editable-row" id="emailContainer">
+                        <span class="editable-text" id="displayEmail">
+                            <span class="skeleton skeleton-text" style="width:170px;display:inline-block;"></span>
+                        </span>
+                        <button class="field-edit-btn" id="emailEditBtn" title="Change email">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phone — editable -->
+            <div class="profile-field">
+                <div class="field-label"><i class="fas fa-phone"></i> Phone Number</div>
+                <div class="field-value">
+                    <div class="editable-row" id="phoneContainer">
+                        <span class="editable-text" id="displayPhone">
+                            <span class="skeleton skeleton-text" style="width:110px;display:inline-block;"></span>
+                        </span>
+                        <button class="field-edit-btn" id="phoneEditBtn" title="Edit phone">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Designation — static -->
+            <div class="profile-field">
+                <div class="field-label"><i class="fas fa-briefcase"></i> Designation</div>
+                <div class="field-value">
+                    <span class="text-secondary">Customer</span>
+                </div>
+            </div>
+
+            <!-- Member Since — static -->
+            <div class="profile-field">
+                <div class="field-label"><i class="fas fa-calendar-alt"></i> Member Since</div>
+                <div class="field-value">
+                    <span class="text-secondary" id="displayJoinDate">
+                        <span class="skeleton skeleton-text" style="width:120px;display:inline-block;"></span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Password — action -->
+            <div class="profile-field">
+                <div class="field-label"><i class="fas fa-lock"></i> Password</div>
+                <div class="field-value" style="justify-content:space-between;">
+                    <span class="password-dots">••••••••</span>
+                    <button class="btn btn-secondary btn-sm" id="openPasswordModalBtn">
+                        <i class="fas fa-key"></i> Change Password
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- ── OTP Email Verification Modal ── -->
+    <div class="modal-overlay" id="otpModal">
+        <div class="modal" style="max-width:420px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Verify Email Change</h2>
+                <button class="modal-close" id="closeOtpModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-secondary" style="margin-bottom:var(--space-2);font-size:var(--text-sm);">
+                    We've sent a 6-digit OTP to:
+                </p>
+                <p class="text-center font-semibold" style="margin-bottom:var(--space-5);font-size:var(--text-md);"
+                    id="otpTargetEmail">—</p>
+                <div class="form-group">
+                    <label class="form-label">Enter OTP <span class="form-required">*</span></label>
+                    <input type="text" id="otpInput" class="otp-input" maxlength="6" placeholder="000000"
+                        inputmode="numeric" autocomplete="one-time-code">
+                    <span class="form-error" id="otpError" style="display:none;">
+                        <i class="fas fa-circle-exclamation"></i> <span></span>
+                    </span>
+                    <p class="form-hint" style="margin-top:var(--space-2);">OTP is valid for 5 minutes.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelOtpBtn">Cancel</button>
+                <button class="btn btn-primary" id="verifyOtpBtn">
+                    <i class="fas fa-check"></i> Verify & Change
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Change Password Modal ── -->
+    <div class="modal-overlay" id="passwordModal">
+        <div class="modal" style="max-width:420px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Change Password</h2>
+                <button class="modal-close" id="closePasswordModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Current Password <span class="form-required">*</span></label>
+                    <div class="input-group">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="currentPassword" class="form-control"
+                            placeholder="Enter current password">
+                    </div>
+                    <span class="form-error" id="currentPasswordError" style="display:none;">
+                        <i class="fas fa-circle-exclamation"></i> <span></span>
+                    </span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">New Password <span class="form-required">*</span></label>
+                    <div class="input-group">
+                        <i class="fas fa-key input-icon"></i>
+                        <input type="password" id="newPassword" class="form-control" placeholder="Min. 6 characters">
+                    </div>
+                    <span class="form-error" id="newPasswordError" style="display:none;">
+                        <i class="fas fa-circle-exclamation"></i> <span></span>
+                    </span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm New Password <span class="form-required">*</span></label>
+                    <div class="input-group">
+                        <i class="fas fa-key input-icon"></i>
+                        <input type="password" id="confirmPassword" class="form-control"
+                            placeholder="Repeat new password">
+                    </div>
+                    <span class="form-error" id="confirmPasswordError" style="display:none;">
+                        <i class="fas fa-circle-exclamation"></i> <span></span>
+                    </span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelPasswordBtn">Cancel</button>
+                <button class="btn btn-primary" id="changePasswordBtn">
+                    <i class="fas fa-save"></i> Change Password
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+    <script>
+        let customerData = {
+            id: '', fullName: '', email: '',
+            phone: '', picture: '', joinDate: ''
+        };
+        let originalValues = { name: '', email: '', phone: '' };
+        let otpState = { newEmail: '', isVerifying: false };
+
+        // ── Toast ──
+        function showToast(message, type = 'success') {
+            document.querySelectorAll('.toast').forEach(t => t.remove());
+            const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas ${icons[type] || icons.success}"></i>
+                <span style="flex:1">${message}</span>
+                <button class="toast-close"><i class="fas fa-times"></i></button>
+            `;
+            document.body.appendChild(toast);
+            toast.querySelector('.toast-close').addEventListener('click', () => toast.remove());
+            setTimeout(() => toast?.remove(), 4000);
+        }
+
+        // ── Modal helpers ──
+        function openModal(id) { document.getElementById(id).classList.add('open'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+        function closePasswordModal() {
+            closeModal('passwordModal');
+            clearPassErrors();
+            ['currentPassword', 'newPassword', 'confirmPassword'].forEach(id =>
+                document.getElementById(id).value = '');
+        }
+
+        function closeOtpModal() {
+            closeModal('otpModal');
+            otpState = { newEmail: '', isVerifying: false };
+            document.getElementById('otpInput').value = '';
+            document.getElementById('otpError').style.display = 'none';
+        }
+
+        // ── Init ──
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const { data: authData } = await api.get('/api/auth/verify');
+                customerData.id = authData.user.id;
+                customerData.email = authData.user.email;
+                customerData.fullName = authData.user.name || 'Customer';
+                if (authData.user.picture) customerData.picture = authData.user.picture;
+                await loadFullProfile();
+            } catch (err) {
+                console.error(err);
+                if (err.response?.status === 401) window.location.href = '/login';
+            }
+
+            // Avatar upload
+            document.getElementById('avatarInput').addEventListener('change', handleAvatarUpload);
+
+            // Field edit buttons
+            document.getElementById('nameEditBtn').addEventListener('click', () => enableEdit('name'));
+            document.getElementById('emailEditBtn').addEventListener('click', () => enableEdit('email'));
+            document.getElementById('phoneEditBtn').addEventListener('click', () => enableEdit('phone'));
+
+            // Password modal
+            document.getElementById('openPasswordModalBtn').addEventListener('click', () => openModal('passwordModal'));
+            document.getElementById('closePasswordModal').addEventListener('click', closePasswordModal);
+            document.getElementById('cancelPasswordBtn').addEventListener('click', closePasswordModal);
+            document.getElementById('changePasswordBtn').addEventListener('click', changePassword);
+            document.getElementById('passwordModal').addEventListener('click', e => {
+                if (e.target === document.getElementById('passwordModal')) closePasswordModal();
+            });
+
+            // OTP modal
+            document.getElementById('closeOtpModal').addEventListener('click', closeOtpModal);
+            document.getElementById('cancelOtpBtn').addEventListener('click', closeOtpModal);
+            document.getElementById('verifyOtpBtn').addEventListener('click', () =>
+                verifyOTPAndChangeEmail(document.getElementById('otpInput').value.trim()));
+            document.getElementById('otpModal').addEventListener('click', e => {
+                if (e.target === document.getElementById('otpModal')) closeOtpModal();
+            });
+
+            // OTP input: digits only
+            document.getElementById('otpInput').addEventListener('input', function () {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+            document.getElementById('otpInput').addEventListener('keydown', e => {
+                if (e.key === 'Enter') verifyOTPAndChangeEmail(document.getElementById('otpInput').value.trim());
+            });
+        });
+
+        async function loadFullProfile() {
+            try {
+                const { data } = await api.get('/api/customer/profile');
+                if (data.success) {
+                    customerData = { ...customerData, ...data.data };
+                    renderProfile();
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to load profile data', 'error');
+            }
+        }
+
+        function renderProfile() {
+            document.getElementById('displayCustomerId').textContent = customerData.id;
+            document.getElementById('displayFullName').textContent = customerData.fullName;
+            document.getElementById('displayName').textContent = customerData.fullName;
+            document.getElementById('displayEmail').textContent = customerData.email;
+
+            const phone = customerData.phone || '—';
+            document.getElementById('displayPhone').textContent = phone;
+
+            originalValues.name = customerData.fullName;
+            originalValues.email = customerData.email;
+            originalValues.phone = phone;
+
+            const img = document.getElementById('profileImage');
+            if (customerData.picture) {
+                img.src = customerData.picture;
+                img.onerror = () => { img.src = '/assets/default%20user%20icon.png'; };
+            }
+
+            document.getElementById('displayJoinDate').textContent = customerData.joinDate
+                ? new Date(customerData.joinDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+                : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        // ── Inline edit ──
+        function enableEdit(field) {
+            if (field === 'email' && otpState.isVerifying) {
+                openModal('otpModal'); return;
+            }
+
+            const container = document.getElementById(field + 'Container');
+            let current = document.getElementById('display' + cap(field)).textContent;
+            if (current === '—') current = '';
+
+            const isEmail = field === 'email';
+            const isPhone = field === 'phone';
+            const inputType = isEmail ? 'email' : isPhone ? 'tel' : 'text';
+
+            const actionBtn = isEmail
+                ? `<button class="edit-verify-btn" id="${field}SaveBtn"><i class="fas fa-paper-plane"></i> Send OTP</button>`
+                : `<button class="edit-save-btn" id="${field}SaveBtn"><i class="fas fa-check"></i> Save</button>`;
+
+            container.innerHTML = `
+                <div class="edit-row">
+                    <input type="${inputType}" id="input${cap(field)}" class="form-control"
+                        value="${escapeAttr(current)}"
+                        placeholder="${isEmail ? 'new@example.com' : isPhone ? 'e.g. +92 300 1234567' : ''}">
+                    ${actionBtn}
+                    <button class="edit-cancel-btn" id="${field}CancelBtn" title="Cancel">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+
+            const input = document.getElementById('input' + cap(field));
+            const saveBtn = document.getElementById(field + 'SaveBtn');
+            const cancelBtn = document.getElementById(field + 'CancelBtn');
+
+            input.focus();
+            if (field !== 'email') input.select();
+
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    isEmail ? initiateEmailChange() : saveField(field);
+                }
+                if (e.key === 'Escape') cancelEdit(field);
+            });
+
+            saveBtn.addEventListener('click', () => isEmail ? initiateEmailChange() : saveField(field));
+            cancelBtn.addEventListener('click', () => cancelEdit(field));
+        }
+
+        async function saveField(field) {
+            const input = document.getElementById('input' + cap(field));
+            const value = input.value.trim();
+
+            if (field === 'name' && (!value || value.length < 2)) {
+                showToast('Name must be at least 2 characters', 'error'); return;
+            }
+            if (field === 'phone' && value && !/^[\d\s\-\+\(\)]{6,20}$/.test(value)) {
+                showToast('Please enter a valid phone number', 'error'); return;
+            }
+
+            const saveBtn = document.getElementById(field + 'SaveBtn');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;"></span>';
+            }
+
+            try {
+                const endpoint = field === 'name' ? '/api/customer/profile/name' : '/api/customer/profile/phone';
+                const payload = field === 'name' ? { name: value } : { phone: value };
+                const { data } = await api.put(endpoint, payload);
+                if (!data.success) throw new Error(data.message);
+
+                if (field === 'name') {
+                    customerData.fullName = value;
+                    document.getElementById('displayFullName').textContent = value;
+                } else {
+                    customerData[field] = value || null;
+                }
+                originalValues[field] = value || '—';
+                restoreField(field, value || '—');
+                showToast(data.message || `${cap(field)} updated successfully`);
+            } catch (err) {
+                console.error(err);
+                showToast(err.response?.data?.message || err.message || 'Failed to save', 'error');
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<i class="fas fa-check"></i> Save';
+                }
+            }
+        }
+
+        async function initiateEmailChange() {
+            const input = document.getElementById('inputEmail');
+            const email = input.value.trim();
+
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showToast('Please enter a valid email address', 'error'); return;
+            }
+            if (email === customerData.email) {
+                showToast('This is already your current email', 'info');
+                cancelEdit('email'); return;
+            }
+
+            const btn = document.getElementById('emailSaveBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;"></span>';
+
+            try {
+                showToast('Sending OTP…', 'info');
+                const { data } = await api.post('/api/customer/profile/email/initiate-change', { newEmail: email });
+                if (!data.success) throw new Error(data.message);
+
+                otpState = { newEmail: email, isVerifying: true };
+                document.getElementById('otpTargetEmail').textContent = email;
+                document.getElementById('otpInput').value = '';
+                document.getElementById('otpError').style.display = 'none';
+                openModal('otpModal');
+            } catch (err) {
+                console.error(err);
+                showToast(err.response?.data?.message || err.message || 'Failed to send OTP', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send OTP';
+            }
+        }
+
+        async function verifyOTPAndChangeEmail(otp) {
+            const err = document.getElementById('otpError');
+            err.style.display = 'none';
+            document.getElementById('otpInput').classList.remove('is-error');
+
+            if (!otp || otp.length !== 6) {
+                document.getElementById('otpInput').classList.add('is-error');
+                err.querySelector('span').textContent = 'Please enter the 6-digit OTP';
+                err.style.display = 'flex';
+                return;
+            }
+
+            const btn = document.getElementById('verifyOtpBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;"></span> Verifying…';
+
+            try {
+                const { data } = await api.post('/api/customer/profile/email/verify-and-change', {
+                    newEmail: otpState.newEmail, otp
+                });
+                if (!data.success) throw new Error(data.message);
+
+                customerData.email = otpState.newEmail;
+                originalValues.email = otpState.newEmail;
+                restoreField('email', otpState.newEmail);
+                closeOtpModal();
+                showToast('Email updated successfully');
+            } catch (err2) {
+                console.error(err2);
+                const msg = err2.response?.data?.message || err2.message || 'OTP verification failed';
+                document.getElementById('otpInput').classList.add('is-error');
+                err.querySelector('span').textContent = msg;
+                err.style.display = 'flex';
+                showToast(msg, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Verify & Change';
+            }
+        }
+
+        function cancelEdit(field) {
+            if (field === 'email') otpState = { newEmail: '', isVerifying: false };
+            restoreField(field, originalValues[field]);
+        }
+
+        function restoreField(field, value) {
+            const container = document.getElementById(field + 'Container');
+            container.innerHTML = `
+                <span class="editable-text" id="display${cap(field)}">${escapeHTML(value)}</span>
+                <button class="field-edit-btn" title="Edit">
+                    <i class="fas fa-pen"></i>
+                </button>
+            `;
+            container.querySelector('.field-edit-btn').addEventListener('click', () => enableEdit(field));
+        }
+
+        // ── Avatar upload ──
+        async function handleAvatarUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (file.size > 2 * 1024 * 1024) { showToast('Image must be under 2MB', 'error'); this.value = ''; return; }
+            if (!['image/jpeg', 'image/jpg', 'image/png', 'image/gif'].includes(file.type)) {
+                showToast('Only JPG, PNG, GIF allowed', 'error'); this.value = ''; return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = ev => { document.getElementById('profileImage').src = ev.target.result; };
+            reader.readAsDataURL(file);
+
+            try {
+                const fd = new FormData();
+                fd.append('picture', file);
+                const { data } = await api.post('/api/customer/profile/picture', fd);
+                if (!data.success) throw new Error(data.message);
+                customerData.picture = data.data.picture;
+                showToast('Profile photo updated successfully');
+            } catch (err) {
+                document.getElementById('profileImage').src = customerData.picture || '/assets/default%20user%20icon.png';
+                showToast(err.response?.data?.message || err.message || 'Failed to upload photo', 'error');
+            } finally { this.value = ''; }
+        }
+
+        // ── Password change ──
+        function clearPassErrors() {
+            ['currentPasswordError', 'newPasswordError', 'confirmPasswordError'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+            ['currentPassword', 'newPassword', 'confirmPassword'].forEach(id => {
+                document.getElementById(id).classList.remove('is-error');
+            });
+        }
+
+        function setPassError(inputId, errorId, msg) {
+            document.getElementById(inputId).classList.add('is-error');
+            const err = document.getElementById(errorId);
+            err.querySelector('span').textContent = msg;
+            err.style.display = 'flex';
+        }
+
+        async function changePassword() {
+            clearPassErrors();
+            const cur = document.getElementById('currentPassword').value;
+            const newPw = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+            let valid = true;
+
+            if (!cur) { setPassError('currentPassword', 'currentPasswordError', 'Current password is required'); valid = false; }
+            if (!newPw) { setPassError('newPassword', 'newPasswordError', 'New password is required'); valid = false; }
+            else if (newPw.length < 6) { setPassError('newPassword', 'newPasswordError', 'Password must be at least 6 characters'); valid = false; }
+            if (!confirm) { setPassError('confirmPassword', 'confirmPasswordError', 'Please confirm your new password'); valid = false; }
+            else if (newPw && newPw !== confirm) { setPassError('confirmPassword', 'confirmPasswordError', 'Passwords do not match'); valid = false; }
+
+            if (!valid) return;
+
+            const btn = document.getElementById('changePasswordBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;"></span> Saving…';
+
+            try {
+                const { data } = await api.put('/api/customer/profile/password', {
+                    currentPassword: cur, newPassword: newPw
+                });
+                if (!data.success) throw new Error(data.message);
+                closePasswordModal();
+                showToast('Password updated successfully');
+            } catch (err) {
+                console.error(err);
+                showToast(err.response?.data?.message || err.message || 'Failed to change password', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Change Password';
+            }
+        }
+
+        // ── Helpers ──
+        function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+        function escapeHTML(str) {
+            return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        function escapeAttr(str) {
+            return String(str || '').replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,43 @@
+{
+    "info": {
+        "name": "Resolvia APIs",
+        "description": "Auto-generated collection of all 157 APIs in server.js. Organized by HTTP Method.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "1. GET Requests (Read-Only & Safe)",
+            "description": "These requests only retrieve data. They will not mess up any existing data in your database.",
+            "item": []
+        },
+        {
+            "name": "2. POST Requests (Create Data)",
+            "description": "⚠️ CAUTION: These requests add new data (e.g. creating users, submitting complaints). Running these might create test data in your database.",
+            "item": []
+        },
+        {
+            "name": "3. PUT Requests (Update Data)",
+            "description": "⚠️ CAUTION: These requests update existing data. Be careful as they might change actual user data or complaints.",
+            "item": []
+        },
+        {
+            "name": "4. DELETE Requests (Remove Data)",
+            "description": "⛔ DANGER: These requests will permanently delete data from your database (e.g. deleting staff, discarding found items).",
+            "item": []
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost",
+            "type": "string",
+            "description": "The base URL for the Resolvia backend"
+        },
+        {
+            "key": "access_token",
+            "value": "",
+            "type": "string",
+            "description": "JWT access token for authentication endpoints."
+        }
+    ]
+}

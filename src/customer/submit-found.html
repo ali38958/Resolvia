@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <title>Submit Found Item — Resolvia</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <style>
+        /* ── Page-specific styles only ── */
+
+        /* Two-column form layout */
+        .found-layout {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-5);
+        }
+
+        /* Form section panels */
+        .form-section-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-xs);
+            transition: background-color var(--t-base), border-color var(--t-base);
+        }
+
+        .form-section-title {
+            font-size: var(--text-md);
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-5);
+            padding-bottom: var(--space-4);
+            border-bottom: 1px solid var(--border);
+            letter-spacing: -0.2px;
+        }
+
+        .form-section-title i {
+            width: 30px;
+            height: 30px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        /* Item details two-col */
+        .item-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: var(--space-6);
+        }
+
+        /* Guidelines info box */
+        .info-box {
+            background: var(--primary-light);
+            border: 1px solid var(--primary-mid);
+            border-radius: var(--radius-md);
+            padding: var(--space-3) var(--space-4);
+            margin-top: var(--space-2);
+        }
+
+        .info-box-title {
+            font-size: var(--text-xs);
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-2);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .info-box ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-box li {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-2);
+            font-size: var(--text-xs);
+            color: var(--text-secondary);
+        }
+
+        .info-box li i {
+            color: var(--primary);
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        /* Char counter */
+        .char-counter {
+            text-align: right;
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .char-counter.warn {
+            color: var(--warning);
+            font-weight: 600;
+        }
+
+        .char-counter.over {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        /* Image upload */
+        .upload-drop-zone {
+            border: 1.5px dashed var(--border-strong);
+            border-radius: var(--radius-md);
+            padding: var(--space-6) var(--space-4);
+            text-align: center;
+            background: var(--bg-surface-2);
+            cursor: pointer;
+            transition: border-color var(--t-fast), background var(--t-fast);
+            margin-bottom: var(--space-3);
+        }
+
+        .upload-drop-zone:hover,
+        .upload-drop-zone.drag-over {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .upload-drop-icon {
+            font-size: 36px;
+            color: var(--primary);
+            margin-bottom: var(--space-3);
+        }
+
+        .upload-drop-text {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .upload-drop-sub {
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+            margin-bottom: var(--space-3);
+        }
+
+        /* Image preview grid */
+        .image-preview-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+            margin-top: var(--space-2);
+        }
+
+        .preview-thumb {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-xs);
+        }
+
+        .preview-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-thumb-remove {
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(232, 69, 96, 0.9);
+            color: #fff;
+            border: 1px solid #fff;
+            font-size: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity var(--t-fast);
+        }
+
+        .preview-thumb:hover .preview-thumb-remove {
+            opacity: 1;
+        }
+
+        /* Location mode toggles */
+        .mode-toggle-group {
+            display: flex;
+            gap: var(--space-2);
+            margin-bottom: var(--space-4);
+            flex-wrap: wrap;
+        }
+
+        .mode-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: 0 var(--space-4);
+            height: 36px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-strong);
+            background: var(--bg-surface);
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast), box-shadow var(--t-fast);
+        }
+
+        .mode-toggle-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .mode-toggle-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.25);
+        }
+
+        /* Mode instruction hint */
+        .mode-hint {
+            display: none;
+            background: var(--bg-surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--space-3) var(--space-4);
+            margin-bottom: var(--space-4);
+            font-size: var(--text-xs);
+            color: var(--text-secondary);
+        }
+
+        .mode-hint.active {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-2);
+        }
+
+        .mode-hint i {
+            color: var(--primary);
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* Map mode warning */
+        .map-mode-warning {
+            display: none;
+            align-items: flex-start;
+            gap: var(--space-2);
+            background: var(--warning-light);
+            border: 1px solid var(--warning);
+            border-radius: var(--radius-md);
+            padding: var(--space-3) var(--space-4);
+            margin-bottom: var(--space-4);
+            font-size: var(--text-xs);
+            color: #92400e;
+        }
+
+        [data-theme="dark"] .map-mode-warning {
+            color: #fcd34d;
+        }
+
+        .map-mode-warning.show {
+            display: flex;
+        }
+
+        .map-mode-warning i {
+            color: var(--warning);
+            flex-shrink: 0;
+        }
+
+        /* Location grid */
+        .location-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-6);
+        }
+
+        /* Map container */
+        .map-container {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            height: 480px;
+            position: relative;
+            background: var(--bg-surface-2);
+            transition: border-color var(--t-fast);
+        }
+
+        .map-container.map-error {
+            border-color: var(--danger);
+            box-shadow: 0 0 0 3px rgba(var(--danger-rgb), 0.1);
+        }
+
+        /* Map placeholder */
+        .map-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: var(--space-6);
+        }
+
+        .map-placeholder-icon {
+            font-size: 48px;
+            color: var(--primary);
+            opacity: 0.7;
+            margin-bottom: var(--space-4);
+        }
+
+        .map-placeholder h4 {
+            font-size: var(--text-lg);
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-2);
+        }
+
+        .map-placeholder p {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            max-width: 260px;
+            line-height: 1.6;
+            margin-bottom: var(--space-5);
+        }
+
+        /* Map interface */
+        .map-interface {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: none;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Map search overlay */
+        .map-search-overlay {
+            position: absolute;
+            top: var(--space-3);
+            left: var(--space-3);
+            right: var(--space-3);
+            z-index: 400;
+        }
+
+        .map-search-box {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+
+        .map-search-input-wrap {
+            display: flex;
+            align-items: center;
+            padding: 0 var(--space-3);
+            gap: var(--space-2);
+        }
+
+        .map-search-input-wrap i {
+            color: var(--text-muted);
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .map-search-input-wrap input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: var(--space-2) 0;
+            font-size: var(--text-sm);
+            font-family: var(--font-sans);
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .map-search-input-wrap input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .map-search-clear {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 12px;
+            padding: 2px 4px;
+            display: none;
+            transition: color var(--t-fast);
+        }
+
+        .map-search-clear:hover {
+            color: var(--text-primary);
+        }
+
+        .map-search-go {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 4px 10px;
+            font-size: var(--text-xs);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--t-fast);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .map-search-go:hover {
+            background: var(--primary-hover);
+        }
+
+        .map-search-results {
+            border-top: 1px solid var(--border);
+            max-height: 220px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .map-result-item {
+            padding: var(--space-2) var(--space-3);
+            font-size: var(--text-xs);
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            transition: background var(--t-fast);
+            color: var(--text-primary);
+        }
+
+        .map-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .map-result-item:hover {
+            background: var(--bg-surface-2);
+        }
+
+        .map-result-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .map-result-addr {
+            color: var(--text-muted);
+            font-size: 10px;
+            line-height: 1.3;
+        }
+
+        /* Map controls */
+        .map-controls-right {
+            position: absolute;
+            top: 56px;
+            right: var(--space-3);
+            z-index: 400;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 4px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .map-controls-left {
+            position: absolute;
+            top: 56px;
+            left: var(--space-3);
+            z-index: 400;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .map-ctrl-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            transition: background var(--t-fast), color var(--t-fast);
+        }
+
+        .map-ctrl-btn:hover {
+            background: var(--bg-surface-2);
+            color: var(--primary);
+        }
+
+        .map-ctrl-btn.active {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .zoom-divider {
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* Map coordinate display */
+        .map-coords-bar {
+            position: absolute;
+            bottom: var(--space-3);
+            left: var(--space-3);
+            right: var(--space-3);
+            z-index: 400;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--space-2) var(--space-3);
+            box-shadow: var(--shadow-sm);
+            display: none;
+        }
+
+        .map-coords-address {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .map-coords-latlng {
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        /* Leaflet custom marker */
+        .custom-div-icon {
+            font-size: 36px !important;
+            color: var(--primary) !important;
+            text-align: center !important;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .leaflet-control-zoom {
+            display: none !important;
+        }
+
+        .leaflet-control-attribution {
+            font-size: 9px !important;
+        }
+
+        .leaflet-popup-content-wrapper {
+            border-radius: var(--radius-md) !important;
+            box-shadow: var(--shadow-md) !important;
+        }
+
+        /* Expand map button */
+        .map-expand-hint {
+            position: absolute;
+            bottom: calc(var(--space-3) + 56px);
+            right: var(--space-3);
+            z-index: 400;
+        }
+
+        /* Form actions */
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-2);
+        }
+
+        /* Confirmation Modal summary */
+        .confirm-summary {
+            background: var(--bg-surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--space-4);
+            margin: var(--space-4) 0;
+        }
+
+        .confirm-summary-row {
+            display: flex;
+            gap: var(--space-3);
+            padding: var(--space-2) 0;
+            border-bottom: 1px solid var(--border);
+            font-size: var(--text-sm);
+        }
+
+        .confirm-summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .confirm-summary-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            min-width: 120px;
+            flex-shrink: 0;
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .confirm-summary-value {
+            color: var(--text-primary);
+        }
+
+        /* Expanded map modal body */
+        .modal-map-body {
+            position: relative;
+            height: 520px;
+        }
+
+        #expanded-map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .modal-confirm-loc-btn {
+            position: absolute;
+            bottom: var(--space-4);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 500;
+            white-space: nowrap;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .item-details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .location-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .map-container {
+                height: 380px;
+            }
+
+            .modal-map-body {
+                height: 420px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-section-panel {
+                padding: var(--space-4);
+            }
+
+            .form-actions {
+                flex-direction: column-reverse;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .mode-toggle-group {
+                flex-direction: row;
+            }
+
+            .map-container {
+                height: 320px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .map-container {
+                height: 280px;
+            }
+
+            .modal-map-body {
+                height: 360px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="/assets/logo.png" alt="Resolvia" id="logo">
+            <span class="logo-text">Resolvia</span>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" title="Toggle theme">
+                <i class="fa fa-moon icon-moon"></i>
+                <i class="fa fa-sun icon-sun"></i>
+            </button>
+            <div class="profile-icon"><i class="fa fa-user"></i></div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fa fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <nav class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </nav>
+
+    <main class="main-content" id="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Submit Found Item</h1>
+                <p class="page-subtitle">Found something that doesn't belong to you? Report it here so we can return it
+                    to its owner.</p>
+            </div>
+        </div>
+
+        <form id="found-item-form" class="found-layout" autocomplete="off">
+
+            <!-- ── Section 1: Item Details ── -->
+            <div class="form-section-panel">
+                <h2 class="form-section-title">
+                    <i class="fas fa-info-circle"></i> Item Details
+                </h2>
+
+                <div class="item-details-grid">
+                    <!-- Left: text fields -->
+                    <div>
+                        <!-- Title -->
+                        <div class="form-group">
+                            <label class="form-label">Item Title <span class="form-required">*</span></label>
+                            <input type="text" id="item-title" class="form-control"
+                                placeholder="e.g., Black Wallet, iPhone 12, Gold Ring" required>
+                            <span class="form-error" id="titleError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span>Please enter a title</span>
+                            </span>
+                        </div>
+
+                        <!-- Category + Date row -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Category <span class="form-required">*</span></label>
+                                <select id="item-category" class="form-control" required>
+                                    <option value="">Select a category</option>
+                                    <option value="electronics">Electronics</option>
+                                    <option value="jewelry">Jewelry &amp; Accessories</option>
+                                    <option value="documents">Documents &amp; IDs</option>
+                                    <option value="clothing">Clothing</option>
+                                    <option value="bags">Bags &amp; Wallets</option>
+                                    <option value="keys">Keys</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <span class="form-error" id="categoryError" style="display:none;">
+                                    <i class="fas fa-circle-exclamation"></i> <span>Select a category</span>
+                                </span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Date Found <span class="form-required">*</span></label>
+                                <input type="datetime-local" id="found-date" class="form-control" required>
+                                <span class="form-error" id="dateError" style="display:none;">
+                                    <i class="fas fa-circle-exclamation"></i> <span>Please select a date</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="form-group">
+                            <label class="form-label">Description <span class="form-required">*</span></label>
+                            <textarea id="item-description" class="form-control"
+                                placeholder="Describe the item: brand, color, size, distinguishing features…"
+                                style="min-height:110px;" maxlength="200" required></textarea>
+                            <div class="char-counter" id="desc-counter">0 / 200</div>
+                            <span class="form-error" id="descError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span>Please describe the item (10–200
+                                    chars)</span>
+                            </span>
+                        </div>
+
+                        <div class="info-box">
+                            <div class="info-box-title"><i class="fas fa-lightbulb"></i> Description Tips</div>
+                            <ul>
+                                <li><i class="fas fa-check-circle"></i> Mention brand, model, and color</li>
+                                <li><i class="fas fa-check-circle"></i> Include any distinguishing marks</li>
+                                <li><i class="fas fa-check-circle"></i> Add serial numbers if available</li>
+                                <li><i class="fas fa-check-circle"></i> Describe contents (wallet, bag, etc.)</li>
+                                <li><i class="fas fa-check-circle"></i> Maximum 200 characters</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Right: image upload -->
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">Upload Images <span
+                                    style="color:var(--text-muted);font-weight:500;">(Optional)</span></label>
+                            <div class="upload-drop-zone" id="drop-area">
+                                <div class="upload-drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                                <div class="upload-drop-text">Click or drag &amp; drop images</div>
+                                <div class="upload-drop-sub">Up to 5 images, 5MB each</div>
+                                <button type="button" class="btn btn-secondary btn-sm" id="browse-btn">
+                                    <i class="fas fa-folder-open"></i> Browse
+                                </button>
+                                <input type="file" id="file-input" accept="image/*" multiple style="display:none;">
+                            </div>
+                            <div class="image-preview-grid" id="image-preview"></div>
+                        </div>
+
+                        <div class="info-box">
+                            <div class="info-box-title"><i class="fas fa-camera"></i> Photo Guidelines</div>
+                            <ul>
+                                <li><i class="fas fa-check-circle"></i> Clear photos from multiple angles</li>
+                                <li><i class="fas fa-check-circle"></i> Show serial numbers or marks</li>
+                                <li><i class="fas fa-check-circle"></i> Good lighting helps</li>
+                                <li><i class="fas fa-check-circle"></i> Max 5 images, 5MB each</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Section 2: Location ── -->
+            <div class="form-section-panel">
+                <h2 class="form-section-title">
+                    <i class="fas fa-map-marker-alt"></i> Location Details
+                </h2>
+
+                <!-- Mode toggles -->
+                <div class="mode-toggle-group">
+                    <button type="button" class="mode-toggle-btn active" id="manual-mode-btn">
+                        <i class="fas fa-keyboard"></i> Enter Manually
+                    </button>
+                    <button type="button" class="mode-toggle-btn" id="map-mode-btn">
+                        <i class="fas fa-map-marked-alt"></i> Use Map
+                    </button>
+                </div>
+
+                <!-- Mode hints -->
+                <div class="mode-hint active" id="manual-hint">
+                    <i class="fas fa-pencil-alt"></i>
+                    <span>Fill in all location fields manually. Ensure accuracy for better matching.</span>
+                </div>
+                <div class="mode-hint" id="map-hint">
+                    <i class="fas fa-map-pin"></i>
+                    <span>Click or search on the map to auto-fill location. Use "Open Interactive Map" for a larger
+                        view.</span>
+                </div>
+
+                <!-- Map mode active warning -->
+                <div class="map-mode-warning" id="map-mode-warning">
+                    <i class="fas fa-info-circle"></i>
+                    <span><strong>Map Mode Active:</strong> Location fields are auto-filled from your map
+                        selection.</span>
+                </div>
+
+                <div class="location-grid">
+                    <!-- Left: location fields -->
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">Where did you find it? <span
+                                    class="form-required">*</span></label>
+                            <input type="text" id="found-location" class="form-control"
+                                placeholder="e.g., NUTECH University, I-12, Islamabad" required>
+                            <span class="form-error" id="locationError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span>Please specify the location</span>
+                            </span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Additional Location Details</label>
+                            <textarea id="location-details" class="form-control"
+                                placeholder="Specific spot: bench near entrance, 3rd floor corridor, parking lot A…"
+                                style="min-height:80px;"></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">City <span class="form-required">*</span></label>
+                                <input type="text" id="city" class="form-control" placeholder="e.g., Islamabad"
+                                    required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Postal Code</label>
+                                <input type="text" id="postalcode" class="form-control" placeholder="e.g., 44000">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">State / Province <span class="form-required">*</span></label>
+                                <input type="text" id="state" class="form-control"
+                                    placeholder="e.g., Islamabad Capital Territory" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Country <span class="form-required">*</span></label>
+                                <input type="text" id="country" class="form-control" placeholder="e.g., Pakistan"
+                                    required>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="coordinates-group" style="display:none;">
+                            <label class="form-label">Coordinates</label>
+                            <input type="text" id="coordinates" class="form-control" placeholder="Auto-filled from map"
+                                readonly>
+                        </div>
+                    </div>
+
+                    <!-- Right: map -->
+                    <div class="map-container" id="map-container">
+                        <!-- Placeholder (manual mode) -->
+                        <div class="map-placeholder" id="map-placeholder">
+                            <div class="map-placeholder-icon"><i class="fas fa-map-marked-alt"></i></div>
+                            <h4>Select on Map</h4>
+                            <p>Switch to Map Mode and use the interactive map to pinpoint the exact location.</p>
+                            <button type="button" class="btn btn-primary" id="open-map-placeholder-btn">
+                                <i class="fas fa-map-pin"></i> Open Interactive Map
+                            </button>
+                        </div>
+
+                        <!-- Map interface (map mode) -->
+                        <div class="map-interface" id="map-interface">
+                            <!-- Search overlay -->
+                            <div class="map-search-overlay">
+                                <div class="map-search-box">
+                                    <div class="map-search-input-wrap">
+                                        <i class="fas fa-search"></i>
+                                        <input type="text" id="map-search-input" placeholder="Search address or place…">
+                                        <button type="button" class="map-search-clear" id="map-search-clear"><i
+                                                class="fas fa-times"></i></button>
+                                        <button type="button" class="map-search-go" id="map-search-go">Search</button>
+                                    </div>
+                                    <div class="map-search-results" id="map-search-results"></div>
+                                </div>
+                            </div>
+
+                            <!-- Zoom controls (left) -->
+                            <div class="map-controls-left" id="map-zoom-controls">
+                                <button type="button" class="map-ctrl-btn" id="zoom-in" title="Zoom in"><i
+                                        class="fas fa-plus"></i></button>
+                                <div class="zoom-divider"></div>
+                                <button type="button" class="map-ctrl-btn" id="zoom-out" title="Zoom out"><i
+                                        class="fas fa-minus"></i></button>
+                            </div>
+
+                            <!-- Right controls -->
+                            <div class="map-controls-right" id="map-right-controls">
+                                <button type="button" class="map-ctrl-btn" id="map-reset" title="Reset to default"><i
+                                        class="fas fa-undo-alt"></i></button>
+                                <button type="button" class="map-ctrl-btn" id="map-locate" title="My location"><i
+                                        class="fas fa-location-crosshairs"></i></button>
+                                <button type="button" class="map-ctrl-btn" id="map-satellite" title="Satellite view"><i
+                                        class="fas fa-satellite"></i></button>
+                                <button type="button" class="map-ctrl-btn" id="map-expand" title="Expand map"><i
+                                        class="fas fa-expand"></i></button>
+                            </div>
+
+                            <!-- Map element -->
+                            <div id="map"></div>
+
+                            <!-- Coordinates bar -->
+                            <div class="map-coords-bar" id="map-coords-bar">
+                                <div class="map-coords-address" id="map-coords-address">—</div>
+                                <div class="map-coords-latlng" id="map-coords-latlng">—</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="button" id="reset-btn" class="btn btn-secondary">
+                    <i class="fas fa-rotate-left"></i> Clear Form
+                </button>
+                <button type="submit" id="submit-btn" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Submit Found Item
+                </button>
+            </div>
+
+        </form>
+    </main>
+
+    <!-- ── Confirmation Modal ── -->
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal" style="max-width:520px;">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-check-circle"
+                        style="color:var(--primary);margin-right:6px;"></i> Confirm Submission</h2>
+                <button class="modal-close" id="close-confirm-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--space-3);">Please
+                    review the details before submitting.</p>
+                <div class="confirm-summary" id="confirm-summary"></div>
+                <p class="form-hint"><i class="fas fa-info-circle"></i> After submission, you can track the status of
+                    your report.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancel-confirm">Cancel</button>
+                <button type="button" class="btn btn-primary" id="do-confirm">
+                    <i class="fas fa-check"></i> Confirm &amp; Submit
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Expanded Map Modal ── -->
+    <div class="modal-overlay" id="expanded-map-modal">
+        <div class="modal" style="max-width:860px; width:96%;">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-map-marked-alt"
+                        style="color:var(--primary);margin-right:6px;"></i> Select Exact Location</h2>
+                <button class="modal-close" id="close-expanded-map"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body"
+                style="padding:0; overflow:hidden; border-radius:0 0 var(--radius-xl) var(--radius-xl);">
+                <div class="modal-map-body" style="position:relative;">
+                    <!-- Map search -->
+                    <div
+                        style="position:absolute;top:var(--space-3);left:50%;transform:translateX(-50%);width:460px;max-width:90%;z-index:500;">
+                        <div class="map-search-box">
+                            <div class="map-search-input-wrap">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="exp-search-input" placeholder="Search address or place…">
+                                <button type="button" class="map-search-clear" id="exp-search-clear"><i
+                                        class="fas fa-times"></i></button>
+                                <button type="button" class="map-search-go" id="exp-search-go">Search</button>
+                            </div>
+                            <div class="map-search-results" id="exp-search-results"></div>
+                        </div>
+                    </div>
+                    <!-- Zoom controls -->
+                    <div style="position:absolute;top:56px;left:var(--space-3);z-index:500;" class="map-controls-left">
+                        <button type="button" class="map-ctrl-btn" id="exp-zoom-in"><i class="fas fa-plus"></i></button>
+                        <div class="zoom-divider"></div>
+                        <button type="button" class="map-ctrl-btn" id="exp-zoom-out"><i
+                                class="fas fa-minus"></i></button>
+                    </div>
+                    <!-- Right controls -->
+                    <div style="position:absolute;top:56px;right:var(--space-3);z-index:500;"
+                        class="map-controls-right">
+                        <button type="button" class="map-ctrl-btn" id="exp-reset"><i
+                                class="fas fa-undo-alt"></i></button>
+                        <button type="button" class="map-ctrl-btn" id="exp-locate"><i
+                                class="fas fa-location-crosshairs"></i></button>
+                        <button type="button" class="map-ctrl-btn" id="exp-satellite"><i
+                                class="fas fa-satellite"></i></button>
+                    </div>
+                    <div id="expanded-map"></div>
+                    <!-- Confirm button -->
+                    <button type="button" class="btn btn-primary modal-confirm-loc-btn" id="confirm-exp-location">
+                        <i class="fas fa-check"></i> Confirm Location
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script>
+        // ── State ─────────────────────────────────────────────────────
+        const DEFAULT = {
+            lat: 33.628148, lng: 73.011081,
+            address: 'National University Of Technology (NUTECH), I-12, Islamabad, Pakistan',
+            city: 'Islamabad', state: 'Islamabad Capital Territory', country: 'Pakistan', postalcode: '44000'
+        };
+
+        let selectedLoc = { ...DEFAULT };
+        let isMapMode = false;
+        let uploadedFiles = [];
+        let map, marker, expandedMap, expMarker;
+        let searchTimer, expSearchTimer;
+
+        // ── Toast ─────────────────────────────────────────────────────
+        function showToast(message, type = 'success') {
+            document.querySelectorAll('.toast').forEach(t => t.remove());
+            const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', warning: 'fa-triangle-exclamation', info: 'fa-circle-info' };
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i><span style="flex:1">${message}</span>
+                <button class="toast-close"><i class="fas fa-times"></i></button>`;
+            document.body.appendChild(toast);
+            toast.querySelector('.toast-close').addEventListener('click', () => toast.remove());
+            setTimeout(() => toast?.remove(), 4500);
+        }
+
+        // ── Form errors ───────────────────────────────────────────────
+        function setErr(inputId, errId, msg) {
+            const el = document.getElementById(inputId);
+            const er = document.getElementById(errId);
+            if (el) el.classList.add('is-error');
+            if (er) { er.querySelector('span').textContent = msg; er.style.display = 'flex'; }
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.form-error').forEach(e => e.style.display = 'none');
+            document.querySelectorAll('.is-error').forEach(e => e.classList.remove('is-error'));
+        }
+
+        // ── Mode switch ───────────────────────────────────────────────
+        function switchMode(toMap) {
+            isMapMode = toMap;
+            document.getElementById('manual-mode-btn').classList.toggle('active', !toMap);
+            document.getElementById('map-mode-btn').classList.toggle('active', toMap);
+            document.getElementById('manual-hint').classList.toggle('active', !toMap);
+            document.getElementById('map-hint').classList.toggle('active', toMap);
+            document.getElementById('map-mode-warning').classList.toggle('show', toMap);
+            document.getElementById('coordinates-group').style.display = toMap ? '' : 'none';
+            document.getElementById('map-placeholder').style.display = toMap ? 'none' : '';
+            document.getElementById('map-interface').style.display = toMap ? 'block' : 'none';
+
+            const lockFields = ['found-location', 'city', 'postalcode', 'state', 'country'];
+            lockFields.forEach(id => {
+                const el = document.getElementById(id);
+                if (toMap) {
+                    el.setAttribute('readonly', true);
+                    el.style.background = 'var(--bg-surface-2)';
+                    el.style.cursor = 'not-allowed';
+                    el.style.color = 'var(--text-secondary)';
+                } else {
+                    el.removeAttribute('readonly');
+                    el.style.background = '';
+                    el.style.cursor = '';
+                    el.style.color = '';
+                }
+            });
+
+            if (toMap) {
+                setTimeout(() => { if (map) { map.invalidateSize(); } else { initMap(); } }, 100);
+                if (selectedLoc.lat) syncFormFromMap();
+            }
+        }
+
+        // ── Sync form from map ────────────────────────────────────────
+        function syncFormFromMap() {
+            if (!isMapMode) return;
+            document.getElementById('found-location').value = selectedLoc.address || '';
+            document.getElementById('city').value = selectedLoc.city || '';
+            document.getElementById('state').value = selectedLoc.state || '';
+            document.getElementById('country').value = selectedLoc.country || '';
+            document.getElementById('postalcode').value = selectedLoc.postalcode || '';
+            if (selectedLoc.lat && selectedLoc.lng) {
+                document.getElementById('coordinates').value = fmtCoords(selectedLoc.lat, selectedLoc.lng);
+            }
+        }
+
+        function fmtCoords(lat, lng) {
+            return `${Math.abs(lat).toFixed(6)}° ${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(6)}° ${lng >= 0 ? 'E' : 'W'}`;
+        }
+
+        // ── Map init ──────────────────────────────────────────────────
+        function initMap() {
+            if (map) return;
+            map = L.map('map', { zoomControl: false, maxZoom: 19, minZoom: 8 })
+                .setView([selectedLoc.lat, selectedLoc.lng], 15);
+
+            addTileLayer(map, 'road');
+
+            const icon = makeIcon();
+            marker = L.marker([selectedLoc.lat, selectedLoc.lng], { icon, draggable: true }).addTo(map);
+            updateMapCoordsBar();
+
+            marker.on('dragend', () => {
+                const p = marker.getLatLng();
+                selectedLoc.lat = p.lat; selectedLoc.lng = p.lng;
+                updateMapCoordsBar();
+                reverseGeocode(p.lat, p.lng, 'main');
+            });
+
+            map.on('click', e => {
+                marker.setLatLng(e.latlng);
+                selectedLoc.lat = e.latlng.lat; selectedLoc.lng = e.latlng.lng;
+                updateMapCoordsBar();
+                reverseGeocode(e.latlng.lat, e.latlng.lng, 'main');
+            });
+
+            // Controls
+            document.getElementById('zoom-in').addEventListener('click', () => map.zoomIn());
+            document.getElementById('zoom-out').addEventListener('click', () => map.zoomOut());
+            document.getElementById('map-reset').addEventListener('click', () => resetToDefault('main'));
+            document.getElementById('map-locate').addEventListener('click', () => geolocate('main'));
+            document.getElementById('map-satellite').addEventListener('click', function () {
+                const on = this.classList.toggle('active');
+                switchTileLayer(map, on ? 'satellite' : 'road');
+                marker.addTo(map);
+            });
+            document.getElementById('map-expand').addEventListener('click', openExpandedMap);
+
+            // Search
+            initSearch('map-search-input', 'map-search-clear', 'map-search-go', 'map-search-results', 'main');
+            updateMapCoordsBar();
+        }
+
+        function makeIcon() {
+            return L.divIcon({ html: '<i class="fas fa-map-marker-alt"></i>', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -36], className: 'custom-div-icon' });
+        }
+
+        function addTileLayer(mapObj, type) {
+            const url = type === 'satellite'
+                ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+                : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+            const attr = type === 'satellite' ? '© Esri' : '© OpenStreetMap';
+            L.tileLayer(url, { attribution: attr, maxZoom: 19 }).addTo(mapObj);
+        }
+
+        function switchTileLayer(mapObj, type) {
+            mapObj.eachLayer(l => { if (l instanceof L.TileLayer) mapObj.removeLayer(l); });
+            addTileLayer(mapObj, type);
+        }
+
+        function updateMapCoordsBar() {
+            const bar = document.getElementById('map-coords-bar');
+            if (!bar) return;
+            bar.style.display = selectedLoc.lat ? 'block' : 'none';
+            document.getElementById('map-coords-address').textContent = selectedLoc.address || '—';
+            document.getElementById('map-coords-latlng').textContent = selectedLoc.lat ? fmtCoords(selectedLoc.lat, selectedLoc.lng) : '—';
+        }
+
+        function resetToDefault(which) {
+            selectedLoc = { ...DEFAULT };
+            if (which === 'main' && map) {
+                map.setView([DEFAULT.lat, DEFAULT.lng], 15);
+                marker.setLatLng([DEFAULT.lat, DEFAULT.lng]);
+                updateMapCoordsBar();
+            } else if (which === 'expanded' && expandedMap) {
+                expandedMap.setView([DEFAULT.lat, DEFAULT.lng], 15);
+                expMarker.setLatLng([DEFAULT.lat, DEFAULT.lng]);
+            }
+            if (isMapMode) syncFormFromMap();
+        }
+
+        function geolocate(which) {
+            if (!navigator.geolocation) { showToast('Geolocation not supported', 'warning'); return; }
+            const btnId = which === 'main' ? 'map-locate' : 'exp-locate';
+            const btn = document.getElementById(btnId);
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(pos => {
+                const { latitude: lat, longitude: lng } = pos.coords;
+                selectedLoc.lat = lat; selectedLoc.lng = lng;
+                if (which === 'main' && map) { map.setView([lat, lng], 16); marker.setLatLng([lat, lng]); updateMapCoordsBar(); }
+                else if (which === 'expanded' && expandedMap) { expandedMap.setView([lat, lng], 16); expMarker.setLatLng([lat, lng]); }
+                reverseGeocode(lat, lng, which);
+                btn.innerHTML = orig; btn.disabled = false;
+            }, () => {
+                showToast('Could not get your location', 'warning');
+                btn.innerHTML = orig; btn.disabled = false;
+            }, { enableHighAccuracy: true, timeout: 10000 });
+        }
+
+        async function reverseGeocode(lat, lng, which) {
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+                const data = await res.json();
+                if (data.display_name) {
+                    selectedLoc.address = data.display_name;
+                    selectedLoc.city = data.address?.city || data.address?.town || data.address?.village || '';
+                    selectedLoc.state = data.address?.state || '';
+                    selectedLoc.country = data.address?.country || '';
+                    selectedLoc.postalcode = data.address?.postcode || '';
+                    if (which === 'main') {
+                        updateMapCoordsBar();
+                        if (marker) marker.bindPopup(`<b style="color:var(--primary)">Selected</b><br>${data.display_name}`).openPopup();
+                    }
+                    if (isMapMode) syncFormFromMap();
+                }
+            } catch (e) { console.error('Reverse geocode failed', e); }
+        }
+
+        // ── Map Search ────────────────────────────────────────────────
+        function initSearch(inputId, clearId, goId, resultsId, which) {
+            const inp = document.getElementById(inputId);
+            const clr = document.getElementById(clearId);
+            const go = document.getElementById(goId);
+            const res = document.getElementById(resultsId);
+
+            go.addEventListener('click', () => { const q = inp.value.trim(); if (q.length >= 2) doSearch(q, res, which); });
+            inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go.click(); } });
+            inp.addEventListener('input', () => {
+                const q = inp.value.trim();
+                clr.style.display = q ? 'inline' : 'none';
+                if (q.length < 2) { res.style.display = 'none'; return; }
+                clearTimeout(which === 'main' ? searchTimer : expSearchTimer);
+                const t = setTimeout(() => doSuggestions(q, res, which), 700);
+                if (which === 'main') searchTimer = t; else expSearchTimer = t;
+            });
+            clr.addEventListener('click', () => { inp.value = ''; clr.style.display = 'none'; res.style.display = 'none'; });
+            document.addEventListener('click', e => {
+                if (!e.target.closest(`#${inputId}`) && !e.target.closest(`#${resultsId}`) && !e.target.closest(`#${goId}`))
+                    res.style.display = 'none';
+            });
+        }
+
+        async function doSuggestions(q, resEl, which) {
+            resEl.innerHTML = '<div class="map-result-item"><i class="fas fa-spinner fa-spin"></i> Searching…</div>';
+            resEl.style.display = 'block';
+            try {
+                const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&addressdetails=1`);
+                const data = await r.json();
+                renderResults(data, resEl, which);
+            } catch { resEl.innerHTML = '<div class="map-result-item">Search failed. Try again.</div>'; }
+        }
+
+        async function doSearch(q, resEl, which) {
+            try {
+                const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1&addressdetails=1`);
+                const data = await r.json();
+                if (!data.length) { showToast('Location not found', 'warning'); return; }
+                pickResult(data[0], which);
+                resEl.style.display = 'none';
+            } catch { showToast('Search failed', 'error'); }
+        }
+
+        function renderResults(results, resEl, which) {
+            resEl.innerHTML = '';
+            if (!results.length) { resEl.innerHTML = '<div class="map-result-item">No results found</div>'; return; }
+            results.forEach(r => {
+                const div = document.createElement('div');
+                div.className = 'map-result-item';
+                div.innerHTML = `<div class="map-result-name">${r.display_name.split(',')[0]}</div>
+                    <div class="map-result-addr">${r.display_name.length > 80 ? r.display_name.slice(0, 80) + '…' : r.display_name}</div>`;
+                div.addEventListener('click', () => { pickResult(r, which); resEl.style.display = 'none'; });
+                resEl.appendChild(div);
+            });
+        }
+
+        function pickResult(r, which) {
+            const lat = parseFloat(r.lat), lng = parseFloat(r.lon);
+            selectedLoc.lat = lat; selectedLoc.lng = lng; selectedLoc.address = r.display_name;
+            if (which === 'main' && map) { map.setView([lat, lng], 16); marker.setLatLng([lat, lng]); updateMapCoordsBar(); reverseGeocode(lat, lng, 'main'); }
+            if (which === 'expanded' && expandedMap) { expandedMap.setView([lat, lng], 16); expMarker.setLatLng([lat, lng]); reverseGeocode(lat, lng, 'expanded'); }
+        }
+
+        // ── Expanded Map ──────────────────────────────────────────────
+        function openExpandedMap() {
+            document.getElementById('expanded-map-modal').classList.add('open');
+            setTimeout(() => {
+                if (!expandedMap) initExpandedMap();
+                else { expandedMap.invalidateSize(); expMarker.setLatLng([selectedLoc.lat, selectedLoc.lng]); }
+            }, 100);
+        }
+
+        function initExpandedMap() {
+            expandedMap = L.map('expanded-map', { zoomControl: false, maxZoom: 19 })
+                .setView([selectedLoc.lat, selectedLoc.lng], 15);
+            addTileLayer(expandedMap, 'road');
+            expMarker = L.marker([selectedLoc.lat, selectedLoc.lng], { icon: makeIcon(), draggable: true }).addTo(expandedMap);
+
+            expMarker.on('dragend', () => {
+                const p = expMarker.getLatLng();
+                selectedLoc.lat = p.lat; selectedLoc.lng = p.lng;
+            });
+            expandedMap.on('click', e => {
+                expMarker.setLatLng(e.latlng);
+                selectedLoc.lat = e.latlng.lat; selectedLoc.lng = e.latlng.lng;
+            });
+
+            document.getElementById('exp-zoom-in').addEventListener('click', () => expandedMap.zoomIn());
+            document.getElementById('exp-zoom-out').addEventListener('click', () => expandedMap.zoomOut());
+            document.getElementById('exp-reset').addEventListener('click', () => resetToDefault('expanded'));
+            document.getElementById('exp-locate').addEventListener('click', () => geolocate('expanded'));
+            document.getElementById('exp-satellite').addEventListener('click', function () {
+                const on = this.classList.toggle('active');
+                switchTileLayer(expandedMap, on ? 'satellite' : 'road');
+                expMarker.addTo(expandedMap);
+            });
+            initSearch('exp-search-input', 'exp-search-clear', 'exp-search-go', 'exp-search-results', 'expanded');
+
+            document.getElementById('confirm-exp-location').addEventListener('click', () => {
+                if (map) { map.setView([selectedLoc.lat, selectedLoc.lng]); marker.setLatLng([selectedLoc.lat, selectedLoc.lng]); }
+                updateMapCoordsBar();
+                reverseGeocode(selectedLoc.lat, selectedLoc.lng, 'main');
+                document.getElementById('expanded-map-modal').classList.remove('open');
+            });
+        }
+
+        // ── Image Upload ──────────────────────────────────────────────
+        function initImageUpload() {
+            const zone = document.getElementById('drop-area');
+            const input = document.getElementById('file-input');
+            const prev = document.getElementById('image-preview');
+
+            document.getElementById('browse-btn').addEventListener('click', e => { e.stopPropagation(); input.click(); });
+            zone.addEventListener('click', () => input.click());
+            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+            zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); handleFiles(Array.from(e.dataTransfer.files)); });
+            input.addEventListener('change', () => { handleFiles(Array.from(input.files)); input.value = ''; });
+
+            function handleFiles(files) {
+                if (uploadedFiles.length + files.length > 5) { showToast('Maximum 5 images allowed', 'warning'); return; }
+                files.forEach(f => {
+                    if (!f.type.startsWith('image/')) { showToast(`${f.name} is not an image`, 'warning'); return; }
+                    if (f.size > 5 * 1024 * 1024) { showToast(`${f.name} exceeds 5MB`, 'warning'); return; }
+                    uploadedFiles.push(f);
+                    const reader = new FileReader();
+                    reader.onload = e2 => {
+                        const wrap = document.createElement('div');
+                        wrap.className = 'preview-thumb';
+                        wrap.innerHTML = `<img src="${e2.target.result}" alt="${f.name}">
+                            <button type="button" class="preview-thumb-remove"><i class="fas fa-times"></i></button>`;
+                        wrap.querySelector('button').addEventListener('click', ev => {
+                            ev.stopPropagation();
+                            uploadedFiles.splice(uploadedFiles.indexOf(f), 1);
+                            wrap.remove();
+                        });
+                        prev.appendChild(wrap);
+                    };
+                    reader.readAsDataURL(f);
+                });
+            }
+        }
+
+        // ── Validate ──────────────────────────────────────────────────
+        function validateForm() {
+            clearErrors();
+            let ok = true;
+            const title = document.getElementById('item-title').value.trim();
+            const cat = document.getElementById('item-category').value;
+            const date = document.getElementById('found-date').value;
+            const desc = document.getElementById('item-description').value.trim();
+            const loc = document.getElementById('found-location').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const state = document.getElementById('state').value.trim();
+            const ctry = document.getElementById('country').value.trim();
+
+            if (!title) { setErr('item-title', 'titleError', 'Please enter a title'); ok = false; }
+            if (!cat) { setErr('item-category', 'categoryError', 'Please select a category'); ok = false; }
+            if (!date) { setErr('found-date', 'dateError', 'Please select when you found it'); ok = false; }
+            if (desc.length < 10) { setErr('item-description', 'descError', 'Description must be at least 10 characters'); ok = false; }
+            if (desc.length > 200) { setErr('item-description', 'descError', 'Description must be 200 characters or fewer'); ok = false; }
+            if (!loc) { setErr('found-location', 'locationError', isMapMode ? 'Please select a location on the map' : 'Please enter the location'); ok = false; }
+            if (!city || !state || !ctry) { showToast('Please complete all required location fields', 'warning'); ok = false; }
+
+            return ok;
+        }
+
+        // ── Confirmation modal ────────────────────────────────────────
+        function buildSummary() {
+            const rows = [
+                ['Item Title', document.getElementById('item-title').value],
+                ['Category', document.getElementById('item-category').value],
+                ['Description', document.getElementById('item-description').value.slice(0, 100) + (document.getElementById('item-description').value.length > 100 ? '…' : '')],
+                ['Location', document.getElementById('found-location').value],
+                ['City / State', `${document.getElementById('city').value}, ${document.getElementById('state').value}`],
+                ['Entry Mode', isMapMode ? 'Map Selection' : 'Manual Entry'],
+            ];
+            if (isMapMode && selectedLoc.lat) rows.push(['Coordinates', fmtCoords(selectedLoc.lat, selectedLoc.lng)]);
+            return rows.map(([l, v]) => `<div class="confirm-summary-row">
+                <span class="confirm-summary-label">${l}</span>
+                <span class="confirm-summary-value">${v}</span>
+            </div>`).join('');
+        }
+
+        // ── Submit ────────────────────────────────────────────────────
+        async function doSubmit() {
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Submitting…';
+            try {
+                const fd = new FormData();
+                fd.append('title', document.getElementById('item-title').value.trim());
+                fd.append('category', document.getElementById('item-category').value);
+                fd.append('description', document.getElementById('item-description').value.trim());
+                fd.append('date_found', document.getElementById('found-date').value);
+                fd.append('location', document.getElementById('found-location').value.trim());
+                fd.append('location_details', document.getElementById('location-details').value.trim());
+                fd.append('city', document.getElementById('city').value.trim());
+                fd.append('postal_code', document.getElementById('postalcode').value.trim());
+                fd.append('state_province', document.getElementById('state').value.trim());
+                fd.append('country', document.getElementById('country').value.trim());
+                if (isMapMode && selectedLoc.lat) {
+                    fd.append('latitude', selectedLoc.lat);
+                    fd.append('longitude', selectedLoc.lng);
+                }
+                uploadedFiles.forEach(f => fd.append('pictures', f));
+
+                const res = await api.post('/api/found-items', fd);
+                if (!res.data.success) throw new Error(res.data.message || 'Submission failed');
+
+                showToast('Found item submitted successfully!', 'success');
+                setTimeout(() => window.location.href = '/customer/my-found-items', 2000);
+            } catch (err) {
+                console.error(err);
+                showToast(err.response?.data?.message || err.message || 'Submission failed', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Found Item';
+            }
+        }
+
+        // ── Init ──────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            // Default date
+            document.getElementById('found-date').value = new Date().toISOString().slice(0, 16);
+
+            initImageUpload();
+
+            // Char counter
+            document.getElementById('item-description').addEventListener('input', function () {
+                const len = this.value.length;
+                const counter = document.getElementById('desc-counter');
+                counter.textContent = `${len} / 200`;
+                counter.className = 'char-counter' + (len > 190 ? ' warn' : '') + (len >= 200 ? ' over' : '');
+            });
+
+            // Mode toggles
+            document.getElementById('manual-mode-btn').addEventListener('click', () => switchMode(false));
+            document.getElementById('map-mode-btn').addEventListener('click', () => switchMode(true));
+            document.getElementById('open-map-placeholder-btn').addEventListener('click', () => {
+                switchMode(true);
+                setTimeout(openExpandedMap, 300);
+            });
+
+            // Form submit
+            document.getElementById('found-item-form').addEventListener('submit', e => {
+                e.preventDefault();
+                if (!validateForm()) return;
+                document.getElementById('confirm-summary').innerHTML = buildSummary();
+                document.getElementById('confirm-modal').classList.add('open');
+            });
+
+            // Confirm modal
+            document.getElementById('cancel-confirm').addEventListener('click', () => document.getElementById('confirm-modal').classList.remove('open'));
+            document.getElementById('close-confirm-modal').addEventListener('click', () => document.getElementById('confirm-modal').classList.remove('open'));
+            document.getElementById('do-confirm').addEventListener('click', () => {
+                document.getElementById('confirm-modal').classList.remove('open');
+                doSubmit();
+            });
+
+            // Reset button
+            document.getElementById('reset-btn').addEventListener('click', () => {
+                if (!confirm('Clear all fields? This cannot be undone.')) return;
+                document.getElementById('found-item-form').reset();
+                document.getElementById('found-date').value = new Date().toISOString().slice(0, 16);
+                document.getElementById('image-preview').innerHTML = '';
+                uploadedFiles = [];
+                switchMode(false);
+                selectedLoc = { ...DEFAULT };
+                if (map) { map.setView([DEFAULT.lat, DEFAULT.lng], 15); marker?.setLatLng([DEFAULT.lat, DEFAULT.lng]); }
+                updateMapCoordsBar();
+                clearErrors();
+                document.getElementById('desc-counter').textContent = '0 / 200';
+                document.getElementById('desc-counter').className = 'char-counter';
+                showToast('Form cleared', 'success');
+            });
+
+            // Expanded map modal close
+            document.getElementById('close-expanded-map').addEventListener('click', () => document.getElementById('expanded-map-modal').classList.remove('open'));
+
+            // Close modals on overlay click
+            document.querySelectorAll('.modal-overlay').forEach(o => {
+                o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+            });
+
+            // Window resize
+            window.addEventListener('resize', () => {
+                map?.invalidateSize();
+                expandedMap?.invalidateSize();
+            });
+        });
+    </script>
+</body>
+
+</html>

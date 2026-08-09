@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <title>Complaints Report — Resolvia</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+    <style>
+        /* ── Page-specific styles only ── */
+
+        /* ── Stat cards ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-4);
+            margin-bottom: var(--space-5);
+        }
+
+        @media (max-width: 900px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .stat-card-btn {
+            all: unset;
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4) var(--space-5);
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: var(--shadow-xs);
+            transition: box-shadow var(--t-base), transform var(--t-fast), border-color var(--t-fast), background var(--t-base);
+        }
+
+        .stat-card-btn:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+            border-color: var(--primary-mid);
+        }
+
+        .stat-card-btn.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .stat-card-btn .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .stat-card-btn .stat-value {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            line-height: 1.1;
+        }
+
+        .stat-card-btn .stat-label {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-top: 2px;
+        }
+
+        /* ── Filter card ── */
+        .filter-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            box-shadow: var(--shadow-xs);
+            margin-bottom: var(--space-4);
+            transition: background-color var(--t-base), border-color var(--t-base);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: var(--space-3);
+            margin-bottom: var(--space-3);
+        }
+
+        /* ── Status badges ── */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: var(--radius-full);
+            font-size: var(--text-xs);
+            font-weight: 700;
+            white-space: nowrap;
+            line-height: 1.4;
+        }
+
+        .status-pending {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .status-inprogress {
+            background: var(--info-light);
+            color: var(--info);
+        }
+
+        .status-onhold {
+            background: rgba(107, 33, 168, 0.1);
+            color: #7c3aed;
+        }
+
+        .status-completed {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .status-rejected {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .status-cancelled {
+            background: var(--bg-surface-2);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        [data-theme="dark"] .status-onhold {
+            background: rgba(139, 92, 246, 0.15);
+            color: #a78bfa;
+        }
+
+        /* ── Table column sizing ── */
+        #complaintsTable th:nth-child(1),
+        #complaintsTable td:nth-child(1) {
+            width: 80px;
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+        }
+
+        #complaintsTable th:nth-child(2),
+        #complaintsTable td:nth-child(2) {
+            width: 100px;
+            white-space: nowrap;
+        }
+
+        #complaintsTable th:nth-child(7),
+        #complaintsTable td:nth-child(7) {
+            width: 120px;
+            text-align: center;
+        }
+
+        /* Sortable header */
+        #complaintsTable th {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        #complaintsTable th:hover {
+            background: var(--bg-surface-2);
+        }
+
+        #complaintsTable th .sort-icon {
+            margin-left: 4px;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        #complaintsTable th.sort-asc .sort-icon,
+        #complaintsTable th.sort-desc .sort-icon {
+            color: var(--primary);
+        }
+
+        /* ── Export / action buttons ── */
+        .report-actions {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+        }
+
+        /* ── Date range chip ── */
+        .date-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+            background: var(--bg-surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+            padding: 3px 10px;
+            margin-top: var(--space-1);
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            top: calc(var(--header-height) + var(--space-4));
+            right: var(--space-5);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: 500;
+            z-index: 5000;
+            box-shadow: var(--shadow-lg);
+            min-width: 260px;
+            max-width: 380px;
+            animation: toast-in 0.25s ease;
+            border-left: 4px solid transparent;
+        }
+
+        @keyframes toast-in {
+            from {
+                transform: translateX(110%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            background: var(--success-light);
+            border-color: var(--success);
+            color: #166534;
+        }
+
+        .toast.error {
+            background: var(--danger-light);
+            border-color: var(--danger);
+            color: #9f1239;
+        }
+
+        .toast.info {
+            background: var(--info-light);
+            border-color: var(--info);
+            color: #1e40af;
+        }
+
+        .toast-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.6;
+            font-size: 16px;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="/assets/logo.png" alt="Resolvia" id="logo">
+            <span class="logo-text">Resolvia</span>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" title="Toggle theme">
+                <i class="fa fa-moon icon-moon"></i>
+                <i class="fa fa-sun icon-sun"></i>
+            </button>
+            <div class="profile-icon"><i class="fa fa-user"></i></div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fa fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <nav class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </nav>
+
+    <main class="main-content" id="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Complaints Report</h1>
+                <div class="date-chip" id="dateChip">
+                    <i class="far fa-calendar-alt"></i>
+                    <span id="dateRangeText">Loading…</span>
+                </div>
+            </div>
+            <div class="page-actions report-actions">
+                <button class="btn btn-secondary" id="csvBtn">
+                    <i class="fas fa-file-csv"></i> Export CSV
+                </button>
+                <button class="btn btn-secondary" id="printBtn">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Stat cards ── -->
+        <div class="stats-grid">
+            <button class="stat-card-btn active" id="totalCard">
+                <div class="stat-icon green"><i class="fas fa-exclamation-circle"></i></div>
+                <div>
+                    <div class="stat-value" id="totalComplaints">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+            </button>
+            <button class="stat-card-btn" id="pendingCard">
+                <div class="stat-icon yellow"><i class="fas fa-clock"></i></div>
+                <div>
+                    <div class="stat-value" id="pendingComplaints">0</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+            </button>
+            <button class="stat-card-btn" id="inprogressCard">
+                <div class="stat-icon blue"><i class="fas fa-spinner"></i></div>
+                <div>
+                    <div class="stat-value" id="inProgressComplaints">0</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+            </button>
+            <button class="stat-card-btn" id="completedCard">
+                <div class="stat-icon teal"><i class="fas fa-check-circle"></i></div>
+                <div>
+                    <div class="stat-value" id="resolvedComplaints">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+            </button>
+        </div>
+
+        <!-- ── Filter card ── -->
+        <div class="filter-card">
+            <div class="filter-grid">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">
+                        <i class="fas fa-calendar" style="color:var(--primary);font-size:11px;"></i> Date From
+                    </label>
+                    <input type="date" id="dateFrom" class="form-control">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">
+                        <i class="fas fa-calendar" style="color:var(--primary);font-size:11px;"></i> Date To
+                    </label>
+                    <input type="date" id="dateTo" class="form-control">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">
+                        <i class="fas fa-tag" style="color:var(--primary);font-size:11px;"></i> Status
+                    </label>
+                    <select id="statusFilter" class="form-control">
+                        <option value="all">All Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="On Hold">On Hold</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">
+                        <i class="fas fa-building" style="color:var(--primary);font-size:11px;"></i> Building
+                    </label>
+                    <select id="buildingFilter" class="form-control">
+                        <option value="all">All Buildings</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display:flex; gap:var(--space-2); align-items:center; flex-wrap:wrap;">
+                <button class="btn btn-primary btn-sm" id="applyFilters">
+                    <i class="fas fa-filter"></i> Apply
+                </button>
+                <button class="btn btn-secondary btn-sm" id="clearFilters">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Search + entries ── -->
+        <div class="table-toolbar">
+            <div class="input-group table-search">
+                <i class="fas fa-search input-icon"></i>
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by ID, title or location…">
+            </div>
+            <div class="table-actions">
+                <div class="flex items-center gap-2">
+                    <label class="form-label mb-0" style="margin:0; white-space:nowrap;">Show</label>
+                    <select id="entriesPerPage" class="form-control" style="width:80px;">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Table ── -->
+        <div class="table-wrapper">
+            <table id="complaintsTable">
+                <thead>
+                    <tr>
+                        <th data-col="0">ID <i class="fas fa-sort sort-icon"></i></th>
+                        <th data-col="1" class="sort-desc">Date <i class="fas fa-sort-down sort-icon"></i></th>
+                        <th data-col="2">Title <i class="fas fa-sort sort-icon"></i></th>
+                        <th data-col="3">Category <i class="fas fa-sort sort-icon"></i></th>
+                        <th data-col="4">Category Type <i class="fas fa-sort sort-icon"></i></th>
+                        <th data-col="5">Location <i class="fas fa-sort sort-icon"></i></th>
+                        <th data-col="6">Status <i class="fas fa-sort sort-icon"></i></th>
+                        <th data-col="7">Assigned To <i class="fas fa-sort sort-icon"></i></th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="8" style="text-align:center; padding:var(--space-8);">
+                            <div class="spinner" style="margin:0 auto;"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                <span class="pagination-info" id="tableInfo">Showing 0 entries</span>
+                <div class="pagination-controls" id="pagination"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="/js/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+    <script>
+        (function () {
+            // ── State ──────────────────────────────────────────
+            const state = {
+                complaints: [],
+                filteredData: [],
+                currentPage: 1,
+                rowsPerPage: 10,
+                sortColumn: 1,
+                sortDirection: 'desc',
+                filters: { dateFrom: '', dateTo: '', status: 'all', building: 'all', search: '' },
+                buildings: []
+            };
+
+            // ── Toast ──────────────────────────────────────────
+            function showToast(message, type = 'info') {
+                document.querySelectorAll('.toast').forEach(t => t.remove());
+                const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i>
+                <span style="flex:1">${message}</span>
+                <button class="toast-close"><i class="fas fa-times"></i></button>`;
+                document.body.appendChild(toast);
+                toast.querySelector('.toast-close').addEventListener('click', () => toast.remove());
+                setTimeout(() => toast?.remove(), 3500);
+            }
+
+            // ── URL helpers ────────────────────────────────────
+            function initFromURL() {
+                const p = new URLSearchParams(window.location.search);
+                state.filters.dateFrom = p.get('dateFrom') || '';
+                state.filters.dateTo = p.get('dateTo') || '';
+                state.filters.status = p.get('status') || 'all';
+                state.filters.building = p.get('building') || 'all';
+                state.filters.search = p.get('search') || '';
+                state.currentPage = parseInt(p.get('page')) || 1;
+                state.rowsPerPage = parseInt(p.get('entries')) || 10;
+                state.sortColumn = parseInt(p.get('sortCol')) || 1;
+                state.sortDirection = p.get('sortDir') || 'desc';
+
+                document.getElementById('dateFrom').value = state.filters.dateFrom;
+                document.getElementById('dateTo').value = state.filters.dateTo;
+                document.getElementById('searchInput').value = state.filters.search;
+                document.getElementById('entriesPerPage').value = state.rowsPerPage;
+                document.getElementById('statusFilter').value = state.filters.status;
+            }
+
+            function updateURL() {
+                const p = new URLSearchParams();
+                if (state.filters.dateFrom) p.set('dateFrom', state.filters.dateFrom);
+                if (state.filters.dateTo) p.set('dateTo', state.filters.dateTo);
+                if (state.filters.status !== 'all') p.set('status', state.filters.status);
+                if (state.filters.building !== 'all') p.set('building', state.filters.building);
+                if (state.filters.search) p.set('search', state.filters.search);
+                if (state.currentPage > 1) p.set('page', state.currentPage);
+                if (state.rowsPerPage !== 10) p.set('entries', state.rowsPerPage);
+                if (state.sortColumn !== 1) p.set('sortCol', state.sortColumn);
+                if (state.sortDirection !== 'desc') p.set('sortDir', state.sortDirection);
+                window.history.replaceState({}, '', window.location.pathname + (p.toString() ? '?' + p : ''));
+            }
+
+            // ── Stats ──────────────────────────────────────────
+            function updateStats() {
+                const all = state.complaints;
+                document.getElementById('totalComplaints').textContent = all.length;
+                document.getElementById('pendingComplaints').textContent = all.filter(c => c.status === 'Pending').length;
+                document.getElementById('inProgressComplaints').textContent = all.filter(c => c.status === 'In Progress').length;
+                document.getElementById('resolvedComplaints').textContent = all.filter(c => c.status === 'Completed').length;
+            }
+
+            function updateDateRange() {
+                const today = new Date();
+                const first = new Date(today.getFullYear(), today.getMonth(), 1);
+                document.getElementById('dateRangeText').textContent =
+                    `${first.toLocaleDateString()} – ${today.toLocaleDateString()}`;
+            }
+
+            // ── Status badge ───────────────────────────────────
+            function statusClass(status) {
+                const map = {
+                    'Pending': 'status-pending',
+                    'In Progress': 'status-inprogress',
+                    'On Hold': 'status-onhold',
+                    'Completed': 'status-completed',
+                    'Rejected': 'status-rejected',
+                    'Cancelled': 'status-cancelled'
+                };
+                return map[status] || '';
+            }
+
+            // ── Fetch data ─────────────────────────────────────
+            async function fetchBuildings() {
+                try {
+                    const { data } = await api.get('/api/handler/buildings');
+                    if (data.success) {
+                        state.buildings = data.data || [];
+                        const sel = document.getElementById('buildingFilter');
+                        sel.innerHTML = '<option value="all">All Buildings</option>';
+                        state.buildings.forEach(b => {
+                            const o = document.createElement('option');
+                            o.value = b.id; o.textContent = b.name;
+                            sel.appendChild(o);
+                        });
+                        if (state.filters.building !== 'all') sel.value = state.filters.building;
+                    }
+                } catch (e) { console.error('Buildings fetch failed', e); }
+            }
+
+            async function fetchReportData() {
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:var(--space-8);">
+                <div class="spinner" style="margin:0 auto;"></div></td></tr>`;
+                try {
+                    const { data } = await api.get('/api/handler/complaints-report');
+                    if (data.success) {
+                        state.complaints = data.data || [];
+                        updateStats();
+                        applyLocalFilters();
+                    } else {
+                        showToast('Failed to fetch report data', 'error');
+                        tbody.innerHTML = `<tr><td colspan="8">
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                            <p class="empty-title">Failed to load</p>
+                            <p class="empty-text">Could not fetch complaints data.</p>
+                        </div></td></tr>`;
+                    }
+                } catch (e) {
+                    console.error(e);
+                    showToast('Connection error', 'error');
+                }
+            }
+
+            // ── Filtering ──────────────────────────────────────
+            function applyLocalFilters() {
+                let f = [...state.complaints];
+
+                if (state.filters.status !== 'all')
+                    f = f.filter(c => c.status === state.filters.status);
+
+                if (state.filters.building !== 'all')
+                    f = f.filter(c => (c.building_id || c.buildingId || '').toString() === state.filters.building.toString());
+
+                if (state.filters.search) {
+                    const q = state.filters.search.toLowerCase();
+                    f = f.filter(c =>
+                        (c.id && c.id.toString().toLowerCase().includes(q)) ||
+                        (c.title && c.title.toLowerCase().includes(q)) ||
+                        (c.location && c.location.toLowerCase().includes(q))
+                    );
+                }
+
+                if (state.filters.dateFrom) {
+                    const from = new Date(state.filters.dateFrom); from.setHours(0, 0, 0, 0);
+                    f = f.filter(c => new Date(c.date || c.created_at) >= from);
+                }
+
+                if (state.filters.dateTo) {
+                    const to = new Date(state.filters.dateTo); to.setHours(23, 59, 59, 999);
+                    f = f.filter(c => new Date(c.date || c.created_at) <= to);
+                }
+
+                state.filteredData = f;
+                state.currentPage = 1;
+                applySort();
+                renderTable();
+                updateActiveStatCard();
+            }
+
+            function applyFilters() {
+                state.filters.dateFrom = document.getElementById('dateFrom').value;
+                state.filters.dateTo = document.getElementById('dateTo').value;
+                state.filters.status = document.getElementById('statusFilter').value;
+                state.filters.building = document.getElementById('buildingFilter').value;
+                state.filters.search = document.getElementById('searchInput').value;
+                applyLocalFilters();
+                updateURL();
+            }
+
+            function clearFilters() {
+                document.getElementById('dateFrom').value = '';
+                document.getElementById('dateTo').value = '';
+                document.getElementById('statusFilter').value = 'all';
+                document.getElementById('buildingFilter').value = 'all';
+                document.getElementById('searchInput').value = '';
+                state.filters = { dateFrom: '', dateTo: '', status: 'all', building: 'all', search: '' };
+                applyLocalFilters();
+                updateURL();
+                showToast('Filters cleared', 'info');
+            }
+
+            // ── Active stat card highlight ─────────────────────
+            function updateActiveStatCard() {
+                const map = { all: 'totalCard', Pending: 'pendingCard', 'In Progress': 'inprogressCard', Completed: 'completedCard' };
+                document.querySelectorAll('.stat-card-btn').forEach(b => b.classList.remove('active'));
+                const id = map[state.filters.status];
+                if (id) document.getElementById(id)?.classList.add('active');
+            }
+
+            // ── Sort ───────────────────────────────────────────
+            const colKeys = ['id', 'date', 'title', 'category', 'category_type', 'location', 'status', 'assigned_to'];
+
+            function sortTable(col) {
+                if (state.sortColumn === col)
+                    state.sortDirection = state.sortDirection === 'asc' ? 'desc' : 'asc';
+                else { state.sortColumn = col; state.sortDirection = 'asc'; }
+
+                // Update header icons
+                document.querySelectorAll('#complaintsTable th').forEach(th => {
+                    th.classList.remove('sort-asc', 'sort-desc');
+                    th.querySelector('.sort-icon').className = 'fas fa-sort sort-icon';
+                });
+                const activeTh = document.querySelector(`#complaintsTable th[data-col="${col}"]`);
+                if (activeTh) {
+                    activeTh.classList.add(state.sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+                    activeTh.querySelector('.sort-icon').className =
+                        `fas fa-sort-${state.sortDirection === 'asc' ? 'up' : 'down'} sort-icon`;
+                }
+
+                applySort();
+                renderTable();
+                updateURL();
+            }
+
+            function applySort() {
+                const key = colKeys[state.sortColumn];
+                state.filteredData.sort((a, b) => {
+                    let va = a[key] || '', vb = b[key] || '';
+                    if (state.sortColumn === 1) { va = new Date(va || a.created_at || 0); vb = new Date(vb || b.created_at || 0); }
+                    else if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+                    if (va < vb) return state.sortDirection === 'asc' ? -1 : 1;
+                    if (va > vb) return state.sortDirection === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+
+            window.sortTable = sortTable;
+
+            // ── Render table ───────────────────────────────────
+            function renderTable() {
+                const tbody = document.getElementById('tableBody');
+                const start = (state.currentPage - 1) * state.rowsPerPage;
+                const page = state.filteredData.slice(start, start + state.rowsPerPage);
+
+                if (!page.length) {
+                    tbody.innerHTML = `<tr><td colspan="8">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-magnifying-glass"></i></div>
+                        <p class="empty-title">No complaints found</p>
+                        <p class="empty-text">Try adjusting your filters or search term.</p>
+                    </div></td></tr>`;
+                } else {
+                    tbody.innerHTML = page.map(c => {
+                        const date = c.date || c.created_at;
+                        const dateStr = date ? new Date(date).toLocaleDateString() : 'N/A';
+                        return `<tr>
+                        <td class="font-mono text-muted">${c.id || 'N/A'}</td>
+                        <td class="text-secondary" style="white-space:nowrap;">${dateStr}</td>
+                        <td class="font-semibold">${c.title || 'N/A'}</td>
+                        <td class="text-secondary">${c.category || c.nature || 'N/A'}</td>
+                        <td class="text-secondary">${c.category_type || c.nature_type || 'N/A'}</td>
+                        <td class="text-secondary">${c.location || 'N/A'}</td>
+                        <td class="text-center">
+                            <span class="status-badge ${statusClass(c.status)}">${c.status || 'N/A'}</span>
+                        </td>
+                        <td class="text-secondary">${c.assigned_to || c.resolver || 'Unassigned'}</td>
+                    </tr>`;
+                    }).join('');
+                }
+
+                const total = state.filteredData.length;
+                const end = Math.min(start + state.rowsPerPage, total);
+                document.getElementById('tableInfo').textContent =
+                    total === 0 ? 'Showing 0 entries'
+                        : `Showing ${start + 1}–${end} of ${total} entries`;
+
+                updatePagination();
+            }
+
+            // ── Pagination ─────────────────────────────────────
+            function updatePagination() {
+                const total = Math.ceil(state.filteredData.length / state.rowsPerPage) || 1;
+                const ctrl = document.getElementById('pagination');
+                ctrl.innerHTML = '';
+
+                if (total <= 1) return;
+
+                const cur = state.currentPage;
+
+                const mkBtn = (label, page, disabled = false, active = false) => {
+                    const b = document.createElement('button');
+                    b.className = `page-btn${active ? ' active' : ''}`;
+                    b.disabled = disabled;
+                    b.innerHTML = label;
+                    if (!disabled) b.addEventListener('click', () => { state.currentPage = page; renderTable(); updateURL(); });
+                    return b;
+                };
+
+                ctrl.appendChild(mkBtn('<i class="fas fa-chevron-left"></i>', cur - 1, cur === 1));
+
+                let s = Math.max(1, cur - 2), e = Math.min(total, s + 4);
+                if (e - s < 4) s = Math.max(1, e - 4);
+
+                if (s > 1) { ctrl.appendChild(mkBtn('1', 1)); if (s > 2) ctrl.appendChild(mkBtn('…', null, true)); }
+                for (let p = s; p <= e; p++) ctrl.appendChild(mkBtn(p, p, false, p === cur));
+                if (e < total) { if (e < total - 1) ctrl.appendChild(mkBtn('…', null, true)); ctrl.appendChild(mkBtn(total, total)); }
+
+                ctrl.appendChild(mkBtn('<i class="fas fa-chevron-right"></i>', cur + 1, cur === total));
+            }
+
+            // ── Export CSV ─────────────────────────────────────
+            function exportToCSV() {
+                if (!state.filteredData.length) { showToast('No data to export', 'info'); return; }
+                const headers = ['ID', 'Date', 'Title', 'Category', 'Category Type', 'Location', 'Status', 'Assigned To'];
+                const rows = state.filteredData.map(c => [
+                    c.id || 'N/A',
+                    (c.date || c.created_at) ? new Date(c.date || c.created_at).toLocaleDateString() : 'N/A',
+                    `"${(c.title || '').replace(/"/g, '""')}"`,
+                    `"${(c.category || c.nature || '').replace(/"/g, '""')}"`,
+                    `"${(c.category_type || c.nature_type || '').replace(/"/g, '""')}"`,
+                    `"${(c.location || '').replace(/"/g, '""')}"`,
+                    c.status || 'N/A',
+                    `"${(c.assigned_to || c.resolver || 'Unassigned').replace(/"/g, '""')}"`
+                ]);
+                const csv = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+                a.download = `complaints-report-${new Date().toISOString().slice(0, 10)}.csv`;
+                a.click();
+                showToast('CSV exported!', 'success');
+            }
+
+            // ── Print ──────────────────────────────────────────
+            function printReport() {
+                const win = window.open('', '_blank');
+                const building = state.filters.building === 'all' ? 'All'
+                    : (state.buildings.find(b => b.id.toString() === state.filters.building)?.name || state.filters.building);
+                win.document.write(`<!DOCTYPE html><html><head>
+                <title>Complaints Report</title>
+                <style>
+                    body { font-family: system-ui, sans-serif; padding: 32px; color: #1e293b; }
+                    h1 { color: #0E5A4C; margin-bottom: 4px; }
+                    .meta { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+                    .filters { background:#f8fafd; border-radius:8px; padding:12px 16px; margin-bottom:20px; font-size:13px; }
+                    .summary { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+                    .sc { background:#f8fafd; border-radius:8px; padding:12px; }
+                    .sc h3 { margin:0; font-size:22px; } .sc p { margin:4px 0 0; color:#64748b; font-size:12px; }
+                    table { width:100%; border-collapse:collapse; font-size:13px; }
+                    th { background:#f8fafd; padding:10px 12px; text-align:left; border-bottom:2px solid #e2eaf2; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+                    td { padding:9px 12px; border-bottom:1px solid #edf2f9; }
+                    .sb { display:inline-block; padding:2px 8px; border-radius:40px; font-size:11px; font-weight:600; }
+                    .status-pending{background:#fff3e0;color:#b85e00} .status-inprogress{background:#e3f2fd;color:#0b5e8e}
+                    .status-onhold{background:#f3e5f5;color:#6A1B9A} .status-completed{background:#e8f5e9;color:#1B5E20}
+                    .status-rejected{background:#ffebee;color:#B71C1C} .status-cancelled{background:#eee;color:#424242}
+                </style></head><body>
+                <h1>Complaints Report</h1>
+                <div class="meta">Generated on: ${new Date().toLocaleString()}</div>
+                <div class="filters">
+                    <strong>Filters:</strong> &nbsp;
+                    Date: ${state.filters.dateFrom || 'Any'} → ${state.filters.dateTo || 'Any'} &nbsp;|&nbsp;
+                    Status: ${state.filters.status === 'all' ? 'All' : state.filters.status} &nbsp;|&nbsp;
+                    Building: ${building} &nbsp;|&nbsp;
+                    Search: ${state.filters.search || '—'}
+                </div>
+                <div class="summary">
+                    <div class="sc"><h3>${state.complaints.length}</h3><p>Total</p></div>
+                    <div class="sc"><h3>${state.complaints.filter(c => c.status === 'Pending').length}</h3><p>Pending</p></div>
+                    <div class="sc"><h3>${state.complaints.filter(c => c.status === 'In Progress').length}</h3><p>In Progress</p></div>
+                    <div class="sc"><h3>${state.complaints.filter(c => c.status === 'Completed').length}</h3><p>Completed</p></div>
+                </div>
+                <table><thead><tr>
+                    <th>ID</th><th>Date</th><th>Title</th><th>Category</th>
+                    <th>Type</th><th>Location</th><th>Status</th><th>Assigned To</th>
+                </tr></thead><tbody>
+                ${state.filteredData.map(c => {
+                    const d = (c.date || c.created_at) ? new Date(c.date || c.created_at).toLocaleDateString() : 'N/A';
+                    const sc = { Pending: 'status-pending', 'In Progress': 'status-inprogress', 'On Hold': 'status-onhold', Completed: 'status-completed', Rejected: 'status-rejected', Cancelled: 'status-cancelled' }[c.status] || '';
+                    return `<tr>
+                        <td>${c.id || 'N/A'}</td><td>${d}</td>
+                        <td>${c.title || 'N/A'}</td>
+                        <td>${c.category || c.nature || 'N/A'}</td>
+                        <td>${c.category_type || c.nature_type || 'N/A'}</td>
+                        <td>${c.location || 'N/A'}</td>
+                        <td><span class="sb ${sc}">${c.status || 'N/A'}</span></td>
+                        <td>${c.assigned_to || c.resolver || 'Unassigned'}</td>
+                    </tr>`;
+                }).join('')}
+                </tbody></table>
+            </body></html>`);
+                win.document.close();
+                setTimeout(() => { win.focus(); win.print(); showToast('Print dialog opened', 'info'); }, 400);
+            }
+
+            // ── Stat card clicks ───────────────────────────────
+            function setupStatCards() {
+                const map = [
+                    { id: 'totalCard', status: 'all' },
+                    { id: 'pendingCard', status: 'Pending' },
+                    { id: 'inprogressCard', status: 'In Progress' },
+                    { id: 'completedCard', status: 'Completed' },
+                ];
+                map.forEach(({ id, status }) => {
+                    document.getElementById(id)?.addEventListener('click', () => {
+                        document.getElementById('statusFilter').value = status;
+                        state.filters.status = status;
+                        applyLocalFilters();
+                        updateURL();
+                    });
+                });
+            }
+
+            // ── Init ───────────────────────────────────────────
+            async function init() {
+                initFromURL();
+                await fetchBuildings();
+                await fetchReportData();
+                updateDateRange();
+                setupStatCards();
+
+                document.getElementById('applyFilters').addEventListener('click', applyFilters);
+                document.getElementById('clearFilters').addEventListener('click', clearFilters);
+                document.getElementById('csvBtn').addEventListener('click', exportToCSV);
+                document.getElementById('printBtn').addEventListener('click', printReport);
+
+                document.getElementById('searchInput').addEventListener('keyup', e => {
+                    if (e.key === 'Enter') applyFilters();
+                });
+
+                document.getElementById('entriesPerPage').addEventListener('change', function () {
+                    state.rowsPerPage = +this.value;
+                    state.currentPage = 1;
+                    renderTable();
+                    updateURL();
+                });
+
+                // Sort on th click
+                document.querySelectorAll('#complaintsTable th[data-col]').forEach(th => {
+                    th.addEventListener('click', () => sortTable(+th.dataset.col));
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', init);
+        })();
+    </script>
+</body>
+
+</html>

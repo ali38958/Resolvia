@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <title>Admin Management — Resolvia</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+    <style>
+        /* ── Page-specific styles only ── */
+
+        /* Superadmin notice */
+        .superadmin-notice {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            background: var(--warning-light);
+            border: 1px solid var(--warning);
+            border-left: 4px solid var(--warning);
+            color: #92400e;
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: 500;
+            margin-bottom: var(--space-4);
+        }
+
+        [data-theme="dark"] .superadmin-notice {
+            color: #fcd34d;
+        }
+
+        .superadmin-notice i {
+            color: var(--warning);
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        /* Superadmin row */
+        tbody tr.superadmin-row {
+            background: rgba(245, 166, 35, 0.05);
+            border-left: 3px solid var(--warning);
+        }
+
+        tbody tr.superadmin-row:hover {
+            background: rgba(245, 166, 35, 0.1);
+        }
+
+        /* Superadmin badge */
+        .badge-super {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #5a3a00;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: var(--radius-full);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            vertical-align: middle;
+            margin-left: 4px;
+        }
+
+        /* Avatar */
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-full);
+            object-fit: cover;
+            border: 2px solid var(--border);
+            display: block;
+            margin: 0 auto;
+            transition: transform var(--t-fast), box-shadow var(--t-fast);
+        }
+
+        .avatar:hover {
+            transform: scale(1.12);
+            box-shadow: var(--shadow-md);
+        }
+
+        .avatar-placeholder {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-full);
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font-size: 15px;
+            border: 2px solid var(--primary-mid);
+            transition: transform var(--t-fast);
+        }
+
+        .avatar-placeholder:hover {
+            transform: scale(1.1);
+        }
+
+        /* Action button in table */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: 0 var(--space-3);
+            height: 30px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-strong);
+            background: var(--bg-surface);
+            color: var(--primary);
+            font-size: var(--text-xs);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast), transform var(--t-fast);
+            white-space: nowrap;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .action-btn:disabled {
+            background: var(--bg-surface-2);
+            color: var(--text-muted);
+            border-color: var(--border);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Image upload area */
+        .upload-area {
+            display: flex;
+            align-items: center;
+            gap: var(--space-5);
+            padding: var(--space-4);
+            background: var(--bg-surface-2);
+            border: 1.5px dashed var(--border-strong);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-5);
+            transition: border-color var(--t-fast), background var(--t-base);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+        }
+
+        .image-preview {
+            width: 72px;
+            height: 72px;
+            border-radius: var(--radius-full);
+            border: 3px solid var(--bg-surface);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-surface);
+            flex-shrink: 0;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview i {
+            font-size: 28px;
+            color: var(--text-muted);
+        }
+
+        .upload-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .upload-hint {
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+            margin-top: var(--space-1);
+        }
+
+        /* Superadmin field in modal */
+        .superadmin-field {
+            background: rgba(245, 166, 35, 0.06);
+            border: 1px solid var(--warning);
+            border-radius: var(--radius-md);
+            padding: var(--space-3) var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+
+        .superadmin-field .form-label {
+            color: #92400e;
+        }
+
+        [data-theme="dark"] .superadmin-field .form-label {
+            color: #fcd34d;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            top: calc(var(--header-height) + var(--space-4));
+            right: var(--space-5);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: 500;
+            z-index: 5000;
+            box-shadow: var(--shadow-lg);
+            min-width: 280px;
+            max-width: 400px;
+            animation: toast-in 0.25s ease;
+            border-left: 4px solid transparent;
+        }
+
+        @keyframes toast-in {
+            from {
+                transform: translateX(110%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            background: var(--success-light);
+            border-color: var(--success);
+            color: #166534;
+        }
+
+        .toast.error {
+            background: var(--danger-light);
+            border-color: var(--danger);
+            color: #9f1239;
+        }
+
+        .toast.warning {
+            background: var(--warning-light);
+            border-color: var(--warning);
+            color: #92400e;
+        }
+
+        .toast i {
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+
+        .toast-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.6;
+            font-size: 16px;
+            padding: 0;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+
+        /* Table column sizing */
+        #adminTable th:nth-child(1),
+        #adminTable td:nth-child(1) {
+            width: 50px;
+            text-align: center;
+        }
+
+        #adminTable th:nth-child(2),
+        #adminTable td:nth-child(2) {
+            width: 90px;
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+        }
+
+        #adminTable th:nth-child(3),
+        #adminTable td:nth-child(3) {
+            width: 60px;
+            text-align: center;
+        }
+
+        #adminTable th:nth-child(6),
+        #adminTable td:nth-child(6) {
+            width: 110px;
+            text-align: center;
+        }
+
+        #adminTable th:nth-child(7),
+        #adminTable td:nth-child(7) {
+            width: 100px;
+            text-align: center;
+        }
+
+        #adminTable th:nth-child(8),
+        #adminTable td:nth-child(8) {
+            width: 120px;
+        }
+
+        #adminTable th:nth-child(9),
+        #adminTable td:nth-child(9) {
+            width: 100px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .upload-area {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .upload-area .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="/assets/logo.png" alt="Resolvia" id="logo">
+            <span class="logo-text">Resolvia</span>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" title="Toggle theme">
+                <i class="fa fa-moon icon-moon"></i>
+                <i class="fa fa-sun icon-sun"></i>
+            </button>
+            <div class="profile-icon"><i class="fa fa-user"></i></div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fa fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <nav class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </nav>
+
+    <main class="main-content" id="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Admin Management</h1>
+                <p class="page-subtitle">Manage admin accounts and permissions</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-primary" id="addAdminBtn">
+                    <i class="fas fa-user-plus"></i> Add Admin
+                </button>
+            </div>
+        </div>
+
+        <!-- Superadmin notice -->
+        <div class="superadmin-notice" id="superadminNotice" style="display:none;">
+            <i class="fas fa-crown"></i>
+            <span>Superadmin accounts are highlighted and cannot be edited.</span>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="table-toolbar">
+            <div class="input-group table-search">
+                <i class="fas fa-search input-icon"></i>
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by name or email…">
+            </div>
+            <div class="table-actions">
+                <div class="flex items-center gap-2">
+                    <label class="form-label mb-0" style="white-space:nowrap;margin:0;">Show</label>
+                    <select id="entriesPerPage" class="form-control" style="width:80px;">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <button class="btn btn-secondary" id="searchBtn">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrapper">
+            <table id="adminTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>ID</th>
+                        <th>Photo</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTableBody"></tbody>
+            </table>
+
+            <!-- Pagination inside wrapper -->
+            <div class="pagination">
+                <span class="pagination-info" id="paginationInfo">Showing 1–10 of 0 admins</span>
+                <div class="pagination-controls">
+                    <button class="page-btn" id="prevPage" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn" id="nextPage">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ── Admin Modal ── -->
+    <div class="modal-overlay" id="adminModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="adminModalTitle">Add Admin</h2>
+                <button class="modal-close" id="closeAdminModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="adminForm" autocomplete="off">
+
+                    <!-- Image upload -->
+                    <div class="upload-area">
+                        <div class="image-preview" id="imagePreview">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="upload-info">
+                            <button type="button" class="btn btn-secondary btn-sm" id="uploadImageBtn">
+                                <i class="fas fa-upload"></i> Upload Photo
+                            </button>
+                            <p class="upload-hint">JPG, PNG, GIF — max 2MB</p>
+                        </div>
+                        <input type="file" id="imageInput" style="display:none;" accept="image/*">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Admin ID <span class="form-required">*</span></label>
+                            <input type="text" id="adminId" class="form-control" placeholder="e.g. admin-001"
+                                pattern="[A-Za-z0-9\-_]+" required>
+                            <span class="form-error" id="adminIdError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span></span>
+                            </span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Full Name <span class="form-required">*</span></label>
+                            <input type="text" id="adminName" class="form-control" placeholder="Enter full name"
+                                required>
+                            <span class="form-error" id="adminNameError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Email <span class="form-required">*</span></label>
+                            <div class="input-group">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" id="adminEmail" class="form-control" placeholder="admin@example.com"
+                                    required>
+                            </div>
+                            <span class="form-error" id="adminEmailError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span></span>
+                            </span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Status <span class="form-required">*</span></label>
+                            <select id="adminStatus" class="form-control" required>
+                                <option value="">Select status</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                            <span class="form-error" id="adminStatusError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Password <span class="form-required">*</span></label>
+                            <div class="input-group">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" id="adminPassword" class="form-control"
+                                    placeholder="Min. 6 characters">
+                            </div>
+                            <span class="form-error" id="adminPasswordError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span></span>
+                            </span>
+                            <p class="form-hint">Leave empty when editing to keep current password.</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm Password <span class="form-required">*</span></label>
+                            <div class="input-group">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" id="adminConfirmPassword" class="form-control"
+                                    placeholder="Repeat password">
+                            </div>
+                            <span class="form-error" id="adminConfirmPasswordError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Superadmin readonly field (shown when editing superadmin) -->
+                    <div class="superadmin-field form-group" id="superadminField" style="display:none;">
+                        <label class="form-label"><i class="fas fa-crown"></i> Superadmin Status</label>
+                        <input type="text" id="isSuperadmin" class="form-control" readonly>
+                        <p class="form-hint">Superadmin status cannot be changed.</p>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelAdminBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveAdminBtn">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+    <script>
+        const API_BASE_URL = '/api';
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let totalAdmins = 0;
+        let totalPages = 1;
+        let currentAdminId = null;
+        let isCurrentAdminSuperadmin = false;
+
+        // ── Toast ──────────────────────────────────────────
+        function showToast(message, type = 'success') {
+            document.querySelectorAll('.toast').forEach(t => t.remove());
+            const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', warning: 'fa-triangle-exclamation' };
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas ${icons[type] || icons.success}"></i>
+                <span style="flex:1">${message}</span>
+                <button class="toast-close"><i class="fas fa-times"></i></button>
+            `;
+            document.body.appendChild(toast);
+            toast.querySelector('.toast-close').addEventListener('click', () => toast.remove());
+            setTimeout(() => toast?.remove(), 4000);
+        }
+
+        // ── Table ──────────────────────────────────────────
+        async function renderTable() {
+            const tbody = document.getElementById('adminTableBody');
+            tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding:var(--space-8)">
+                <div class="spinner" style="margin:0 auto"></div>
+            </td></tr>`;
+
+            try {
+                const searchTerm = document.getElementById('searchInput').value.trim();
+                const { data: result } = await api.get(`${API_BASE_URL}/admins`, {
+                    params: { page: currentPage, limit: itemsPerPage, search: searchTerm }
+                });
+
+                tbody.innerHTML = '';
+
+                if (!result.data.length) {
+                    tbody.innerHTML = `
+                        <tr><td colspan="9">
+                            <div class="empty-state">
+                                <div class="empty-icon"><i class="fas fa-users"></i></div>
+                                <p class="empty-title">No admins found</p>
+                                <p class="empty-text">Try adjusting your search or add a new admin.</p>
+                            </div>
+                        </td></tr>`;
+                    document.getElementById('superadminNotice').style.display = 'none';
+                    totalAdmins = 0; totalPages = 1;
+                    updatePagination();
+                    return;
+                }
+
+                let hasSuperadmin = false;
+
+                result.data.forEach((admin, i) => {
+                    const rowNum = (currentPage - 1) * itemsPerPage + i + 1;
+                    const isSA = admin.is_superadmin === 1 || admin.is_superadmin === true;
+                    if (isSA) hasSuperadmin = true;
+
+                    const avatar = admin.picture
+                        ? `<img src="${admin.picture}" alt="${admin.name}" class="avatar"
+                               onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'avatar-placeholder',innerHTML:'<i class=\\'fas fa-user\\'></i>'}));">`
+                        : `<div class="avatar-placeholder"><i class="fas fa-user"></i></div>`;
+
+                    const roleCell = isSA
+                        ? `Admin <span class="badge-super">Super</span>`
+                        : `Admin`;
+
+                    const statusBadge = admin.status === 'Active'
+                        ? `<span class="badge badge-green"><span class="status-dot green"></span> Active</span>`
+                        : `<span class="badge badge-red"><span class="status-dot red"></span> Inactive</span>`;
+
+                    const date = new Date(admin.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric', month: 'short', day: 'numeric'
+                    });
+
+                    const actionBtn = isSA
+                        ? `<button class="action-btn" disabled><i class="fas fa-lock"></i> Locked</button>`
+                        : `<button class="action-btn edit-btn" data-id="${admin.id}"><i class="fas fa-pen"></i> Edit</button>`;
+
+                    const tr = document.createElement('tr');
+                    if (isSA) tr.classList.add('superadmin-row');
+                    tr.innerHTML = `
+                        <td class="text-center font-mono text-muted">${rowNum}</td>
+                        <td class="font-mono">${admin.id}</td>
+                        <td>${avatar}</td>
+                        <td class="font-semibold">${admin.name}</td>
+                        <td class="text-secondary">${admin.email}</td>
+                        <td class="text-center">${roleCell}</td>
+                        <td class="text-center">${statusBadge}</td>
+                        <td class="text-secondary">${date}</td>
+                        <td class="text-center">${actionBtn}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('superadminNotice').style.display = hasSuperadmin ? 'flex' : 'none';
+                totalAdmins = result.pagination.total;
+                totalPages = result.pagination.pages;
+                updatePagination();
+
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="9">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                        <p class="empty-title">Failed to load</p>
+                        <p class="empty-text">Could not fetch admin data. Please try again.</p>
+                    </div>
+                </td></tr>`;
+                showToast('Error loading admins', 'error');
+            }
+        }
+
+        // ── Pagination ─────────────────────────────────────
+        function updatePagination() {
+            const start = totalAdmins ? (currentPage - 1) * itemsPerPage + 1 : 0;
+            const end = Math.min(currentPage * itemsPerPage, totalAdmins);
+            document.getElementById('paginationInfo').textContent =
+                `Showing ${start}–${end} of ${totalAdmins} admin${totalAdmins !== 1 ? 's' : ''}`;
+
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage >= totalPages || totalPages === 0;
+
+            const controls = document.querySelector('.pagination-controls');
+            controls.querySelectorAll('.page-btn:not(#prevPage):not(#nextPage)').forEach(b => b.remove());
+
+            const max = 5;
+            let s = Math.max(1, currentPage - Math.floor(max / 2));
+            let e = Math.min(totalPages, s + max - 1);
+            if (e - s + 1 < max) s = Math.max(1, e - max + 1);
+
+            const nextBtn = document.getElementById('nextPage');
+            for (let p = s; p <= e; p++) {
+                const btn = document.createElement('button');
+                btn.className = `page-btn${p === currentPage ? ' active' : ''}`;
+                btn.textContent = p;
+                btn.addEventListener('click', () => { currentPage = p; renderTable(); });
+                controls.insertBefore(btn, nextBtn);
+            }
+        }
+
+        // ── Modal helpers ──────────────────────────────────
+        function openModal() { document.getElementById('adminModal').classList.add('open'); }
+        function closeModal() { document.getElementById('adminModal').classList.remove('open'); }
+
+        function resetForm() {
+            document.getElementById('adminForm').reset();
+            document.getElementById('imagePreview').innerHTML = '<i class="fas fa-user"></i>';
+            document.getElementById('adminModalTitle').textContent = 'Add Admin';
+            document.getElementById('superadminField').style.display = 'none';
+            document.getElementById('adminId').readOnly = false;
+            document.getElementById('adminId').style.removeProperty('background');
+            currentAdminId = null;
+            isCurrentAdminSuperadmin = false;
+            clearErrors();
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.form-error').forEach(el => { el.style.display = 'none'; });
+            document.querySelectorAll('.form-control.is-error').forEach(el => el.classList.remove('is-error'));
+        }
+
+        function setError(inputId, errorId, msg) {
+            const input = document.getElementById(inputId);
+            const err = document.getElementById(errorId);
+            input.classList.add('is-error');
+            err.querySelector('span').textContent = msg;
+            err.style.display = 'flex';
+        }
+
+        // ── Open Add ───────────────────────────────────────
+        function openAddModal() {
+            resetForm();
+            openModal();
+        }
+
+        // ── Open Edit ──────────────────────────────────────
+        async function openEditModal(adminId) {
+            try {
+                const { data: result } = await api.get(`${API_BASE_URL}/admins/${adminId}`);
+                if (!result.success) throw new Error(result.message);
+
+                const admin = result.data;
+                resetForm();
+                currentAdminId = adminId;
+                isCurrentAdminSuperadmin = admin.is_superadmin === 1 || admin.is_superadmin === true;
+
+                document.getElementById('adminModalTitle').textContent = 'Edit Admin';
+                document.getElementById('adminId').value = admin.id;
+                document.getElementById('adminName').value = admin.name;
+                document.getElementById('adminEmail').value = admin.email;
+                document.getElementById('adminStatus').value = admin.status;
+
+                if (isCurrentAdminSuperadmin) {
+                    document.getElementById('superadminField').style.display = 'block';
+                    document.getElementById('isSuperadmin').value = 'Superadmin (Cannot be changed)';
+                    document.getElementById('adminId').readOnly = true;
+                }
+
+                if (admin.picture) {
+                    document.getElementById('imagePreview').innerHTML =
+                        `<img src="${admin.picture}" alt="Preview">`;
+                }
+
+                openModal();
+            } catch (err) {
+                console.error(err);
+                showToast('Error loading admin details', 'error');
+            }
+        }
+
+        // ── Validate ───────────────────────────────────────
+        function validateForm() {
+            clearErrors();
+            let valid = true;
+
+            const id = document.getElementById('adminId').value.trim();
+            const name = document.getElementById('adminName').value.trim();
+            const email = document.getElementById('adminEmail').value.trim();
+            const status = document.getElementById('adminStatus').value;
+            const pw = document.getElementById('adminPassword').value;
+            const pwc = document.getElementById('adminConfirmPassword').value;
+
+            if (!id) { setError('adminId', 'adminIdError', 'Admin ID is required'); valid = false; }
+            if (!name) { setError('adminName', 'adminNameError', 'Full name is required'); valid = false; }
+            if (!email) {
+                setError('adminEmail', 'adminEmailError', 'Email is required'); valid = false;
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                setError('adminEmail', 'adminEmailError', 'Enter a valid email address'); valid = false;
+            }
+            if (!status) { setError('adminStatus', 'adminStatusError', 'Status is required'); valid = false; }
+
+            if (!currentAdminId) {
+                if (!pw) {
+                    setError('adminPassword', 'adminPasswordError', 'Password is required for new admin'); valid = false;
+                } else if (pw.length < 6) {
+                    setError('adminPassword', 'adminPasswordError', 'Password must be at least 6 characters'); valid = false;
+                } else if (pw !== pwc) {
+                    setError('adminConfirmPassword', 'adminConfirmPasswordError', 'Passwords do not match'); valid = false;
+                }
+            } else if (pw) {
+                if (pw.length < 6) {
+                    setError('adminPassword', 'adminPasswordError', 'Password must be at least 6 characters'); valid = false;
+                } else if (pw !== pwc) {
+                    setError('adminConfirmPassword', 'adminConfirmPasswordError', 'Passwords do not match'); valid = false;
+                }
+            }
+
+            return valid;
+        }
+
+        // ── Save ───────────────────────────────────────────
+        async function saveAdmin() {
+            if (!validateForm()) return;
+            if (isCurrentAdminSuperadmin) {
+                showToast('Superadmin accounts cannot be modified', 'warning');
+                return;
+            }
+
+            const saveBtn = document.getElementById('saveAdminBtn');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner"></span> Saving…';
+
+            try {
+                const formData = new FormData();
+                formData.append('id', document.getElementById('adminId').value.trim());
+                formData.append('name', document.getElementById('adminName').value.trim());
+                formData.append('email', document.getElementById('adminEmail').value.trim());
+                formData.append('status', document.getElementById('adminStatus').value);
+                formData.append('is_superadmin', 'false');
+
+                const pw = document.getElementById('adminPassword').value.trim();
+                if (pw) formData.append('password', pw);
+
+                const img = document.getElementById('imageInput').files[0];
+                if (img) formData.append('picture', img);
+
+                const { data: result } = currentAdminId
+                    ? await api.put(`${API_BASE_URL}/admins/${currentAdminId}`, formData)
+                    : await api.post(`${API_BASE_URL}/admins`, formData);
+
+                if (!result.success) throw new Error(result.message);
+
+                showToast(currentAdminId ? 'Admin updated successfully' : 'Admin added successfully', 'success');
+                closeModal();
+                renderTable();
+
+            } catch (err) {
+                console.error(err);
+                showToast(err.message || 'Error saving admin', 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> Save';
+            }
+        }
+
+        // ── Init ───────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('addAdminBtn').addEventListener('click', openAddModal);
+
+            document.getElementById('searchBtn').addEventListener('click', () => { currentPage = 1; renderTable(); });
+            document.getElementById('searchInput').addEventListener('keypress', e => {
+                if (e.key === 'Enter') { currentPage = 1; renderTable(); }
+            });
+
+            document.getElementById('entriesPerPage').addEventListener('change', function () {
+                itemsPerPage = +this.value; currentPage = 1; renderTable();
+            });
+
+            document.getElementById('prevPage').addEventListener('click', () => {
+                if (currentPage > 1) { currentPage--; renderTable(); }
+            });
+            document.getElementById('nextPage').addEventListener('click', () => {
+                if (currentPage < totalPages) { currentPage++; renderTable(); }
+            });
+
+            document.getElementById('closeAdminModal').addEventListener('click', closeModal);
+            document.getElementById('cancelAdminBtn').addEventListener('click', closeModal);
+            document.getElementById('adminModal').addEventListener('click', e => {
+                if (e.target === document.getElementById('adminModal')) closeModal();
+            });
+
+            document.getElementById('saveAdminBtn').addEventListener('click', saveAdmin);
+
+            // Image upload
+            document.getElementById('uploadImageBtn').addEventListener('click', () =>
+                document.getElementById('imageInput').click());
+            document.getElementById('imageInput').addEventListener('change', function () {
+                const file = this.files[0];
+                if (!file) return;
+                if (file.size > 2 * 1024 * 1024) { showToast('Image must be under 2MB', 'warning'); return; }
+                if (!file.type.match('image.*')) { showToast('Please select an image file', 'warning'); return; }
+                const reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById('imagePreview').innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Edit delegation
+            document.addEventListener('click', e => {
+                const btn = e.target.closest('.edit-btn');
+                if (btn) openEditModal(btn.dataset.id);
+            });
+
+            // ID uniqueness check
+            let idTimer;
+            document.getElementById('adminId').addEventListener('input', function () {
+                const id = this.value.trim();
+                clearTimeout(idTimer);
+                if (id.length < 3 || (currentAdminId && id === currentAdminId)) return;
+                idTimer = setTimeout(async () => {
+                    try {
+                        const { data } = await api.get(`${API_BASE_URL}/admins/${id}`);
+                        if (data.success) setError('adminId', 'adminIdError', 'This ID is already taken');
+                    } catch {
+                        document.getElementById('adminId').classList.remove('is-error');
+                        document.getElementById('adminIdError').style.display = 'none';
+                    }
+                }, 500);
+            });
+
+            renderTable();
+        });
+    </script>
+</body>
+
+</html>

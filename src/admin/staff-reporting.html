@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <title>Staff Performance Report — Resolvia</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+    <style>
+        /* ── Page-specific styles only ── */
+
+        /* ── Table column sizing ── */
+        #staffTable th:nth-child(1),
+        #staffTable td:nth-child(1) {
+            width: 50px;
+            text-align: center;
+        }
+
+        #staffTable th:nth-child(5),
+        #staffTable td:nth-child(5),
+        #staffTable th:nth-child(6),
+        #staffTable td:nth-child(6),
+        #staffTable th:nth-child(7),
+        #staffTable td:nth-child(7) {
+            width: 100px;
+            text-align: center;
+        }
+
+        #staffTable th:nth-child(8),
+        #staffTable td:nth-child(8) {
+            width: 100px;
+            text-align: center;
+        }
+
+        /* ── Staff name cell ── */
+        .staff-name {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: var(--text-sm);
+        }
+
+        .staff-id {
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            margin-top: 2px;
+        }
+
+        /* ── Count badges ── */
+        .count-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 24px;
+            padding: 0 var(--space-2);
+            border-radius: var(--radius-full);
+            font-size: var(--text-xs);
+            font-weight: 700;
+        }
+
+        .count-inprogress {
+            background: var(--info-light);
+            color: var(--info);
+        }
+
+        .count-completed {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .count-total {
+            background: var(--bg-surface-2);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        /* ── Action button ── */
+        .btn-report {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: 0 var(--space-3);
+            height: 28px;
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border-strong);
+            background: var(--bg-surface);
+            color: var(--primary);
+            transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast), transform var(--t-fast);
+            white-space: nowrap;
+        }
+
+        .btn-report:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            top: calc(var(--header-height) + var(--space-4));
+            right: var(--space-5);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: 500;
+            z-index: 5000;
+            box-shadow: var(--shadow-lg);
+            min-width: 260px;
+            max-width: 380px;
+            animation: toast-in 0.25s ease;
+            border-left: 4px solid transparent;
+        }
+
+        @keyframes toast-in {
+            from {
+                transform: translateX(110%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            background: var(--success-light);
+            border-color: var(--success);
+            color: #166534;
+        }
+
+        .toast.error {
+            background: var(--danger-light);
+            border-color: var(--danger);
+            color: #9f1239;
+        }
+
+        .toast.info {
+            background: var(--info-light);
+            border-color: var(--info);
+            color: #1e40af;
+        }
+
+        .toast-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.6;
+            font-size: 16px;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="/assets/logo.png" alt="Resolvia" id="logo">
+            <span class="logo-text">Resolvia</span>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" title="Toggle theme">
+                <i class="fa fa-moon icon-moon"></i>
+                <i class="fa fa-sun icon-sun"></i>
+            </button>
+            <div class="profile-icon"><i class="fa fa-user"></i></div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fa fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <nav class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </nav>
+
+    <main class="main-content" id="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Staff Performance Report</h1>
+                <p class="page-subtitle">Performance metrics and productivity analysis for maintenance staff</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-primary" id="exportCsvBtn">
+                    <i class="fas fa-file-export"></i> Export All CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Toolbar ── -->
+        <div class="table-toolbar">
+            <div style="display:flex;gap:var(--space-2);flex:1;flex-wrap:wrap;">
+                <div class="form-group" style="margin-bottom:0;min-width:180px;">
+                    <select id="designation-filter" class="form-control">
+                        <option value="all">All Designations</option>
+                    </select>
+                </div>
+                <div class="input-group table-search" style="flex:1;min-width:220px;">
+                    <i class="fas fa-search input-icon"></i>
+                    <input type="text" id="search-input" class="form-control"
+                        placeholder="Search by name or designation…">
+                </div>
+            </div>
+            <div class="table-actions">
+                <div style="display:flex;align-items:center;gap:var(--space-2);">
+                    <label class="form-label" style="margin:0;white-space:nowrap;">Show</label>
+                    <select id="entries-per-page" class="form-control" style="width:80px;">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Table ── -->
+        <div class="table-wrapper">
+            <table id="staffTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Designation</th>
+                        <th>Email</th>
+                        <th>Total</th>
+                        <th>In Progress</th>
+                        <th>Completed</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <tr>
+                        <td colspan="8" style="text-align:center;padding:var(--space-8);">
+                            <div class="spinner" style="margin:0 auto;"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                <span class="pagination-info" id="table-info">Showing 0 entries</span>
+                <div class="pagination-controls" id="pagination-container"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ══ DETAIL REPORT MODAL ════════════════════════════ -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal" style="max-width:460px;">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    Generate Report: <span id="modal-staff-name" style="color:var(--accent);"></span>
+                </h2>
+                <button class="modal-close" id="close-detail-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Task Status</label>
+                    <select id="modal-status" class="form-control">
+                        <option value="all">All Statuses</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date From <span class="form-required">*</span></label>
+                    <input type="date" id="modal-from" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date To <span class="form-required">*</span></label>
+                    <input type="date" id="modal-to" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancel-detail-btn">Cancel</button>
+                <button class="btn btn-primary" id="download-report-btn">
+                    <i class="fas fa-download"></i> Download Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+    <script>
+        // ── State ──────────────────────────────────────────
+        let allData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        let rowsPerPage = 10;
+        let selectedName = '';
+        let activeSearch = '';
+        let activeDesig = 'all';
+
+        // ── Toast ──────────────────────────────────────────
+        function showToast(message, type = 'info') {
+            document.querySelectorAll('.toast').forEach(t => t.remove());
+            const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i>
+                <span style="flex:1">${message}</span>
+                <button class="toast-close"><i class="fas fa-times"></i></button>`;
+            document.body.appendChild(toast);
+            toast.querySelector('.toast-close').addEventListener('click', () => toast.remove());
+            setTimeout(() => toast?.remove(), 3500);
+        }
+
+        // ── Modal ──────────────────────────────────────────
+        function openModal(name) {
+            selectedName = name;
+            document.getElementById('modal-staff-name').textContent = name;
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('modal-to').value = today;
+            document.getElementById('modal-from').value = today;
+            document.getElementById('detailModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        // ── Fetch data ─────────────────────────────────────
+        async function fetchStaffStats() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:var(--space-8);">
+                <div class="spinner" style="margin:0 auto;"></div></td></tr>`;
+            try {
+                const { data } = await api.get('/api/admin/staff-stats');
+                if (data && data.success) {
+                    allData = data.data;
+                    populateDesignationFilter(allData);
+                    filteredData = [...allData];
+                    renderTable();
+                } else {
+                    throw new Error(data?.message || 'Failed to fetch');
+                }
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="8">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                        <p class="empty-title">Failed to load</p>
+                        <p class="empty-text">Could not fetch staff data. Check your connection.</p>
+                    </div></td></tr>`;
+                showToast('Error connecting to server', 'error');
+            }
+        }
+
+        function populateDesignationFilter(staffArray) {
+            const sel = document.getElementById('designation-filter');
+            const desigsSet = new Set(staffArray.map(s => s.designation));
+            [...desigsSet].sort().forEach(d => {
+                const o = document.createElement('option');
+                o.value = d; o.textContent = d;
+                sel.appendChild(o);
+            });
+        }
+
+        // ── Filtering ──────────────────────────────────────
+        function applyFilters() {
+            filteredData = allData.filter(s => {
+                const matchSearch = !activeSearch ||
+                    s.name.toLowerCase().includes(activeSearch) ||
+                    s.designation.toLowerCase().includes(activeSearch);
+                const matchDesig = activeDesig === 'all' || s.designation === activeDesig;
+                return matchSearch && matchDesig;
+            });
+            currentPage = 1;
+            renderTable();
+        }
+
+        // ── Render ─────────────────────────────────────────
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            const start = (currentPage - 1) * rowsPerPage;
+            const page = filteredData.slice(start, start + rowsPerPage);
+
+            if (!page.length) {
+                tbody.innerHTML = `<tr><td colspan="8">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-magnifying-glass"></i></div>
+                        <p class="empty-title">No staff found</p>
+                        <p class="empty-text">Try adjusting your search or filter.</p>
+                    </div></td></tr>`;
+                updateInfo(0, 0, 0);
+                return;
+            }
+
+            tbody.innerHTML = page.map((s, i) => `
+                <tr>
+                    <td class="text-center text-muted font-mono">${start + i + 1}</td>
+                    <td>
+                        <div class="staff-name">${s.name}</div>
+                        <div class="staff-id">${s.id}</div>
+                    </td>
+                    <td class="text-secondary">${s.designation}</td>
+                    <td class="text-secondary">${s.email}</td>
+                    <td class="text-center">
+                        <span class="count-badge count-total">${s.total}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="count-badge count-inprogress">${s.inprogress}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="count-badge count-completed">${s.completed}</span>
+                    </td>
+                    <td class="text-center">
+                        <button class="btn-report" data-name="${s.name.replace(/"/g, '&quot;')}">
+                            <i class="fas fa-file-alt"></i> Report
+                        </button>
+                    </td>
+                </tr>`).join('');
+
+            tbody.querySelectorAll('.btn-report').forEach(btn =>
+                btn.addEventListener('click', () => openModal(btn.dataset.name))
+            );
+
+            updateInfo(start + 1, Math.min(start + rowsPerPage, filteredData.length), filteredData.length);
+            renderPagination();
+        }
+
+        function updateInfo(s, e, total) {
+            document.getElementById('table-info').textContent =
+                total === 0 ? 'Showing 0 entries' : `Showing ${s}–${e} of ${total} entries`;
+        }
+
+        function renderPagination() {
+            const total = Math.ceil(filteredData.length / rowsPerPage) || 1;
+            const ctrl = document.getElementById('pagination-container');
+            ctrl.innerHTML = '';
+            if (total <= 1) return;
+
+            const cur = currentPage;
+            const mkBtn = (label, page, disabled = false, active = false) => {
+                const b = document.createElement('button');
+                b.className = `page-btn${active ? ' active' : ''}`;
+                b.disabled = disabled;
+                b.innerHTML = label;
+                if (!disabled) b.addEventListener('click', () => { currentPage = page; renderTable(); });
+                return b;
+            };
+
+            ctrl.appendChild(mkBtn('<i class="fas fa-chevron-left"></i>', cur - 1, cur === 1));
+            let s = Math.max(1, cur - 2), e = Math.min(total, s + 4);
+            if (e - s < 4) s = Math.max(1, e - 4);
+            if (s > 1) { ctrl.appendChild(mkBtn('1', 1)); if (s > 2) ctrl.appendChild(mkBtn('…', null, true)); }
+            for (let p = s; p <= e; p++) ctrl.appendChild(mkBtn(p, p, false, p === cur));
+            if (e < total) { if (e < total - 1) ctrl.appendChild(mkBtn('…', null, true)); ctrl.appendChild(mkBtn(total, total)); }
+            ctrl.appendChild(mkBtn('<i class="fas fa-chevron-right"></i>', cur + 1, cur === total));
+        }
+
+        // ── CSV helpers ────────────────────────────────────
+        function downloadCSV(content, filename) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([content], { type: 'text/csv;charset=utf-8;' }));
+            a.download = filename;
+            a.click();
+        }
+
+        function exportMainCSV() {
+            showToast('Preparing CSV…', 'info');
+            let csv = 'ID,Name,Designation,Email,Total Tasks,In Progress,Completed\n';
+            filteredData.forEach(s =>
+                csv += `${s.id},"${s.name}","${s.designation}",${s.email},${s.total},${s.inprogress},${s.completed}\n`
+            );
+            downloadCSV(csv, `Resolvia_All_Staff_Report_${new Date().toISOString().split('T')[0]}.csv`);
+            showToast('Export complete!', 'success');
+        }
+
+        async function generateDetailedCSV() {
+            const status = document.getElementById('modal-status').value;
+            const from = document.getElementById('modal-from').value;
+            const to = document.getElementById('modal-to').value;
+
+            const btn = document.getElementById('download-report-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;"></span> Generating…';
+
+            showToast(`Generating report for ${selectedName}…`, 'info');
+            closeModal();
+
+            try {
+                const { data } = await api.get('/api/admin/staff-complaints-report', {
+                    params: { staffName: selectedName, status, from, to }
+                });
+
+                if (data && data.success) {
+                    if (!data.data.length) { showToast('No data for selected criteria', 'error'); return; }
+
+                    let csv = `Report For,"${selectedName}"\nDate Range,${from || 'Any'} to ${to || 'Any'}\nFilter Status,${status}\n\n`;
+                    csv += 'Complaint ID,Title,Category,Category Type,Location,Reported By,Resolver,Date Submitted,Completed At,Status\n';
+                    data.data.forEach(r => {
+                        const d = r.date ? new Date(r.date).toLocaleString() : '';
+                        const ca = r.completed_at ? new Date(r.completed_at).toLocaleString() : 'N/A';
+                        csv += `${r.complaints_id},"${r.title}","${r.category}","${r.category_type}","${r.location}","${r.reported_by}","${r.resolver}","${d}","${ca}","${r.status}"\n`;
+                    });
+
+                    downloadCSV(csv, `Detailed_Report_${selectedName.replace(/\s/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`);
+                    showToast('Report downloaded!', 'success');
+                } else {
+                    showToast('Failed to fetch detailed report data', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Error generating report', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-download"></i> Download Report';
+            }
+        }
+
+        // ── Init ───────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', async () => {
+            rowsPerPage = parseInt(document.getElementById('entries-per-page').value, 10);
+            await fetchStaffStats();
+
+            document.getElementById('search-input').addEventListener('input', function () {
+                activeSearch = this.value.toLowerCase();
+                applyFilters();
+            });
+
+            document.getElementById('designation-filter').addEventListener('change', function () {
+                activeDesig = this.value;
+                applyFilters();
+            });
+
+            document.getElementById('entries-per-page').addEventListener('change', function () {
+                rowsPerPage = parseInt(this.value, 10);
+                currentPage = 1;
+                renderTable();
+            });
+
+            document.getElementById('exportCsvBtn').addEventListener('click', exportMainCSV);
+
+            document.getElementById('close-detail-modal').addEventListener('click', closeModal);
+            document.getElementById('cancel-detail-btn').addEventListener('click', closeModal);
+            document.getElementById('detailModal').addEventListener('click', e => {
+                if (e.target === document.getElementById('detailModal')) closeModal();
+            });
+            document.getElementById('download-report-btn').addEventListener('click', generateDetailedCSV);
+
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && document.getElementById('detailModal').classList.contains('open'))
+                    closeModal();
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css "/>
+    <title>Staff Profile</title>
+    <link rel="stylesheet" href="common-styles.css">
+    
+    <style>
+        /* Profile Page Internal Styles - Professional Integrated Layout */
+        .profile-container {
+            max-width: 100%;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Profile Header Section - Full Width Banner Style */
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #0a4238 100%);
+            color: white;
+            padding: 40px 30px;
+            margin: -20px -20px 30px -20px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            border-bottom: 4px solid var(--primary-light);
+        }
+
+        .profile-avatar-section {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.3);
+            object-fit: cover;
+            background: white;
+            display: block;
+        }
+
+        .avatar-upload {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: var(--primary-light);
+            color: var(--primary-color);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid white;
+            transition: transform 0.2s;
+        }
+
+        .avatar-upload:hover {
+            transform: scale(1.1);
+        }
+
+        .profile-title-section {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .profile-designation {
+            font-size: 16px;
+            opacity: 0.9;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.3);
+        }
+
+        .status-dot.inactive {
+            background: #e74c3c;
+            box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.3);
+        }
+
+        /* Profile Content Grid - Flat Integrated Design */
+        .profile-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .profile-field {
+            padding: 25px 30px;
+            border-bottom: 1px solid #f0f0f0;
+            border-right: 1px solid #f0f0f0;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .profile-field:nth-child(even) {
+            border-right: none;
+        }
+
+        .profile-field:hover {
+            background: #fafafa;
+        }
+
+        .field-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-gray);
+            margin-bottom: 8px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .field-value {
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 24px;
+        }
+
+        .field-value.static {
+            color: #555;
+        }
+
+        .editable-field {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .edit-btn {
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            opacity: 0.6;
+        }
+
+        .edit-btn:hover {
+            opacity: 1;
+            background: var(--primary-transparent-10);
+        }
+
+        .edit-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--primary-color);
+            border-radius: 4px;
+            font-size: 15px;
+            font-family: inherit;
+            color: #2c3e50;
+            background: white;
+            outline: none;
+            transition: box-shadow 0.2s;
+        }
+
+        .edit-input:focus {
+            box-shadow: 0 0 0 3px var(--primary-transparent-10);
+        }
+
+        .edit-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .save-btn {
+            color: var(--primary-color);
+            background: var(--primary-light);
+        }
+
+        .save-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .cancel-btn {
+            color: #7f8c8d;
+        }
+
+        .cancel-btn:hover {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+
+        /* Full width fields for specific sections if needed */
+        .profile-field.full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* ID Field Styling */
+        .id-display {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #555;
+            letter-spacing: 0.5px;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+                padding: 30px 20px;
+            }
+
+            .profile-content {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-field {
+                border-right: none;
+            }
+
+            .profile-name {
+                font-size: 24px;
+            }
+
+            .status-badge {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+
+        /* Success Notification */
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .notification.show {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="../assets/logo.png" alt="logo" id="logo">
+            <h2 class="logo-text">Resolvia</h2>
+        </div>
+
+        <div class="header-right">
+            <div class="profile-icon">
+                <i class="fa fa-user"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </div>
+
+    <div class="main-content" id="main-content">
+        <div class="profile-container">
+            <!-- Integrated Profile Header -->
+            <div class="profile-header">
+                <div class="profile-avatar-section">
+                    <img 
+                        src="assets/profile_pics/sarah.jpg" 
+                        alt="Profile" 
+                        class="profile-avatar" 
+                        id="profileImage"
+                        onerror="this.onerror=null; this.src='assets/default_user_icon.png';">
+                </div>
+                <div class="profile-title-section">
+                    <div class="profile-name" id="displayFullName">Sarah Johnson</div>
+                    <div class="profile-designation">
+                        <i class="fa fa-briefcase" style="margin-right: 5px;"></i>
+                        <span id="displayDesignation">Senior Administrator</span>
+                        <span class="status-badge" id="statusBadge">
+                            <span class="status-dot"></span>
+                            <span id="statusText">Active</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Details Grid - Flat Design -->
+            <div class="profile-content">
+                <!-- Staff ID (Read Only) -->
+                <div class="profile-field">
+                    <div class="field-label">
+                        <i class="fa fa-id-card"></i> Staff ID
+                    </div>
+                    <div class="field-value static">
+                        <span class="id-display" id="displayStaffId">STF-2024-0089</span>
+                    </div>
+                </div>
+
+                <!-- Full Name (Read Only) -->
+                <div class="profile-field">
+                    <div class="field-label">
+                        <i class="fa fa-user"></i> Full Name
+                    </div>
+                    <div class="field-value static" id="fieldFullName">
+                        Sarah Johnson
+                    </div>
+                </div>
+
+                <!-- Email (Editable) -->
+                <div class="profile-field">
+                    <div class="field-label">
+                        <i class="fa fa-envelope"></i> Email Address
+                    </div>
+                    <div class="field-value">
+                        <div class="editable-field" id="emailContainer">
+                            <span id="displayEmail">sarah.johnson@resolvia.com</span>
+                            <i class="fa fa-pen edit-btn" onclick="enableEdit('email')" title="Edit Email"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phone Number (Editable) -->
+                <div class="profile-field">
+                    <div class="field-label">
+                        <i class="fa fa-phone"></i> Phone Number
+                    </div>
+                    <div class="field-value">
+                        <div class="editable-field" id="phoneContainer">
+                            <span id="displayPhone">+1 (555) 123-4567</span>
+                            <i class="fa fa-pen edit-btn" onclick="enableEdit('phone')" title="Edit Phone"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Designation (Read Only) -->
+                <div class="profile-field">
+                    <div class="field-label">
+                        <i class="fa fa-briefcase"></i> Designation
+                    </div>
+                    <div class="field-value static" id="fieldDesignation">
+                        Senior Administrator
+                    </div>
+                </div>
+
+                <!-- Status (Read Only) -->
+                <div class="profile-field">
+                    <div class="field-label">
+                        <i class="fa fa-power-off"></i> Employment Status
+                    </div>
+                    <div class="field-value static">
+                        <span id="fieldStatusText" style="color: #2ecc71; font-weight: 600;">Active</span>
+                        <small style="color: var(--text-gray); margin-left: 10px;">Since Jan 15, 2023</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="notification" id="notification">
+        <i class="fa fa-check-circle"></i>
+        <span id="notificationText">Changes saved successfully</span>
+    </div>
+
+    <script src="common-script.js"></script>
+    
+    <script>
+        // Profile Data Management
+        const staffData = {
+            id: 'STF-2024-0089',
+            fullName: 'Sarah Johnson',
+            email: 'sarah.johnson@resolvia.com',
+            phone: '+1 (555) 123-4567',
+            designation: 'Senior Administrator',
+            status: 'Active',
+            joinDate: 'Jan 15, 2023'
+        };
+
+        // Store original values for cancel functionality
+        let originalValues = {
+            email: staffData.email,
+            phone: staffData.phone
+        };
+
+        // Enable Edit Mode
+        function enableEdit(field) {
+            const container = document.getElementById(field + 'Container');
+            const currentValue = document.getElementById('display' + capitalize(field)).textContent;
+            
+            // Create input field
+            const input = document.createElement('input');
+            input.type = field === 'email' ? 'email' : 'tel';
+            input.className = 'edit-input';
+            input.value = currentValue;
+            input.id = 'input' + capitalize(field);
+            
+            // Handle Enter and Escape keys
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') saveField(field);
+                if (e.key === 'Escape') cancelEdit(field);
+            });
+
+            // Action buttons
+            const actions = document.createElement('div');
+            actions.className = 'edit-actions';
+            actions.innerHTML = `
+                <button class="action-btn save-btn" onclick="saveField('${field}')" title="Save">
+                    <i class="fa fa-check"></i> Save
+                </button>
+                <button class="action-btn cancel-btn" onclick="cancelEdit('${field}')" title="Cancel">
+                    <i class="fa fa-times"></i>
+                </button>
+            `;
+
+            // Clear container and add new elements
+            container.innerHTML = '';
+            container.appendChild(input);
+            container.appendChild(actions);
+            
+            // Focus input
+            input.focus();
+            input.select();
+        }
+
+        // Save Field
+        function saveField(field) {
+            const input = document.getElementById('input' + capitalize(field));
+            const newValue = input.value.trim();
+            
+            // Validation
+            if (!newValue) {
+                showNotification('Field cannot be empty', 'error');
+                return;
+            }
+            
+            if (field === 'email' && !isValidEmail(newValue)) {
+                showNotification('Please enter a valid email address', 'error');
+                return;
+            }
+            
+            if (field === 'phone' && !isValidPhone(newValue)) {
+                showNotification('Please enter a valid phone number', 'error');
+                return;
+            }
+
+            // Update data
+            staffData[field] = newValue;
+            originalValues[field] = newValue;
+            
+            // Update display
+            updateDisplay(field, newValue);
+            
+            // Show success message
+            showNotification(capitalize(field) + ' updated successfully');
+            
+            // Here you would typically make an API call to save to server
+            console.log('Saving to server:', field, newValue);
+        }
+
+        // Cancel Edit
+        function cancelEdit(field) {
+            updateDisplay(field, originalValues[field]);
+        }
+
+        // Update Display with Static View
+        function updateDisplay(field, value) {
+            const container = document.getElementById(field + 'Container');
+            container.innerHTML = `
+                <span id="display${capitalize(field)}">${value}</span>
+                <i class="fa fa-pen edit-btn" onclick="enableEdit('${field}')" title="Edit ${capitalize(field)}"></i>
+            `;
+        }
+
+        // Helper Functions
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function isValidPhone(phone) {
+            return /^[\d\s\-\+\(\)]+$/.test(phone) && phone.length >= 10;
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notificationText');
+            const icon = notification.querySelector('i');
+            
+            text.textContent = message;
+            
+            if (type === 'error') {
+                notification.style.background = '#e74c3c';
+                icon.className = 'fa fa-exclamation-circle';
+            } else {
+                notification.style.background = 'var(--primary-color)';
+                icon.className = 'fa fa-check-circle';
+            }
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Avatar Upload Handler
+        document.getElementById('avatarInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profileImage').src = e.target.result;
+                    showNotification('Profile photo updated');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Initialize (optional: fetch from API here)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simulating data load
+            console.log('Profile loaded for staff:', staffData.id);
+        });
+    </script>
+</body>
+</html>

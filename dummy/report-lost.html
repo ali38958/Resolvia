@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Lost Item | Lost & Found System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e88e5;
+            --primary-dark: #1565c0;
+            --secondary: #ff9800;
+            --secondary-dark: #f57c00;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --dark: #1e2a38;
+            --light: #f5f7fa;
+            --gray: #e0e0e0;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: #333;
+            min-height: 100vh;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(30, 136, 229, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 152, 0, 0.05) 0%, transparent 20%);
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            height: 70px;
+            background-color: var(--dark);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 8px rgba(30, 136, 229, 0.3);
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo-subtext {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: -3px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        /* ===== NOTIFICATION ICON ===== */
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 20px;
+            color: white;
+            transition: var(--transition);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .notification-icon:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger);
+            color: white;
+            font-size: 11px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid var(--dark);
+        }
+
+        .notification-box {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 55px;
+            width: 320px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        .notification-header {
+            padding: 15px 20px;
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-header h4 {
+            font-weight: 600;
+        }
+
+        .notification-header span {
+            font-size: 12px;
+            opacity: 0.9;
+            cursor: pointer;
+        }
+
+        .notification-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .notification-item:hover {
+            background-color: rgba(30, 136, 229, 0.05);
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-icon-item {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .notification-icon-item.info {
+            background-color: rgba(30, 136, 229, 0.1);
+            color: var(--primary);
+        }
+
+        /* ===== PROFILE ===== */
+        .profile {
+            position: relative;
+        }
+
+        .profile-img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                linear-gradient(135deg, var(--primary), var(--secondary)) border-box;
+            transition: var(--transition);
+        }
+
+        .profile-img:hover {
+            transform: scale(1.05);
+        }
+
+        .profile-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 60px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            width: 200px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .profile-header {
+            padding: 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .profile-info h4 {
+            font-size: 14px;
+            color: var(--dark);
+        }
+
+        .profile-info p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .profile-menu a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            text-decoration: none;
+            color: #555;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .profile-menu a:hover {
+            background-color: rgba(30, 136, 229, 0.05);
+            color: var(--primary);
+        }
+
+        .profile-menu a i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .profile-menu .logout {
+            color: var(--danger);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* ===== LAYOUT ===== */
+        .container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 250px;
+            background-color: white;
+            height: calc(100vh - 70px);
+            padding: 25px 0;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.03);
+            position: sticky;
+            top: 70px;
+            z-index: 90;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 25px;
+        }
+
+        .sidebar-section h3 {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #888;
+            padding: 0 25px 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 25px;
+            color: #555;
+            text-decoration: none;
+            font-size: 14px;
+            transition: var(--transition);
+            position: relative;
+            margin: 3px 0;
+        }
+
+        .sidebar a:hover {
+            background-color: rgba(30, 136, 229, 0.05);
+            color: var(--primary);
+        }
+
+        .sidebar a.active {
+            background-color: rgba(30, 136, 229, 0.1);
+            color: var(--primary);
+            font-weight: 600;
+            border-right: 4px solid var(--primary);
+        }
+
+        .sidebar a i {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .sidebar a .badge {
+            margin-left: auto;
+            background-color: var(--secondary);
+            color: white;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        /* ===== PAGE HEADER ===== */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-title-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .page-title-text h1 {
+            font-size: 28px;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .page-title-text p {
+            color: #777;
+            font-size: 14px;
+        }
+
+        /* ===== FORM CONTAINER ===== */
+        .form-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .form-header {
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 25px 30px;
+        }
+
+        .form-header h2 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .form-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .form-body {
+            padding: 30px;
+        }
+
+        /* ===== FORM STYLES ===== */
+        .form-section {
+            margin-bottom: 40px;
+        }
+
+        .form-section h3 {
+            font-size: 18px;
+            color: var(--dark);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-section h3 i {
+            color: var(--primary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: var(--danger);
+            margin-left: 3px;
+        }
+
+        .form-group .hint {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: var(--transition);
+            background-color: #f9fafc;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
+            background-color: white;
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-control.error {
+            border-color: var(--danger);
+            background-color: rgba(244, 67, 54, 0.05);
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        /* ===== UPLOAD AREA ===== */
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            background-color: #f9fafc;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background-color: rgba(30, 136, 229, 0.05);
+        }
+
+        .upload-area i {
+            font-size: 48px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .upload-area h4 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .upload-area p {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 15px;
+        }
+
+        .upload-btn {
+            background-color: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .upload-btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .upload-preview {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .preview-item {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* ===== FORM FOOTER ===== */
+        .form-footer {
+            padding: 25px 30px;
+            background-color: #f9fafc;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .form-notes {
+            flex: 1;
+            font-size: 13px;
+            color: #777;
+        }
+
+        .form-notes i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(30, 136, 229, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: var(--dark);
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f5f7fa;
+            border-color: #ccc;
+        }
+
+        .btn-lg {
+            padding: 16px 32px;
+            font-size: 16px;
+        }
+
+        /* ===== SUCCESS MESSAGE ===== */
+        .success-message {
+            display: none;
+            background: linear-gradient(to right, var(--success), #2e7d32);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            align-items: center;
+            gap: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .success-icon {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .success-content h3 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .success-content p {
+            opacity: 0.9;
+            font-size: 15px;
+            margin-bottom: 15px;
+        }
+
+        .reference-id {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 16px;
+            letter-spacing: 1px;
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 220px;
+            }
+
+            .main {
+                padding: 25px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: static;
+                padding: 15px 0;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 5px;
+            }
+
+            .sidebar-section {
+                display: none;
+            }
+
+            .sidebar a {
+                padding: 10px 15px;
+                border-radius: 8px;
+                margin: 2px;
+                font-size: 13px;
+            }
+
+            .sidebar a .badge {
+                display: none;
+            }
+
+            .main {
+                padding: 20px;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .form-body {
+                padding: 20px;
+            }
+
+            .form-footer {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            header {
+                padding: 0 20px;
+                height: 65px;
+            }
+
+            .logo-text {
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .notification-box {
+                width: 280px;
+                right: -20px;
+            }
+
+            .success-message {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.5s ease;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <div>
+                <div class="logo-text">Lost & Found System</div>
+                <div class="logo-subtext">NUTECH University</div>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="notification-icon" onclick="toggleNotifications()">
+                <i class="fas fa-bell"></i>
+                <div class="notification-badge">1</div>
+            </div>
+
+            <div class="notification-box" id="notifications">
+                <div class="notification-header">
+                    <h4>Notifications</h4>
+                    <span onclick="markAllAsRead()">Mark all as read</span>
+                </div>
+                <div class="notification-item">
+                    <div class="notification-icon-item info">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h5>Tip for Reporting</h5>
+                        <p>Add clear photos to increase chances of finding your item</p>
+                        <div class="notification-time">Just now</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80"
+                    class="profile-img" onclick="toggleProfile()">
+                <div class="profile-menu" id="profileMenu">
+                    <div class="profile-header">
+                        <img
+                            src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80">
+                        <div class="profile-info">
+                            <h4>Alex Johnson</h4>
+                            <p>Student • NUTECH</p>
+                        </div>
+                    </div>
+                    <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+                    <a href="#"><i class="fas fa-user"></i> My Profile</a>
+                    <a href="#"><i class="fas fa-cog"></i> Settings</a>
+                    <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <h3>Navigation</h3>
+                <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="#" class="active"><i class="fas fa-plus-circle"></i> Report Lost Item</a>
+                <a href="report-found-item.html"><i class="fas fa-search-plus"></i> Report Found Item</a>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Browse</h3>
+                <a href="view-lost-items.html"><i class="fas fa-eye"></i> View Lost Items <span class="badge">42</span></a>
+                <a href="view-found-items.html"><i class="fas fa-eye"></i> View Found Items <span class="badge">36</span></a>
+                <a href="my-reports.html"><i class="fas fa-clipboard-list"></i> My Reports <span class="badge">5</span></a>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Support</h3>
+                <a href="#"><i class="fas fa-bell"></i> Notifications</a>
+                <a href="#"><i class="fas fa-question-circle"></i> Help & Support</a>
+                <a href="#"><i class="fas fa-phone-alt"></i> Contact Admin</a>
+            </div>
+        </div>
+
+        <div class="main">
+            <!-- Success Message (Hidden by default) -->
+            <div class="success-message" id="successMessage">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="success-content">
+                    <h3>Lost Item Reported Successfully!</h3>
+                    <p>Your lost item has been reported to the system. We'll notify you if a match is found.</p>
+                    <div class="reference-id">Reference ID: <strong>LOST-2023-085</strong></div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-secondary" onclick="printReport()">
+                        <i class="fas fa-print"></i> Print Report
+                    </button>
+                    <button class="btn btn-primary" onclick="goToDashboard()">
+                        <i class="fas fa-home"></i> Go to Dashboard
+                    </button>
+                </div>
+            </div>
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-title">
+                    <div class="page-title-icon">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <div class="page-title-text">
+                        <h1>Report Lost Item</h1>
+                        <p>Fill out the form below to report a lost item at NUTECH University</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Container -->
+            <div class="form-container" id="reportForm">
+                <div class="form-header">
+                    <h2>Lost Item Details</h2>
+                    <p>Provide accurate information to increase chances of recovering your item</p>
+                </div>
+
+                <form id="lostItemForm">
+                    <div class="form-body">
+                        <!-- Section 1: Basic Information -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-info-circle"></i> Basic Information</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Item Name <span class="required">*</span></label>
+                                    <input type="text" class="form-control" id="itemName" 
+                                           placeholder="e.g., Black Leather Wallet, iPhone 13 Pro" 
+                                           required>
+                                    <div class="error-message" id="itemNameError">Please enter the item name</div>
+                                    <div class="hint">Be specific about the item name and brand</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Category <span class="required">*</span></label>
+                                    <select class="form-control" id="itemCategory" required>
+                                        <option value="">Select a category</option>
+                                        <option value="electronics">Electronics</option>
+                                        <option value="accessories">Accessories</option>
+                                        <option value="documents">Documents</option>
+                                        <option value="clothing">Clothing & Bags</option>
+                                        <option value="books">Books & Stationery</option>
+                                        <option value="jewelry">Jewelry & Watches</option>
+                                        <option value="keys">Keys & IDs</option>
+                                        <option value="others">Others</option>
+                                    </select>
+                                    <div class="error-message" id="itemCategoryError">Please select a category</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Color <span class="required">*</span></label>
+                                    <input type="text" class="form-control" id="itemColor" 
+                                           placeholder="e.g., Black, Blue, Silver, Multi-color" 
+                                           required>
+                                    <div class="error-message" id="itemColorError">Please enter the item color</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Brand/Model</label>
+                                    <input type="text" class="form-control" id="itemBrand" 
+                                           placeholder="e.g., Apple, Nike, Samsung">
+                                    <div class="hint">Manufacturer or specific model if applicable</div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Description <span class="required">*</span></label>
+                                <textarea class="form-control" id="itemDescription" 
+                                          placeholder="Provide detailed description of your lost item. Include any distinguishing features, damages, serial numbers, or contents..." 
+                                          required></textarea>
+                                <div class="error-message" id="itemDescriptionError">Please provide a description</div>
+                                <div class="hint">The more details you provide, the better chance of recovery</div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Location & Time -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-map-marker-alt"></i> Location & Time Details</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Location Where Lost <span class="required">*</span></label>
+                                    <select class="form-control" id="lostLocation" required>
+                                        <option value="">Select location</option>
+                                        <option value="library">Library</option>
+                                        <option value="cafeteria">Cafeteria</option>
+                                        <option value="computer-lab">Computer Lab</option>
+                                        <option value="sports-complex">Sports Complex</option>
+                                        <option value="admin-building">Admin Building</option>
+                                        <option value="classroom">Classroom Building</option>
+                                        <option value="parking">Parking Area</option>
+                                        <option value="auditorium">Auditorium</option>
+                                        <option value="other">Other Area</option>
+                                    </select>
+                                    <div class="error-message" id="lostLocationError">Please select a location</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Specific Area/Details</label>
+                                    <input type="text" class="form-control" id="specificArea" 
+                                           placeholder="e.g., Second floor, near coffee machine, table number 5">
+                                    <div class="hint">Be as specific as possible about the exact spot</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Date Lost <span class="required">*</span></label>
+                                    <input type="date" class="form-control" id="lostDate" required>
+                                    <div class="error-message" id="lostDateError">Please select the date when lost</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Approximate Time Lost</label>
+                                    <input type="time" class="form-control" id="lostTime">
+                                    <div class="hint">If you remember the approximate time</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Photos & Identification -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-camera"></i> Photos & Identification</h3>
+                            
+                            <div class="form-group">
+                                <label>Upload Photos</label>
+                                <div class="upload-area" onclick="document.getElementById('fileInput').click()" id="uploadArea">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <h4>Click to upload photos</h4>
+                                    <p>Upload clear photos of your item or similar items</p>
+                                    <button type="button" class="upload-btn">Choose Files</button>
+                                    <input type="file" id="fileInput" accept="image/*" multiple style="display: none;" onchange="handleFileUpload()">
+                                </div>
+                                <div class="hint">Upload up to 5 photos (Max 5MB each). Clear photos increase recovery chances by 70%.</div>
+                            </div>
+
+                            <div class="upload-preview" id="uploadPreview">
+                                <!-- Preview items will be added here -->
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Estimated Value</label>
+                                    <input type="text" class="form-control" id="itemValue" 
+                                           placeholder="e.g., $150, PKR 5000">
+                                    <div class="hint">Approximate monetary value of the item</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Serial Number/ID (If applicable)</label>
+                                    <input type="text" class="form-control" id="serialNumber" 
+                                           placeholder="e.g., IMEI, Serial No., Registration No.">
+                                    <div class="hint">For electronics or registered items</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 4: Contact Information -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-user"></i> Contact Information</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Your Full Name <span class="required">*</span></label>
+                                    <input type="text" class="form-control" id="reporterName" 
+                                           value="Alex Johnson" required>
+                                    <div class="error-message" id="reporterNameError">Please enter your name</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Student/Staff ID <span class="required">*</span></label>
+                                    <input type="text" class="form-control" id="reporterId" 
+                                           value="NUTECH-2021-045" required>
+                                    <div class="error-message" id="reporterIdError">Please enter your ID</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Email Address <span class="required">*</span></label>
+                                    <input type="email" class="form-control" id="reporterEmail" 
+                                           value="alex.j@nutech.edu.pk" required>
+                                    <div class="error-message" id="reporterEmailError">Please enter a valid email</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Phone Number <span class="required">*</span></label>
+                                    <input type="tel" class="form-control" id="reporterPhone" 
+                                           value="+92 300 1234567" required>
+                                    <div class="error-message" id="reporterPhoneError">Please enter your phone number</div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Additional Contact Information</label>
+                                <textarea class="form-control" id="additionalContact" 
+                                          placeholder="Any other contact details or instructions for contacting you..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Section 5: Additional Details -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-edit"></i> Additional Details</h3>
+                            <div class="form-group">
+                                <label>Reward for Return (Optional)</label>
+                                <input type="text" class="form-control" id="reward" 
+                                       placeholder="e.g., $20, PKR 1000, or 'Thank you gift'">
+                                <div class="hint">If you're offering a reward for the item's return</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Special Instructions</label>
+                                <textarea class="form-control" id="specialInstructions" 
+                                          placeholder="Any special instructions for the finder or admin..."></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                    <input type="checkbox" id="termsAgreement" required style="margin-top: 5px;">
+                                    <label for="termsAgreement" style="font-weight: normal; font-size: 14px;">
+                                        I agree to the <a href="#" style="color: var(--primary);">Terms of Service</a> and confirm that the information provided is accurate to the best of my knowledge. I understand that false reporting may result in penalties.
+                                        <span class="required">*</span>
+                                    </label>
+                                </div>
+                                <div class="error-message" id="termsAgreementError">You must agree to the terms</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-footer">
+                        <div class="form-notes">
+                            <p><i class="fas fa-lightbulb"></i> <strong>Tips for better recovery:</strong> 
+                            Provide clear photos, detailed description, and exact location. Items with photos are 3x more likely to be returned.</p>
+                            <p><i class="fas fa-shield-alt"></i> Your information is secure and will only be shared with potential finders.</p>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                                <i class="fas fa-redo"></i> Reset Form
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane"></i> Submit Report
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form validation and submission
+        document.getElementById('lostItemForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (validateForm()) {
+                submitReport();
+            }
+        });
+
+        // Form validation function
+        function validateForm() {
+            let isValid = true;
+            const fields = [
+                { id: 'itemName', errorId: 'itemNameError' },
+                { id: 'itemCategory', errorId: 'itemCategoryError' },
+                { id: 'itemColor', errorId: 'itemColorError' },
+                { id: 'itemDescription', errorId: 'itemDescriptionError' },
+                { id: 'lostLocation', errorId: 'lostLocationError' },
+                { id: 'lostDate', errorId: 'lostDateError' },
+                { id: 'reporterName', errorId: 'reporterNameError' },
+                { id: 'reporterId', errorId: 'reporterIdError' },
+                { id: 'reporterEmail', errorId: 'reporterEmailError' },
+                { id: 'reporterPhone', errorId: 'reporterPhoneError' }
+            ];
+
+            // Reset all errors
+            fields.forEach(field => {
+                document.getElementById(field.id).classList.remove('error');
+                document.getElementById(field.errorId).style.display = 'none';
+            });
+
+            // Check required fields
+            fields.forEach(field => {
+                const element = document.getElementById(field.id);
+                const errorElement = document.getElementById(field.errorId);
+                
+                if (!element.value.trim()) {
+                    element.classList.add('error');
+                    errorElement.style.display = 'block';
+                    isValid = false;
+                    
+                    // Add shake animation
+                    element.classList.add('shake');
+                    setTimeout(() => {
+                        element.classList.remove('shake');
+                    }, 500);
+                }
+                
+                // Special validation for email
+                if (field.id === 'reporterEmail' && element.value.trim()) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(element.value)) {
+                        element.classList.add('error');
+                        errorElement.textContent = 'Please enter a valid email address';
+                        errorElement.style.display = 'block';
+                        isValid = false;
+                    }
+                }
+            });
+
+            // Check terms agreement
+            const termsCheckbox = document.getElementById('termsAgreement');
+            const termsError = document.getElementById('termsAgreementError');
+            
+            if (!termsCheckbox.checked) {
+                termsError.style.display = 'block';
+                isValid = false;
+                
+                termsCheckbox.parentElement.classList.add('shake');
+                setTimeout(() => {
+                    termsCheckbox.parentElement.classList.remove('shake');
+                }, 500);
+            }
+
+            return isValid;
+        }
+
+        // Submit report function
+        function submitReport() {
+            // Get form data
+            const formData = {
+                itemName: document.getElementById('itemName').value,
+                category: document.getElementById('itemCategory').value,
+                color: document.getElementById('itemColor').value,
+                brand: document.getElementById('itemBrand').value,
+                description: document.getElementById('itemDescription').value,
+                location: document.getElementById('lostLocation').value,
+                specificArea: document.getElementById('specificArea').value,
+                dateLost: document.getElementById('lostDate').value,
+                timeLost: document.getElementById('lostTime').value,
+                value: document.getElementById('itemValue').value,
+                serialNumber: document.getElementById('serialNumber').value,
+                reporterName: document.getElementById('reporterName').value,
+                reporterId: document.getElementById('reporterId').value,
+                reporterEmail: document.getElementById('reporterEmail').value,
+                reporterPhone: document.getElementById('reporterPhone').value,
+                additionalContact: document.getElementById('additionalContact').value,
+                reward: document.getElementById('reward').value,
+                specialInstructions: document.getElementById('specialInstructions').value,
+                photos: uploadedFiles.length,
+                timestamp: new Date().toISOString()
+            };
+
+            // In a real application, you would send this data to a server
+            console.log('Form data:', formData);
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Show success message
+                document.getElementById('successMessage').style.display = 'flex';
+                document.getElementById('reportForm').style.display = 'none';
+                
+                // Generate random reference ID
+                const refId = 'LOST-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+                document.querySelector('.reference-id strong').textContent = refId;
+                
+                // Update notification badge
+                const badge = document.querySelector('.notification-badge');
+                const currentCount = parseInt(badge.textContent) || 0;
+                badge.textContent = currentCount + 1;
+                
+                // Show success notification
+                alert(`Lost item reported successfully!\n\nReference ID: ${refId}\n\nYou will receive email updates about your report.`);
+            }, 1500);
+        }
+
+        // File upload handling
+        let uploadedFiles = [];
+
+        function handleFileUpload() {
+            const fileInput = document.getElementById('fileInput');
+            const files = Array.from(fileInput.files);
+            
+            // Validate file count
+            if (uploadedFiles.length + files.length > 5) {
+                alert('Maximum 5 photos allowed. Please select fewer files.');
+                fileInput.value = '';
+                return;
+            }
+            
+            // Validate file size and type
+            const validFiles = files.filter(file => {
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    alert(`File "${file.name}" exceeds 5MB size limit.`);
+                    return false;
+                }
+                if (!file.type.startsWith('image/')) {
+                    alert(`File "${file.name}" is not an image.`);
+                    return false;
+                }
+                return true;
+            });
+            
+            // Add to uploaded files
+            uploadedFiles.push(...validFiles);
+            
+            // Update preview
+            updateFilePreview();
+            
+            // Reset file input
+            fileInput.value = '';
+        }
+
+        function updateFilePreview() {
+            const previewContainer = document.getElementById('uploadPreview');
+            previewContainer.innerHTML = '';
+            
+            uploadedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'preview-item';
+                    previewItem.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <button type="button" class="preview-remove" onclick="removeFile(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    previewContainer.appendChild(previewItem);
+                };
+                
+                reader.readAsDataURL(file);
+            });
+            
+            // Update upload area text if files are uploaded
+            const uploadArea = document.getElementById('uploadArea');
+            if (uploadedFiles.length > 0) {
+                uploadArea.querySelector('h4').textContent = `${uploadedFiles.length} file(s) uploaded`;
+                uploadArea.querySelector('p').textContent = 'Click to add more photos or drag & drop';
+            }
+        }
+
+        function removeFile(index) {
+            uploadedFiles.splice(index, 1);
+            updateFilePreview();
+        }
+
+        // Drag and drop functionality
+        const uploadArea = document.getElementById('uploadArea');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            uploadArea.style.borderColor = 'var(--primary)';
+            uploadArea.style.backgroundColor = 'rgba(30, 136, 229, 0.1)';
+        }
+
+        function unhighlight() {
+            uploadArea.style.borderColor = '#ddd';
+            uploadArea.style.backgroundColor = '#f9fafc';
+        }
+
+        uploadArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            document.getElementById('fileInput').files = files;
+            handleFileUpload();
+        }
+
+        // Reset form function
+        function resetForm() {
+            if (confirm('Are you sure you want to reset the form? All entered data will be lost.')) {
+                document.getElementById('lostItemForm').reset();
+                uploadedFiles = [];
+                updateFilePreview();
+                
+                // Reset file input
+                document.getElementById('fileInput').value = '';
+                
+                // Reset upload area text
+                const uploadArea = document.getElementById('uploadArea');
+                uploadArea.querySelector('h4').textContent = 'Click to upload photos';
+                uploadArea.querySelector('p').textContent = 'Upload clear photos of your item or similar items';
+                
+                // Reset errors
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.style.display = 'none';
+                });
+                document.querySelectorAll('.form-control').forEach(el => {
+                    el.classList.remove('error');
+                });
+                
+                // Set default date to today
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('lostDate').value = today;
+            }
+        }
+
+        // Success message actions
+        function printReport() {
+            alert('Printing report...\nIn a real application, this would generate a printable report.');
+        }
+
+        function goToDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+
+        // Set default date to today
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('lostDate').value = today;
+            document.getElementById('lostDate').max = today; // Can't select future dates
+        };
+
+        // Toggle notifications dropdown
+        function toggleNotifications() {
+            const box = document.getElementById("notifications");
+            box.style.display = box.style.display === "block" ? "none" : "block";
+            document.getElementById("profileMenu").style.display = "none";
+        }
+
+        // Toggle profile dropdown
+        function toggleProfile() {
+            const menu = document.getElementById("profileMenu");
+            menu.style.display = menu.style.display === "block" ? "none" : "block";
+            document.getElementById("notifications").style.display = "none";
+        }
+
+        // Mark all notifications as read
+        function markAllAsRead() {
+            const badge = document.querySelector('.notification-badge');
+            badge.textContent = '0';
+            badge.style.backgroundColor = '#999';
+            document.getElementById("notifications").style.display = 'none';
+        }
+
+        // Close dropdowns when clicking outside
+        window.onclick = function(event) {
+            if (!event.target.matches('.profile-img') && !event.target.matches('.notification-icon')) {
+                document.getElementById("profileMenu").style.display = "none";
+                document.getElementById("notifications").style.display = "none";
+            }
+        };
+    </script>
+
+</body>
+
+</html>

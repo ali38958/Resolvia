@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <title>Admin Profile — Resolvia</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+    <style>
+        /* ── Profile page layout ── */
+        .profile-wrap {
+            max-width: 860px;
+            animation: fadeUp 0.35s ease;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Hero banner ── */
+        .profile-hero {
+            background: linear-gradient(135deg, var(--primary) 0%, #0a4238 100%);
+            color: #fff;
+            border-radius: var(--radius-xl);
+            padding: var(--space-8) var(--space-8);
+            display: flex;
+            align-items: center;
+            gap: var(--space-6);
+            margin-bottom: var(--space-5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle decorative blob */
+        .profile-hero::before {
+            content: '';
+            position: absolute;
+            inset: -40px -40px -40px auto;
+            width: 280px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Gold variant for superadmin */
+        .gold .profile-hero {
+            background: linear-gradient(135deg, #c9a227 0%, #8b6914 100%);
+            color: #3b2a05;
+        }
+
+        /* ── Avatar ── */
+        .avatar-wrap {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .profile-avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255, 255, 255, 0.35);
+            background: #fff;
+            display: block;
+        }
+
+        .avatar-btn {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid #fff;
+            font-size: 13px;
+            transition: transform var(--t-fast), background var(--t-fast);
+        }
+
+        .avatar-btn:hover {
+            transform: scale(1.12);
+            background: #fff;
+        }
+
+        .gold .avatar-btn {
+            color: #8b6914;
+        }
+
+        /* ── Hero text ── */
+        .hero-text {
+            flex: 1;
+        }
+
+        .hero-name {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.4px;
+            margin-bottom: var(--space-2);
+        }
+
+        .hero-role {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            font-size: var(--text-sm);
+            opacity: 0.9;
+            flex-wrap: wrap;
+        }
+
+        .hero-status {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: 3px 10px;
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: var(--radius-full);
+            font-size: var(--text-xs);
+            font-weight: 600;
+        }
+
+        .hero-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #4ade80;
+            box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3);
+        }
+
+        /* ── Profile card grid ── */
+        .profile-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .profile-field {
+            padding: var(--space-5) var(--space-6);
+            border-bottom: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            transition: background var(--t-fast);
+        }
+
+        .profile-field:nth-child(even) {
+            border-right: none;
+        }
+
+        .profile-field:last-child,
+        .profile-field:nth-last-child(2):nth-child(odd) {
+            border-bottom: none;
+        }
+
+        .profile-field:hover {
+            background: var(--bg-surface-2);
+        }
+
+        .field-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.9px;
+            color: var(--text-muted);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-2);
+        }
+
+        .field-value {
+            font-size: var(--text-base);
+            color: var(--text-primary);
+            font-weight: 500;
+            min-height: 26px;
+        }
+
+        /* ── Editable row ── */
+        .editable-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .edit-trigger {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 13px;
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-sm);
+            transition: color var(--t-fast), background var(--t-fast);
+            margin-left: auto;
+        }
+
+        .edit-trigger:hover {
+            color: var(--primary);
+            background: var(--primary-bg);
+        }
+
+        .edit-input {
+            flex: 1;
+            padding: var(--space-2) var(--space-3);
+            border: 1.5px solid var(--primary);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-sm);
+            font-family: inherit;
+            color: var(--text-primary);
+            background: var(--bg-surface);
+            outline: none;
+            transition: box-shadow var(--t-fast);
+        }
+
+        .edit-input:focus {
+            box-shadow: 0 0 0 3px var(--primary-bg);
+        }
+
+        .edit-actions {
+            display: flex;
+            gap: var(--space-1);
+        }
+
+        .btn-save,
+        .btn-cancel {
+            border: none;
+            cursor: pointer;
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            font-weight: 600;
+            transition: all var(--t-fast);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-save {
+            background: var(--primary-bg);
+            color: var(--primary);
+        }
+
+        .btn-save:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-cancel {
+            background: var(--bg-surface-2);
+            color: var(--text-muted);
+        }
+
+        .btn-cancel:hover {
+            background: var(--border-strong);
+            color: var(--text-primary);
+        }
+
+        /* ── Static ID chip ── */
+        .id-chip {
+            font-family: var(--font-mono);
+            font-size: var(--text-sm);
+            background: var(--bg-surface-2);
+            padding: 2px 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            letter-spacing: 0.3px;
+            color: var(--text-secondary);
+        }
+
+        /* ── Password row ── */
+        .btn-change-pass {
+            background: none;
+            border: 1px solid var(--border-strong);
+            color: var(--primary);
+            padding: 4px 14px;
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+        }
+
+        .btn-change-pass:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            top: calc(var(--header-height) + var(--space-4));
+            right: var(--space-5);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: 500;
+            z-index: 5000;
+            box-shadow: var(--shadow-lg);
+            min-width: 240px;
+            max-width: 360px;
+            animation: toast-in 0.25s ease;
+            border-left: 4px solid transparent;
+        }
+
+        @keyframes toast-in {
+            from {
+                transform: translateX(110%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            background: var(--success-light);
+            border-color: var(--success);
+            color: #166534;
+        }
+
+        .toast.error {
+            background: var(--danger-light);
+            border-color: var(--danger);
+            color: #9f1239;
+        }
+
+        .toast.info {
+            background: var(--info-light);
+            border-color: var(--info);
+            color: #1e40af;
+        }
+
+        .toast-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.6;
+            font-size: 15px;
+            padding: 0;
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .profile-hero {
+                flex-direction: column;
+                text-align: center;
+                padding: var(--space-6);
+            }
+
+            .hero-role {
+                justify-content: center;
+            }
+
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-field {
+                border-right: none !important;
+            }
+
+            .profile-field:last-child {
+                border-bottom: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="/assets/logo.png" alt="Resolvia" id="logo">
+            <span class="logo-text">Resolvia</span>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" title="Toggle theme">
+                <i class="fa fa-moon icon-moon"></i>
+                <i class="fa fa-sun icon-sun"></i>
+            </button>
+            <div class="profile-icon"><i class="fa fa-user"></i></div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fa fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <nav class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </nav>
+
+    <main class="main-content" id="main-content">
+        <div class="profile-wrap">
+
+            <!-- ── Hero ─────────────────────────────── -->
+            <div class="profile-hero">
+                <div class="avatar-wrap">
+                    <img src="/assets/default%20user%20icon.png" alt="Profile" class="profile-avatar" id="profileImage"
+                        onerror="this.src='/assets/default%20user%20icon.png'">
+                    <label for="avatarInput" class="avatar-btn" title="Change photo">
+                        <i class="fas fa-camera"></i>
+                    </label>
+                    <input type="file" id="avatarInput" accept="image/*" style="display:none;">
+                </div>
+                <div class="hero-text">
+                    <div class="hero-name" id="heroName">Loading…</div>
+                    <div class="hero-role">
+                        <i class="fas fa-shield-alt" id="roleIcon"></i>
+                        <span id="heroRole">Administrator</span>
+                        <span class="hero-status">
+                            <span class="hero-dot"></span>
+                            Active
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Profile fields card ───────────────── -->
+            <div class="profile-card">
+                <div class="profile-grid">
+
+                    <!-- Admin ID -->
+                    <div class="profile-field">
+                        <div class="field-label"><i class="fas fa-id-badge"></i> Admin ID</div>
+                        <div class="field-value">
+                            <span class="id-chip" id="dispId">—</span>
+                        </div>
+                    </div>
+
+                    <!-- Full Name -->
+                    <div class="profile-field">
+                        <div class="field-label"><i class="fas fa-user"></i> Full Name</div>
+                        <div class="field-value" id="nameField">
+                            <div class="editable-row">
+                                <span id="dispName">—</span>
+                                <button class="edit-trigger" data-field="name" title="Edit name">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="profile-field">
+                        <div class="field-label"><i class="fas fa-envelope"></i> Email Address</div>
+                        <div class="field-value" id="emailField">
+                            <div class="editable-row">
+                                <span id="dispEmail">—</span>
+                                <button class="edit-trigger" data-field="email" title="Edit email">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Member Since -->
+                    <div class="profile-field">
+                        <div class="field-label"><i class="fas fa-calendar-alt"></i> Member Since</div>
+                        <div class="field-value">
+                            <span id="dispJoinDate">—</span>
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="profile-field" style="grid-column: 1 / -1; border-bottom: none;">
+                        <div class="field-label"><i class="fas fa-lock"></i> Password</div>
+                        <div class="field-value">
+                            <div class="editable-row">
+                                <span style="letter-spacing:3px;color:var(--text-muted);">••••••••</span>
+                                <button class="btn-change-pass" id="openPassBtn">Change Password</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ══ PASSWORD MODAL ═══════════════════════════════ -->
+    <div class="modal-overlay" id="passwordModal">
+        <div class="modal" style="max-width:420px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Change Password</h2>
+                <button class="modal-close" id="closePassModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Current Password <span class="form-required">*</span></label>
+                    <input type="password" id="currentPass" class="form-control" autocomplete="current-password">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">New Password <span class="form-required">*</span></label>
+                    <input type="password" id="newPass" class="form-control" autocomplete="new-password">
+                    <span class="form-hint">Minimum 6 characters.</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm New Password <span class="form-required">*</span></label>
+                    <input type="password" id="confirmPass" class="form-control" autocomplete="new-password">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelPassBtn">Cancel</button>
+                <button class="btn btn-primary" id="savePassBtn">
+                    <i class="fas fa-key"></i> Update Password
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+    <script>
+        // ── State ──────────────────────────────────────────
+        let adminData = {
+            id: '', name: '', email: '',
+            is_superadmin: false,
+            picture: '/assets/default%20user%20icon.png',
+            created_at: ''
+        };
+        let origValues = { name: '', email: '' };
+
+        // ── Toast ──────────────────────────────────────────
+        function showToast(message, type = 'success') {
+            document.querySelectorAll('.toast').forEach(t => t.remove());
+            const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i>
+                <span style="flex:1">${message}</span>
+                <button class="toast-close"><i class="fas fa-times"></i></button>`;
+            document.body.appendChild(toast);
+            toast.querySelector('.toast-close').addEventListener('click', () => toast.remove());
+            setTimeout(() => toast?.remove(), 3500);
+        }
+
+        // ── Render profile ─────────────────────────────────
+        function renderProfile() {
+            document.getElementById('heroName').textContent = adminData.name;
+            document.getElementById('dispId').textContent = adminData.id;
+            document.getElementById('dispName').textContent = adminData.name;
+            document.getElementById('dispEmail').textContent = adminData.email;
+            origValues.name = adminData.name;
+            origValues.email = adminData.email;
+
+            const img = document.getElementById('profileImage');
+            img.src = adminData.picture;
+            img.onerror = () => img.src = '/assets/default%20user%20icon.png';
+
+            const dateStr = adminData.created_at
+                ? new Date(adminData.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+                : new Date().toLocaleDateString();
+            document.getElementById('dispJoinDate').textContent = dateStr;
+
+            if (adminData.is_superadmin) {
+                document.body.classList.add('gold');
+                document.getElementById('heroRole').textContent = 'Super Administrator';
+                document.getElementById('roleIcon').className = 'fas fa-crown';
+            }
+        }
+
+        // ── Inline field editing ───────────────────────────
+        function enableEdit(field) {
+            const fieldEl = document.getElementById(field + 'Field');
+            const current = field === 'name'
+                ? document.getElementById('dispName').textContent
+                : document.getElementById('dispEmail').textContent;
+
+            fieldEl.innerHTML = `
+                <div class="editable-row">
+                    <input type="${field === 'email' ? 'email' : 'text'}"
+                           id="inp_${field}" class="edit-input" value="${current}">
+                    <div class="edit-actions">
+                        <button class="btn-save" id="saveBtn_${field}">
+                            <i class="fas fa-check"></i> Save
+                        </button>
+                        <button class="btn-cancel" id="cancelBtn_${field}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>`;
+
+            const input = document.getElementById('inp_' + field);
+            input.focus();
+            input.select();
+
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter') saveField(field);
+                if (e.key === 'Escape') cancelEdit(field);
+            });
+
+            document.getElementById('saveBtn_' + field).addEventListener('click', () => saveField(field));
+            document.getElementById('cancelBtn_' + field).addEventListener('click', () => cancelEdit(field));
+        }
+
+        async function saveField(field) {
+            const input = document.getElementById('inp_' + field);
+            const val = input.value.trim();
+
+            if (field === 'name' && val.length < 2) {
+                showToast('Name must be at least 2 characters.', 'error'); return;
+            }
+            if (field === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+                showToast('Please enter a valid email address.', 'error'); return;
+            }
+            if (field === 'email' && val === adminData.email) {
+                showToast('That is already your current email.', 'info');
+                cancelEdit('email'); return;
+            }
+
+            const btn = document.getElementById('saveBtn_' + field);
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;"></span>';
+
+            try {
+                const payload = {}; payload[field] = val;
+                const { data } = await api.put('/api/admin/profile', payload);
+                if (!data.success) throw new Error(data.message);
+
+                adminData[field] = val;
+                origValues[field] = val;
+                if (field === 'name') document.getElementById('heroName').textContent = val;
+
+                showToast(data.message || `${field.charAt(0).toUpperCase() + field.slice(1)} updated.`);
+            } catch (err) {
+                console.error(err);
+                showToast(err.response?.data?.message || err.message || 'Failed to save.', 'error');
+            }
+
+            restoreField(field);
+        }
+
+        function cancelEdit(field) { restoreField(field); }
+
+        function restoreField(field) {
+            const val = origValues[field];
+            const fid = field === 'name' ? 'dispName' : 'dispEmail';
+            const icon = field === 'name' ? 'fa-user' : 'fa-envelope';
+            const fieldEl = document.getElementById(field + 'Field');
+            fieldEl.innerHTML = `
+                <div class="editable-row">
+                    <span id="${fid}">${val}</span>
+                    <button class="edit-trigger" data-field="${field}" title="Edit ${field}">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                </div>`;
+            fieldEl.querySelector('.edit-trigger').addEventListener('click', () => enableEdit(field));
+        }
+
+        // ── Avatar upload ──────────────────────────────────
+        async function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.size > 2 * 1024 * 1024) {
+                showToast('File size must be less than 2 MB.', 'error'); this.value = ''; return;
+            }
+            if (!['image/jpeg', 'image/jpg', 'image/png', 'image/gif'].includes(file.type)) {
+                showToast('Only JPG, PNG, and GIF images are allowed.', 'error'); this.value = ''; return;
+            }
+
+            // Instant preview
+            const reader = new FileReader();
+            reader.onload = e => document.getElementById('profileImage').src = e.target.result;
+            reader.readAsDataURL(file);
+
+            try {
+                const fd = new FormData();
+                fd.append('picture', file);
+                const { data } = await api.post('/api/admin/profile/picture', fd, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                if (!data.success) throw new Error(data.message);
+                adminData.picture = data.data.picture;
+                showToast('Profile photo updated.');
+            } catch (err) {
+                console.error(err);
+                document.getElementById('profileImage').src = adminData.picture;
+                showToast(err.response?.data?.message || err.message || 'Upload failed.', 'error');
+            } finally {
+                this.value = '';
+            }
+        }
+
+        // ── Password modal ─────────────────────────────────
+        function openPassModal() {
+            document.getElementById('currentPass').value = '';
+            document.getElementById('newPass').value = '';
+            document.getElementById('confirmPass').value = '';
+            document.getElementById('passwordModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePassModal() {
+            document.getElementById('passwordModal').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        async function updatePassword() {
+            const cur = document.getElementById('currentPass').value;
+            const nw = document.getElementById('newPass').value;
+            const conf = document.getElementById('confirmPass').value;
+
+            if (!cur || !nw || !conf) { showToast('All fields are required.', 'error'); return; }
+            if (nw.length < 6) { showToast('Password must be at least 6 characters.', 'error'); return; }
+            if (nw !== conf) { showToast('New passwords do not match.', 'error'); return; }
+
+            const btn = document.getElementById('savePassBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;"></span> Updating…';
+
+            try {
+                const { data } = await api.put('/api/admin/profile/password', {
+                    currentPassword: cur, newPassword: nw
+                });
+                if (!data.success) throw new Error(data.message);
+                closePassModal();
+                showToast('Password updated successfully.');
+            } catch (err) {
+                console.error(err);
+                showToast(err.response?.data?.message || err.message || 'Failed to update password.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-key"></i> Update Password';
+            }
+        }
+
+        // ── Init ───────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Wire static edit triggers
+            document.querySelectorAll('.edit-trigger').forEach(btn =>
+                btn.addEventListener('click', () => enableEdit(btn.dataset.field))
+            );
+
+            // Avatar
+            document.getElementById('avatarInput').addEventListener('change', handleImageUpload);
+
+            // Password modal buttons
+            document.getElementById('openPassBtn').addEventListener('click', openPassModal);
+            document.getElementById('closePassModal').addEventListener('click', closePassModal);
+            document.getElementById('cancelPassBtn').addEventListener('click', closePassModal);
+            document.getElementById('savePassBtn').addEventListener('click', updatePassword);
+            document.getElementById('passwordModal').addEventListener('click', e => {
+                if (e.target === document.getElementById('passwordModal')) closePassModal();
+            });
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && document.getElementById('passwordModal').classList.contains('open'))
+                    closePassModal();
+            });
+
+            // Enter key inside password modal inputs
+            ['currentPass', 'newPass', 'confirmPass'].forEach(id => {
+                document.getElementById(id).addEventListener('keydown', e => {
+                    if (e.key === 'Enter') updatePassword();
+                });
+            });
+
+            // Load profile data
+            try {
+                const { data: auth } = await api.get('/api/auth/verify');
+                adminData.id = auth.user.id;
+                adminData.email = auth.user.email;
+                adminData.name = auth.user.name || 'Admin';
+                adminData.is_superadmin = auth.user.is_superadmin || false;
+                if (auth.user.picture) adminData.picture = auth.user.picture;
+
+                if (adminData.is_superadmin) document.body.classList.add('gold');
+
+                const { data: prof } = await api.get('/api/admin/profile');
+                if (prof.success) {
+                    adminData = {
+                        ...adminData,
+                        ...prof.data,
+                        is_superadmin: adminData.is_superadmin || prof.data.is_superadmin
+                    };
+                }
+                renderProfile();
+            } catch (err) {
+                console.error(err);
+                if (err.response?.status === 401) window.location.href = '/login';
+                showToast('Failed to load profile data.', 'error');
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <title>Building Management — Resolvia</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+    <style>
+        /* ── Page-specific styles only ── */
+
+        /* Image upload area */
+        .upload-area {
+            border: 1.5px dashed var(--border-strong);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6) var(--space-4);
+            text-align: center;
+            cursor: pointer;
+            transition: border-color var(--t-fast), background var(--t-base);
+            background: var(--bg-surface-2);
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .upload-area-icon {
+            font-size: 36px;
+            color: var(--primary);
+            margin-bottom: var(--space-2);
+        }
+
+        .upload-area-text {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .upload-area-hint {
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+            margin-top: var(--space-1);
+        }
+
+        .upload-preview {
+            max-width: 100%;
+            max-height: 140px;
+            border-radius: var(--radius-md);
+            margin-top: var(--space-3);
+            display: none;
+            border: 2px solid var(--primary-mid);
+            box-shadow: var(--shadow-sm);
+            object-fit: cover;
+        }
+
+        .remove-image-btn {
+            display: none;
+            align-items: center;
+            gap: var(--space-1);
+            margin-top: var(--space-2);
+            background: var(--danger-light);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            border-radius: var(--radius-sm);
+            padding: 0 var(--space-3);
+            height: 28px;
+            font-size: var(--text-xs);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--t-fast), color var(--t-fast);
+        }
+
+        .remove-image-btn:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        /* Building details modal */
+        .building-detail-image {
+            width: 100%;
+            height: 220px;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background: var(--bg-surface-2);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-4);
+        }
+
+        .building-detail-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .building-detail-image .img-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-2);
+            color: var(--text-muted);
+        }
+
+        .building-detail-image .img-placeholder i {
+            font-size: 40px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-4);
+            background: var(--bg-surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .detail-label {
+            font-size: var(--text-xs);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: var(--text-muted);
+        }
+
+        .detail-value {
+            font-size: var(--text-md);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Action buttons in table */
+        .action-btn-view,
+        .action-btn-edit,
+        .action-btn-delete {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: 0 var(--space-2);
+            height: 28px;
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--t-fast), color var(--t-fast), transform var(--t-fast);
+            white-space: nowrap;
+            border: 1px solid transparent;
+        }
+
+        .action-btn-view {
+            background: var(--success-light);
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        .action-btn-view:hover {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .action-btn-edit {
+            background: var(--info-light);
+            color: var(--info);
+            border-color: var(--info);
+        }
+
+        .action-btn-edit:hover {
+            background: var(--info);
+            color: #fff;
+        }
+
+        .action-btn-delete {
+            background: var(--danger-light);
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .action-btn-delete:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        /* Delete confirm button */
+        .btn-danger-confirm {
+            background: var(--danger);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 0 var(--space-5);
+            height: 38px;
+            font-size: var(--text-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--t-fast), transform var(--t-fast);
+        }
+
+        .btn-danger-confirm:hover {
+            background: #c83450;
+            transform: translateY(-1px);
+        }
+
+        /* Table column sizing */
+        #buildingsTable th:nth-child(1),
+        #buildingsTable td:nth-child(1) {
+            width: 50px;
+            text-align: center;
+        }
+
+        #buildingsTable th:nth-child(4),
+        #buildingsTable td:nth-child(4),
+        #buildingsTable th:nth-child(5),
+        #buildingsTable td:nth-child(5) {
+            width: 90px;
+            text-align: center;
+        }
+
+        #buildingsTable th:nth-child(6),
+        #buildingsTable td:nth-child(6) {
+            width: 180px;
+            text-align: center;
+        }
+
+        /* Action buttons group */
+        .action-group {
+            display: flex;
+            gap: var(--space-1);
+            justify-content: center;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+
+        @media (max-width: 640px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="/assets/logo.png" alt="Resolvia" id="logo">
+            <span class="logo-text">Resolvia</span>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" title="Toggle theme">
+                <i class="fa fa-moon icon-moon"></i>
+                <i class="fa fa-sun icon-sun"></i>
+            </button>
+            <div class="profile-icon"><i class="fa fa-user"></i></div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fa fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <nav class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </nav>
+
+    <main class="main-content" id="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Building Management</h1>
+                <p class="page-subtitle">Manage all buildings across colonies</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-primary" id="addButton">
+                    <i class="fas fa-plus"></i> Add New Building
+                </button>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="table-toolbar">
+            <div style="display:flex; gap:var(--space-3); flex:1; flex-wrap:wrap; min-width:0;">
+                <!-- Colony filter -->
+                <div style="min-width:180px; flex:1;">
+                    <select id="colonyFilter" class="form-control">
+                        <option value="all">All Colonies</option>
+                    </select>
+                </div>
+                <!-- Search -->
+                <div class="input-group" style="flex:2; min-width:200px;">
+                    <i class="fas fa-search input-icon"></i>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search buildings by name…">
+                </div>
+            </div>
+            <div class="table-actions">
+                <div class="flex items-center gap-2">
+                    <label class="form-label mb-0" style="white-space:nowrap;margin:0;">Show</label>
+                    <select id="entriesPerPage" class="form-control" style="width:80px;">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <button class="btn btn-secondary" id="searchButton">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </div>
+
+        <!-- Error container -->
+        <div id="errorContainer" style="display:none; margin-bottom:var(--space-4);"></div>
+
+        <!-- Table -->
+        <div class="table-wrapper" id="tableWrapper">
+            <table id="buildingsTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Building Name</th>
+                        <th>Colony</th>
+                        <th>Rooms</th>
+                        <th>Floors</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+
+            <div class="pagination">
+                <span class="pagination-info" id="paginationInfo">Showing 0–0 of 0 buildings</span>
+                <div class="pagination-controls">
+                    <button class="page-btn" id="prevPage" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="page-btn" id="nextPage" disabled>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ── Building Details Modal ── -->
+    <div class="modal-overlay" id="detailsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="detailsTitle">Building Details</h2>
+                <button class="modal-close" id="closeDetailsModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div id="buildingDetailsContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="closeDetailsBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Add / Edit Building Modal ── -->
+    <div class="modal-overlay" id="buildingModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Add New Building</h2>
+                <button class="modal-close" id="closeModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="buildingForm" autocomplete="off">
+
+                    <div class="form-group">
+                        <label class="form-label">Building Name <span class="form-required">*</span></label>
+                        <input type="text" id="buildingName" class="form-control" placeholder="Enter building name"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Colony <span class="form-required">*</span></label>
+                        <select id="buildingColony" class="form-control" required>
+                            <option value="">Select colony</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Built Year <span
+                                style="color:var(--text-muted);font-weight:400;">(Optional)</span></label>
+                        <input type="number" id="builtYear" class="form-control" placeholder="e.g. 2020" min="1900"
+                            max="2100">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Building Image <span
+                                style="color:var(--text-muted);font-weight:400;">(Optional)</span></label>
+                        <div class="upload-area" id="imageUploadContainer">
+                            <div class="upload-area-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <div class="upload-area-text">Click to upload or drag &amp; drop</div>
+                            <div class="upload-area-hint">PNG, JPG, GIF — max 5MB</div>
+                            <input type="file" id="buildingImage" accept="image/*" style="display:none;">
+                            <img id="imagePreview" class="upload-preview" alt="Preview">
+                        </div>
+                        <button type="button" class="remove-image-btn" id="removeImageBtn">
+                            <i class="fas fa-trash"></i> Remove Image
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveBtn">
+                    <i class="fas fa-save"></i> Save Building
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Delete Confirmation Modal ── -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal" style="max-width:420px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Confirm Delete</h2>
+                <button class="modal-close" id="closeDeleteModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage" style="color:var(--text-secondary); line-height:1.6;"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+                <button class="btn-danger-confirm" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+    <script>
+        const BUILDINGS_API = '/api/buildings';
+        const COLONIES_API = '/api/coloniesdropdown';
+
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let filteredBuildings = [];
+        let colonies = [];
+        let currentBuildingId = null;
+        let isEditMode = false;
+        let currentImageFile = null;
+        let hasExistingImage = false;
+
+        // ── Toast ──────────────────────────────────────────
+        function showToast(message, type = 'success') {
+            document.querySelectorAll('.toast').forEach(t => t.remove());
+            const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', warning: 'fa-triangle-exclamation' };
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas ${icons[type] || icons.success}"></i>
+                <span style="flex:1">${message}</span>
+                <button class="toast-close"><i class="fas fa-times"></i></button>
+            `;
+            document.body.appendChild(toast);
+            toast.querySelector('.toast-close').addEventListener('click', () => toast.remove());
+            setTimeout(() => toast?.remove(), 4000);
+        }
+
+        // ── Error banner ───────────────────────────────────
+        function showError(msg) {
+            const c = document.getElementById('errorContainer');
+            c.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-circle-xmark"></i>
+                    <span>${msg}</span>
+                </div>`;
+            c.style.display = 'block';
+            setTimeout(() => { c.style.display = 'none'; }, 5000);
+        }
+
+        // ── Colony dropdowns ───────────────────────────────
+        async function loadColonies() {
+            try {
+                const { data: result } = await api.get(COLONIES_API);
+                colonies = result.success ? (result.data || []) : [];
+            } catch { colonies = []; }
+            updateColonyDropdowns();
+        }
+
+        function updateColonyDropdowns() {
+            const filter = document.getElementById('colonyFilter');
+            const modal = document.getElementById('buildingColony');
+            const addBtn = document.getElementById('addButton');
+
+            filter.innerHTML = '<option value="all">All Colonies</option>';
+            modal.innerHTML = '<option value="">Select colony</option>';
+
+            if (colonies.length === 0) {
+                filter.innerHTML = '<option value="all">No Colonies Available</option>';
+                filter.disabled = true;
+                modal.innerHTML = '<option value="">No Colonies Available</option>';
+                modal.disabled = true;
+                addBtn.disabled = true;
+                addBtn.title = 'Cannot add building — no colonies exist';
+            } else {
+                filter.disabled = false;
+                modal.disabled = false;
+                addBtn.disabled = false;
+                addBtn.title = '';
+                colonies.forEach(c => {
+                    [filter, modal].forEach(sel => {
+                        const o = document.createElement('option');
+                        o.value = sel === filter ? c.id : c.id;
+                        o.textContent = c.name;
+                        sel.appendChild(o);
+                    });
+                });
+            }
+        }
+
+        // ── Load buildings ─────────────────────────────────
+        async function loadBuildings() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:var(--space-8)">
+                <div class="spinner" style="margin:0 auto"></div>
+            </td></tr>`;
+
+            try {
+                const { data: result } = await api.get(BUILDINGS_API);
+                filteredBuildings = result.success ? (result.data || []) : [];
+                if (!result.success) showError(result.message || 'Failed to load buildings');
+            } catch {
+                filteredBuildings = [];
+                showError('Failed to load buildings');
+            }
+            currentPage = 1;
+            renderTable();
+        }
+
+        // ── Filter/search ──────────────────────────────────
+        async function filterBuildings() {
+            const q = document.getElementById('searchInput').value.trim();
+            const colony = document.getElementById('colonyFilter').value;
+            try {
+                const params = {};
+                if (q) params.q = q;
+                if (colony !== 'all') params.colony = colony;
+                const { data: result } = await api.get(`${BUILDINGS_API}/search`, { params });
+                filteredBuildings = result.success ? (result.data || []) : [];
+            } catch {
+                filteredBuildings = [];
+            }
+            currentPage = 1;
+            renderTable();
+        }
+
+        // ── Render table ───────────────────────────────────
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if (!filteredBuildings.length) {
+                tbody.innerHTML = `<tr><td colspan="6">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-building"></i></div>
+                        <p class="empty-title">No buildings found</p>
+                        <p class="empty-text">${colonies.length === 0
+                        ? 'Create a colony first before adding buildings.'
+                        : 'Click "Add New Building" to get started.'}</p>
+                    </div>
+                </td></tr>`;
+                updatePagination();
+                return;
+            }
+
+            const start = (currentPage - 1) * itemsPerPage;
+            const page = filteredBuildings.slice(start, start + itemsPerPage);
+
+            page.forEach((b, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="text-center text-muted font-mono">${start + i + 1}</td>
+                    <td class="font-semibold">${b.name}</td>
+                    <td class="text-secondary">${b.colony}</td>
+                    <td class="text-center font-semibold" style="color:var(--success)">${b.rooms}</td>
+                    <td class="text-center font-semibold" style="color:var(--info)">${b.floors}</td>
+                    <td>
+                        <div class="action-group">
+                            <button class="action-btn-view btn-view-row" data-id="${b.id}">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="action-btn-edit btn-edit-row" data-id="${b.id}">
+                                <i class="fas fa-pen"></i> Edit
+                            </button>
+                            <button class="action-btn-delete btn-delete-row" data-id="${b.id}" data-name="${b.name}">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            tbody.querySelectorAll('.btn-view-row').forEach(btn =>
+                btn.addEventListener('click', () => openDetailsModal(btn.dataset.id)));
+            tbody.querySelectorAll('.btn-edit-row').forEach(btn =>
+                btn.addEventListener('click', () => openEditModal(btn.dataset.id)));
+            tbody.querySelectorAll('.btn-delete-row').forEach(btn =>
+                btn.addEventListener('click', () => openDeleteModal(btn.dataset.id, btn.dataset.name)));
+
+            updatePagination();
+        }
+
+        // ── Pagination ─────────────────────────────────────
+        function updatePagination() {
+            const total = filteredBuildings.length;
+            const totalPages = Math.ceil(total / itemsPerPage) || 1;
+            const start = total ? (currentPage - 1) * itemsPerPage + 1 : 0;
+            const end = Math.min(currentPage * itemsPerPage, total);
+
+            document.getElementById('paginationInfo').textContent =
+                `Showing ${start}–${end} of ${total} building${total !== 1 ? 's' : ''}`;
+
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage >= totalPages;
+
+            const controls = document.querySelector('.pagination-controls');
+            controls.querySelectorAll('.page-btn:not(#prevPage):not(#nextPage)').forEach(b => b.remove());
+
+            const max = 5;
+            let s = Math.max(1, currentPage - Math.floor(max / 2));
+            let e = Math.min(totalPages, s + max - 1);
+            if (e - s + 1 < max) s = Math.max(1, e - max + 1);
+
+            const nextBtn = document.getElementById('nextPage');
+            for (let p = s; p <= e; p++) {
+                const btn = document.createElement('button');
+                btn.className = `page-btn${p === currentPage ? ' active' : ''}`;
+                btn.textContent = p;
+                btn.addEventListener('click', () => { currentPage = p; renderTable(); });
+                controls.insertBefore(btn, nextBtn);
+            }
+        }
+
+        // ── Details Modal ──────────────────────────────────
+        async function openDetailsModal(id) {
+            try {
+                const { data: result } = await api.get(`${BUILDINGS_API}/${id}`);
+                if (!result.success) throw new Error(result.message);
+                const b = result.data;
+
+                document.getElementById('detailsTitle').textContent = b.name;
+                document.getElementById('buildingDetailsContent').innerHTML = `
+                    <div class="building-detail-image">
+                        ${b.picture
+                        ? `<img src="${b.picture}" alt="${b.name}"
+                                onerror="this.parentElement.innerHTML='<div class=\\'img-placeholder\\'><i class=\\'fas fa-building\\'></i><span>No image</span></div>'">`
+                        : `<div class="img-placeholder"><i class="fas fa-building"></i><span>No image available</span></div>`}
+                    </div>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Building Name</span>
+                            <span class="detail-value">${b.name}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Colony</span>
+                            <span class="detail-value" style="color:var(--primary)">${b.colony}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Rooms</span>
+                            <span class="detail-value" style="color:var(--success)">${b.rooms ?? '—'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Floors</span>
+                            <span class="detail-value" style="color:var(--info)">${b.floors ?? '—'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Year Built</span>
+                            <span class="detail-value">${b.builtYear || '—'}</span>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('detailsModal').classList.add('open');
+            } catch (err) {
+                showToast('Failed to load building details', 'error');
+            }
+        }
+
+        // ── Add Modal ──────────────────────────────────────
+        function openAddModal() {
+            if (colonies.length === 0) {
+                showError('Cannot add building — no colonies exist. Please create a colony first.');
+                return;
+            }
+            isEditMode = false;
+            currentBuildingId = null;
+            document.getElementById('modalTitle').textContent = 'Add New Building';
+            document.getElementById('buildingForm').reset();
+            resetImageState();
+            document.getElementById('buildingModal').classList.add('open');
+            setTimeout(() => document.getElementById('buildingName').focus(), 100);
+        }
+
+        // ── Edit Modal ─────────────────────────────────────
+        async function openEditModal(id) {
+            try {
+                const { data: result } = await api.get(`${BUILDINGS_API}/${id}`);
+                if (!result.success) throw new Error(result.message);
+                const b = result.data;
+
+                isEditMode = true;
+                currentBuildingId = id;
+                document.getElementById('modalTitle').textContent = 'Edit Building';
+                document.getElementById('buildingName').value = b.name;
+                document.getElementById('buildingColony').value = b.colony_id || '';
+                document.getElementById('builtYear').value = b.builtYear || '';
+                currentImageFile = null;
+                hasExistingImage = !!b.picture;
+
+                const preview = document.getElementById('imagePreview');
+                const removeBtn = document.getElementById('removeImageBtn');
+                if (b.picture) {
+                    preview.src = b.picture;
+                    preview.style.display = 'block';
+                    removeBtn.style.display = 'inline-flex';
+                    preview.onerror = () => { preview.style.display = 'none'; hasExistingImage = false; removeBtn.style.display = 'none'; };
+                } else {
+                    resetImageState();
+                }
+
+                document.getElementById('buildingModal').classList.add('open');
+                setTimeout(() => { const n = document.getElementById('buildingName'); n.focus(); n.select(); }, 100);
+            } catch {
+                showToast('Failed to load building data', 'error');
+            }
+        }
+
+        // ── Delete Modal ───────────────────────────────────
+        function openDeleteModal(id, name) {
+            currentBuildingId = id;
+            document.getElementById('deleteMessage').textContent =
+                `Are you sure you want to delete "${name}"? This action cannot be undone.`;
+            document.getElementById('deleteModal').classList.add('open');
+        }
+
+        // ── Image helpers ──────────────────────────────────
+        function resetImageState() {
+            currentImageFile = null;
+            hasExistingImage = false;
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('removeImageBtn').style.display = 'none';
+            document.getElementById('buildingImage').value = '';
+        }
+
+        function handleImageUpload() {
+            const file = document.getElementById('buildingImage').files[0];
+            if (!file) return;
+            if (file.size > 5 * 1024 * 1024) { showToast('Image must be under 5MB', 'warning'); document.getElementById('buildingImage').value = ''; return; }
+            if (!file.type.match('image.*')) { showToast('Please select an image file', 'warning'); document.getElementById('buildingImage').value = ''; return; }
+            currentImageFile = file;
+            hasExistingImage = false;
+            const reader = new FileReader();
+            reader.onload = e => {
+                const preview = document.getElementById('imagePreview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                document.getElementById('removeImageBtn').style.display = 'inline-flex';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ── Save Building ──────────────────────────────────
+        async function saveBuilding() {
+            const name = document.getElementById('buildingName').value.trim();
+            const colony = document.getElementById('buildingColony').value;
+            const year = document.getElementById('builtYear').value;
+
+            if (!name) { showError('Please enter a building name'); document.getElementById('buildingName').focus(); return; }
+            if (!colony) { showError('Please select a colony'); document.getElementById('buildingColony').focus(); return; }
+            if (year && (year < 1900 || year > 2100)) { showError('Please enter a valid year (1900–2100)'); return; }
+
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner"></span> Saving…';
+
+            try {
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('colony_id', colony);
+                formData.append('built_year', year || '');
+                if (currentImageFile) formData.append('image', currentImageFile);
+                else if (isEditMode && !hasExistingImage && document.getElementById('imagePreview').style.display === 'none')
+                    formData.append('remove_image', 'true');
+
+                const { data: result } = isEditMode
+                    ? await api.put(`${BUILDINGS_API}/${currentBuildingId}`, formData)
+                    : await api.post(BUILDINGS_API, formData);
+
+                if (!result.success) throw new Error(result.message);
+
+                showToast(`Building "${name}" ${isEditMode ? 'updated' : 'added'} successfully!`, 'success');
+                closeBuildingModal();
+                await loadBuildings();
+                await filterBuildings();
+            } catch (err) {
+                showError(err.message || 'Error saving building. Please try again.');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Building';
+            }
+        }
+
+        // ── Delete Building ────────────────────────────────
+        async function deleteBuilding() {
+            const btn = document.getElementById('confirmDeleteBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Deleting…';
+            try {
+                const { data: result } = await api.delete(`${BUILDINGS_API}/${currentBuildingId}`);
+                if (!result.success) throw new Error(result.message);
+                showToast('Building deleted successfully!', 'success');
+                closeDeleteModalFn();
+                await loadBuildings();
+                await filterBuildings();
+            } catch (err) {
+                showError(err.message || 'Error deleting building. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+            }
+        }
+
+        // ── Modal closers ──────────────────────────────────
+        function closeDetailsModalFn() { document.getElementById('detailsModal').classList.remove('open'); }
+        function closeBuildingModal() {
+            document.getElementById('buildingModal').classList.remove('open');
+            document.getElementById('buildingForm').reset();
+            resetImageState();
+        }
+        function closeDeleteModalFn() { document.getElementById('deleteModal').classList.remove('open'); }
+
+        // ── Init ───────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadColonies();
+            await loadBuildings();
+
+            // Search & filter
+            document.getElementById('searchButton').addEventListener('click', filterBuildings);
+            document.getElementById('searchInput').addEventListener('keypress', e => { if (e.key === 'Enter') filterBuildings(); });
+            document.getElementById('colonyFilter').addEventListener('change', filterBuildings);
+
+            // Entries per page
+            document.getElementById('entriesPerPage').addEventListener('change', function () {
+                itemsPerPage = +this.value; currentPage = 1; renderTable();
+            });
+
+            // Pagination
+            document.getElementById('prevPage').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderTable(); } });
+            document.getElementById('nextPage').addEventListener('click', () => {
+                if (currentPage < Math.ceil(filteredBuildings.length / itemsPerPage)) { currentPage++; renderTable(); }
+            });
+
+            // Add button
+            document.getElementById('addButton').addEventListener('click', openAddModal);
+
+            // Details modal
+            document.getElementById('closeDetailsModal').addEventListener('click', closeDetailsModalFn);
+            document.getElementById('closeDetailsBtn').addEventListener('click', closeDetailsModalFn);
+            document.getElementById('detailsModal').addEventListener('click', e => { if (e.target === document.getElementById('detailsModal')) closeDetailsModalFn(); });
+
+            // Building modal
+            document.getElementById('closeModal').addEventListener('click', closeBuildingModal);
+            document.getElementById('cancelBtn').addEventListener('click', closeBuildingModal);
+            document.getElementById('saveBtn').addEventListener('click', saveBuilding);
+            document.getElementById('buildingModal').addEventListener('click', e => { if (e.target === document.getElementById('buildingModal')) closeBuildingModal(); });
+
+            // Delete modal
+            document.getElementById('closeDeleteModal').addEventListener('click', closeDeleteModalFn);
+            document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModalFn);
+            document.getElementById('confirmDeleteBtn').addEventListener('click', deleteBuilding);
+            document.getElementById('deleteModal').addEventListener('click', e => { if (e.target === document.getElementById('deleteModal')) closeDeleteModalFn(); });
+
+            // Image upload
+            const uploadContainer = document.getElementById('imageUploadContainer');
+            uploadContainer.addEventListener('click', () => document.getElementById('buildingImage').click());
+            document.getElementById('buildingImage').addEventListener('change', handleImageUpload);
+            document.getElementById('removeImageBtn').addEventListener('click', e => { e.stopPropagation(); resetImageState(); });
+
+            uploadContainer.addEventListener('dragover', e => { e.preventDefault(); uploadContainer.classList.add('dragover'); });
+            uploadContainer.addEventListener('dragleave', () => uploadContainer.classList.remove('dragover'));
+            uploadContainer.addEventListener('drop', e => {
+                e.preventDefault();
+                uploadContainer.classList.remove('dragover');
+                if (e.dataTransfer.files.length) {
+                    document.getElementById('buildingImage').files = e.dataTransfer.files;
+                    handleImageUpload();
+                }
+            });
+
+            // Escape key
+            document.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+                if (document.getElementById('deleteModal').classList.contains('open')) closeDeleteModalFn();
+                else if (document.getElementById('buildingModal').classList.contains('open')) closeBuildingModal();
+                else if (document.getElementById('detailsModal').classList.contains('open')) closeDetailsModalFn();
+            });
+        });
+    </script>
+</body>
+
+</html>

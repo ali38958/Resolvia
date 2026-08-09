@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resolvia - Signup</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+    <link rel="preload" as="image" href="assets/building.jpg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --nutech-green: rgba(8, 81, 68, 0.94);
+            --nutech-solid: #085144;
+            --text-white: #ffffff;
+            --fallback-bg: #042a23;
+            --label-color: #085144;
+            --success: #4CAF50;
+            --error: #F44336;
+            --warning: #ffc107;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body,
+        html {
+            height: 100%;
+            width: 100%;
+            background: var(--fallback-bg) url('assets/building.jpg') no-repeat center center / cover;
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        /* --- Panels --- */
+        .form-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 3;
+            background: transparent;
+        }
+
+        .info-panel {
+            position: relative;
+            width: 50%;
+            color: var(--text-white);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* --- Wave --- */
+        .wave-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: auto;
+            min-width: 100%;
+            object-fit: cover;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.7;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
+            animation: waveInFromRight 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes waveInFromRight {
+            from {
+                transform: translateX(150%);
+            }
+
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes waveOutRight {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(150%);
+            }
+        }
+
+        .wave-exit-right {
+            animation: waveOutRight 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+        }
+
+        /* --- Branding --- */
+        .content-wrapper {
+            max-width: 400px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .logo-circle {
+            width: clamp(120px, 15vw, 180px);
+            height: clamp(120px, 15vw, 180px);
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+            animation: floatLogo 6s ease-in-out infinite;
+            margin-bottom: 25px;
+        }
+
+        .info-panel h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .info-panel h2 {
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            font-weight: 400;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes floatLogo {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        /* --- Glass Card (no scroll — steps keep it compact) --- */
+        .glass-card {
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: clamp(20px, 5vw, 40px);
+            border-radius: 28px;
+            width: 100%;
+            max-width: 500px;
+            color: white;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            transition: box-shadow 0.3s ease, opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .glass-card:hover {
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .card-fade-out {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        /* --- Step dots --- */
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .step-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: background 0.3s, transform 0.3s;
+        }
+
+        .step-dot.active {
+            background: #fff;
+            transform: scale(1.35);
+        }
+
+        .step-dot.done {
+            background: var(--success);
+            transform: scale(1);
+        }
+
+        /* --- Step panels --- */
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+            animation: stepIn 0.32s ease forwards;
+        }
+
+        @keyframes stepIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- Titles --- */
+        .card-title {
+            font-size: 2rem;
+            margin-bottom: 6px;
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+
+        .card-subtitle {
+            text-align: center;
+            font-size: 0.88rem;
+            color: rgba(255, 255, 255, 0.65);
+            margin-bottom: 28px;
+        }
+
+        /* --- Floating Label Inputs --- */
+        .input-group {
+            position: relative;
+            margin-bottom: 34px;
+            /* fixed gap — enough for validation line below */
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            z-index: 2;
+            transition: color 0.3s ease;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 16px 0 8px 30px;
+            border: none;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+            background: transparent;
+            font-size: 1rem;
+            color: white;
+            outline: none;
+            transition: border-color 0.3s ease;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .input-group input:focus {
+            border-bottom-color: white;
+            border-bottom-width: 3px;
+        }
+
+        .input-group input:focus+label,
+        .input-group input:not(:placeholder-shown)+label {
+            transform: translateY(-30px) scale(0.85);
+            color: white;
+            left: 30px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-group input:focus~i {
+            color: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .input-group label {
+            position: absolute;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.9);
+            pointer-events: none;
+            transition: all 0.2s ease-out;
+            font-size: 1rem;
+            transform-origin: left top;
+            font-weight: 500;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-group input::placeholder {
+            color: transparent;
+        }
+
+        /* --- Validation Messages ---
+           Absolutely positioned so they NEVER shift the layout above them.
+           The fixed margin-bottom on .input-group reserves the space. */
+        .validation-message {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            width: 100%;
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            pointer-events: none;
+        }
+
+        .validation-message.valid {
+            visibility: visible;
+            opacity: 1;
+            color: var(--success);
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .validation-message.invalid {
+            visibility: visible;
+            opacity: 1;
+            color: #ff8a80;
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+
+        /* --- OTP Button --- */
+        .btn-otp {
+            width: 100%;
+            padding: 16px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .btn-otp:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-otp:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-otp.loading {
+            color: transparent;
+        }
+
+        .btn-otp.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin: -10px 0 0 -10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        /* --- Primary / Secondary Buttons --- */
+        .btn-primary,
+        .btn-secondary {
+            width: 100%;
+            padding: 16px;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--nutech-solid);
+            margin-top: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            color: transparent;
+        }
+
+        .btn-primary:disabled::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid rgba(8, 81, 68, 0.2);
+            border-top-color: var(--nutech-solid);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        /* --- OTP Timer --- */
+        .otp-timer {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+            font-weight: 500;
+        }
+
+        .otp-timer.show {
+            display: block;
+        }
+
+        .otp-timer span {
+            color: white;
+            font-weight: 600;
+        }
+
+        /* --- Verified email pill (step 2) --- */
+        .email-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            background: rgba(76, 175, 80, 0.15);
+            border: 1px solid rgba(76, 175, 80, 0.35);
+            border-radius: 40px;
+            margin-bottom: 24px;
+            font-size: 0.88rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .email-badge i {
+            color: #4CAF50;
+            flex-shrink: 0;
+        }
+
+        .email-badge strong {
+            color: #fff;
+        }
+
+        /* --- Checkbox --- */
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            color: white;
+            font-weight: 500;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            accent-color: white;
+            width: 18px;
+            height: 18px;
+        }
+
+        /* --- Divider --- */
+        .divider {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* --- Notifications --- */
+        #notificationContainer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+
+        .notification {
+            padding: 15px 20px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            padding-right: 40px;
+        }
+
+        .notification.success {
+            background: rgba(76, 175, 80, 0.95);
+        }
+
+        .notification.error {
+            background: rgba(244, 67, 54, 0.95);
+        }
+
+        .notification.info {
+            background: rgba(8, 81, 68, 0.95);
+        }
+
+        .notification.warning {
+            background: rgba(255, 193, 7, 0.95);
+            color: #333;
+        }
+
+        .notification .close-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.7;
+            padding: 0 5px;
+        }
+
+        .notification .close-btn:hover {
+            opacity: 1;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 900px) {
+            .main-container {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+
+            .info-panel {
+                width: 100%;
+                padding: 60px 20px 40px;
+                min-height: auto;
+                background-color: var(--nutech-green);
+                order: -1;
+            }
+
+            .wave-image {
+                display: none;
+            }
+
+            .form-panel {
+                width: 100%;
+                padding: 20px;
+            }
+
+            .glass-card {
+                max-width: 100%;
+                backdrop-filter: blur(15px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .glass-card {
+                padding: 25px 15px;
+                border-radius: 24px;
+            }
+
+            .btn-primary,
+            .btn-secondary,
+            .btn-otp {
+                padding: 14px;
+            }
+
+            .logo-circle {
+                margin-bottom: 15px;
+            }
+        }
+
+        @media (max-height: 600px) and (orientation: landscape) {
+            .info-panel {
+                padding: 20px;
+            }
+
+            .logo-circle {
+                width: 80px;
+                height: 80px;
+                margin-bottom: 10px;
+            }
+
+            .glass-card {
+                padding: 20px;
+            }
+
+            .input-group {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="notificationContainer"></div>
+
+    <div class="main-container">
+
+        <!-- Form Panel -->
+        <div class="form-panel">
+            <div class="glass-card" id="signupCard">
+
+                <!-- Step dots -->
+                <div class="step-indicator">
+                    <div class="step-dot active" id="dot1"></div>
+                    <div class="step-dot" id="dot2"></div>
+                </div>
+
+                <!-- ═══ STEP 1: User ID · Name · Email · Send OTP · Enter OTP ═══ -->
+                <div class="step active" id="step1">
+                    <h2 class="card-title">Signup</h2>
+                    <p class="card-subtitle">Step 1 of 2 — Verify your email</p>
+
+                    <div class="input-group">
+                        <input type="text" id="userID" placeholder=" " autocomplete="username" required>
+                        <label for="userID">User ID</label>
+                        <i class="fa-solid fa-address-card"></i>
+                        <div id="userIDValidation" class="validation-message"></div>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" id="fullName" placeholder=" " autocomplete="name" required>
+                        <label for="fullName">Full Name</label>
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="email" id="email" placeholder=" " autocomplete="email" required>
+                        <label for="email">Email Address</label>
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
+
+                    <button type="button" id="sendOtpBtn" class="btn-otp" disabled>
+                        <span id="otpText">Send OTP</span>
+                    </button>
+
+                    <div class="otp-timer" id="otpTimer">
+                        Resend OTP in <span id="timer">60</span> seconds
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" id="otpCode" placeholder=" " maxlength="6" inputmode="numeric"
+                            autocomplete="one-time-code">
+                        <label for="otpCode">Email Confirmation Code</label>
+                        <i class="fa-solid fa-key"></i>
+                    </div>
+
+                    <button type="button" id="continueBtn" class="btn-primary">Continue</button>
+
+                    <div class="divider">
+                        <div class="divider-line"></div>
+                        <span>or</span>
+                        <div class="divider-line"></div>
+                    </div>
+
+                    <a href="login.html" id="toLogin" style="text-decoration: none;">
+                        <button type="button" class="btn-secondary">Login</button>
+                    </a>
+                </div>
+
+                <!-- ═══ STEP 2: Password ═══ -->
+                <div class="step" id="step2">
+                    <h2 class="card-title">Set Password</h2>
+                    <p class="card-subtitle">Step 2 of 2 — Secure your account</p>
+
+                    <!-- Verified email badge -->
+                    <div class="email-badge">
+                        <i class="fas fa-circle-check"></i>
+                        <span>Email verified: <strong id="verifiedEmailDisplay">—</strong></span>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" class="password-field" id="pass" placeholder=" "
+                            autocomplete="new-password" required>
+                        <label for="pass">Password</label>
+                        <i class="fa-solid fa-lock"></i>
+                        <div id="passValidation" class="validation-message"></div>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" class="password-field" id="confirmPass" placeholder=" "
+                            autocomplete="new-password" required>
+                        <label for="confirmPass">Confirm Password</label>
+                        <i class="fa-solid fa-lock"></i>
+                        <div id="confirmPassValidation" class="validation-message"></div>
+                    </div>
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="showPassword"> Show All Passwords
+                    </label>
+
+                    <button type="button" id="signupBtn" class="btn-primary">Signup</button>
+
+                    <div class="divider">
+                        <div class="divider-line"></div>
+                        <span>or</span>
+                        <div class="divider-line"></div>
+                    </div>
+
+                    <button type="button" id="backBtn" class="btn-secondary">
+                        <i class="fas fa-arrow-left" style="margin-right:6px;"></i>Back
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="info-panel">
+            <img src="assets/wave2.svg" alt="" class="wave-image" id="wave">
+            <div class="content-wrapper">
+                <img src="assets/logo.png" alt="Logo" class="logo-circle">
+                <h1>Resolvia</h1>
+                <h2>Complaint Management System</h2>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ── Config ──
+        let OTP_CONFIG = {
+            otpLifeMinutes: 5,
+            otpResendCooldownSeconds: 60,
+            otpLength: 6
+        };
+
+        // ── State ──
+        let otpTimerInterval = null;
+        let canResendOTP = true;
+        let isUserIDAvailable = false;
+        let step1Data = null; // stored after OTP verify, used in step 2
+
+        // ── Load config from server ──
+        async function loadOTPConfig() {
+            try {
+                const r = await (await fetch('/api/otp-config')).json();
+                if (r.success) OTP_CONFIG = r.config;
+            } catch (e) { /* use defaults */ }
+        }
+
+        // ── Notifications ──
+        function showNotification(message, type = 'info', duration = 5000) {
+            const container = document.getElementById('notificationContainer');
+            const el = document.createElement('div');
+            el.className = `notification ${type}`;
+            const iconMap = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle', warning: 'fa-triangle-exclamation' };
+            el.innerHTML = `<i class="fas ${iconMap[type] || iconMap.info}"></i>${message}<button class="close-btn">&times;</button>`;
+            container.appendChild(el);
+            el.querySelector('.close-btn').addEventListener('click', () => dismissNotif(el));
+            if (duration > 0) setTimeout(() => dismissNotif(el), duration);
+        }
+
+        function dismissNotif(el) {
+            if (!el.parentNode) return;
+            el.style.animation = 'slideOut 0.3s ease forwards';
+            setTimeout(() => el.remove(), 300);
+        }
+
+        // ── Step navigation ──
+        function goToStep(n) {
+            document.getElementById('step1').classList.toggle('active', n === 1);
+            document.getElementById('step2').classList.toggle('active', n === 2);
+            document.getElementById('dot1').className = 'step-dot ' + (n === 1 ? 'active' : 'done');
+            document.getElementById('dot2').className = 'step-dot ' + (n === 2 ? 'active' : '');
+        }
+
+        // ── Helpers ──
+        function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+        function isValidUserIDFormat(id) { return /^[a-zA-Z0-9_-]{3,50}$/.test(id); }
+
+        function setValidationMsg(id, msg, valid) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = msg;
+            el.className = `validation-message ${valid ? 'valid' : 'invalid'}`;
+        }
+
+        // ── User ID availability check ──
+        let userIDDebounce;
+        async function checkUserIDAvailability(userID) {
+            if (!userID || userID.length < 3) {
+                setValidationMsg('userIDValidation', 'User ID must be at least 3 characters', false);
+                isUserIDAvailable = false; return;
+            }
+            if (!isValidUserIDFormat(userID)) {
+                setValidationMsg('userIDValidation', 'Only letters, numbers, underscores and hyphens allowed', false);
+                isUserIDAvailable = false; return;
+            }
+            try {
+                const r = await (await fetch('/api/check-userid', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userID })
+                })).json();
+                setValidationMsg('userIDValidation', r.message || '', r.available);
+                isUserIDAvailable = r.available;
+            } catch {
+                setValidationMsg('userIDValidation', 'Failed to check availability', false);
+            }
+        }
+
+        // ── OTP Timer ──
+        function startOTPTimer(seconds) {
+            clearOTPTimer();
+            const timerEl = document.getElementById('timer');
+            const timerBox = document.getElementById('otpTimer');
+            const sendBtn = document.getElementById('sendOtpBtn');
+            let timeLeft = seconds;
+            canResendOTP = false;
+            sendBtn.disabled = true;
+            timerBox.classList.add('show');
+
+            otpTimerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearOTPTimer();
+                    canResendOTP = true;
+                    sendBtn.disabled = false;
+                    timerBox.classList.remove('show');
+                    document.getElementById('otpText').textContent = 'Resend OTP';
+                }
+            }, 1000);
+        }
+
+        function clearOTPTimer() {
+            if (otpTimerInterval) { clearInterval(otpTimerInterval); otpTimerInterval = null; }
+        }
+
+        // ── Send OTP ──
+        async function sendOTP() {
+            const email = document.getElementById('email').value.trim();
+            const sendBtn = document.getElementById('sendOtpBtn');
+            if (!isValidEmail(email)) { showNotification('Please enter a valid email address', 'error'); return; }
+
+            sendBtn.disabled = true;
+            sendBtn.classList.add('loading');
+
+            try {
+                const r = await (await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'send-otp', email })
+                })).json();
+
+                if (r.success) {
+                    showNotification(r.message, 'success');
+                    startOTPTimer(OTP_CONFIG.otpResendCooldownSeconds);
+                    document.getElementById('otpCode').focus();
+                } else {
+                    showNotification(r.message, 'error');
+                    const m = (r.message || '').match(/(\d+)\s+seconds/);
+                    if (m) startOTPTimer(parseInt(m[1]));
+                    else sendBtn.disabled = false;
+                }
+            } catch {
+                showNotification('Failed to send OTP. Please check your connection.', 'error');
+                sendBtn.disabled = false;
+            } finally {
+                sendBtn.classList.remove('loading');
+            }
+        }
+
+        // ── Step 1 Continue: validate locally, store data, go to step 2 ──
+        // OTP correctness is verified by the server on final submit (verify-signup)
+        function handleContinue() {
+            const userID = document.getElementById('userID').value.trim();
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const otpCode = document.getElementById('otpCode').value.trim();
+
+            if (!userID || !fullName || !email || !otpCode) {
+                showNotification('Please fill in all fields', 'error'); return;
+            }
+            if (!isUserIDAvailable) {
+                showNotification('Please choose a valid, available User ID', 'error'); return;
+            }
+            if (fullName.length < 2) {
+                showNotification('Full name must be at least 2 characters', 'error'); return;
+            }
+            if (!isValidEmail(email)) {
+                showNotification('Please enter a valid email address', 'error'); return;
+            }
+            if (otpCode.length !== OTP_CONFIG.otpLength) {
+                showNotification(`OTP must be ${OTP_CONFIG.otpLength} digits`, 'error'); return;
+            }
+
+            // All client-side checks passed — save and proceed to password step
+            step1Data = { userID, fullName, email, otpCode };
+            document.getElementById('verifiedEmailDisplay').textContent = email;
+            clearOTPTimer();
+            goToStep(2);
+            document.getElementById('pass').focus();
+        }
+
+        // ── Step 2: Final signup ──
+        async function handleSignup() {
+            if (!step1Data) { goToStep(1); return; }
+
+            const pass = document.getElementById('pass').value;
+            const confirm = document.getElementById('confirmPass').value;
+            const btn = document.getElementById('signupBtn');
+
+            let valid = true;
+
+            if (pass.length < 8) {
+                setValidationMsg('passValidation', 'Password must be at least 8 characters', false);
+                valid = false;
+            } else {
+                setValidationMsg('passValidation', 'Looks good', true);
+            }
+
+            if (!confirm) {
+                setValidationMsg('confirmPassValidation', 'Please confirm your password', false);
+                valid = false;
+            } else if (pass !== confirm) {
+                setValidationMsg('confirmPassValidation', 'Passwords do not match', false);
+                valid = false;
+            } else if (pass.length >= 8) {
+                setValidationMsg('confirmPassValidation', 'Passwords match ✓', true);
+            }
+
+            if (!valid) return;
+
+            btn.disabled = true;
+            const origText = btn.textContent;
+            btn.textContent = '';
+
+            try {
+                const r = await (await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'verify-signup',
+                        ...step1Data,
+                        password: pass,
+                        confirmPass: confirm
+                    })
+                })).json();
+
+                if (r.success) {
+                    showNotification(r.message, 'success');
+                    setTimeout(() => window.location.href = 'login.html', 2000);
+                } else {
+                    showNotification(r.message, 'error');
+                    btn.disabled = false;
+                    btn.textContent = origText;
+                }
+            } catch {
+                showNotification('Signup failed. Please try again.', 'error');
+                btn.disabled = false;
+                btn.textContent = origText;
+            }
+        }
+
+        // ── Init ──
+        document.addEventListener('DOMContentLoaded', () => {
+            loadOTPConfig();
+
+            // User ID debounce check
+            document.getElementById('userID').addEventListener('input', function () {
+                clearTimeout(userIDDebounce);
+                userIDDebounce = setTimeout(() => checkUserIDAvailability(this.value.trim()), 450);
+            });
+
+            // Enable Send OTP only when email is valid
+            document.getElementById('email').addEventListener('input', function () {
+                document.getElementById('sendOtpBtn').disabled = !isValidEmail(this.value.trim());
+            });
+
+            // OTP — numeric only
+            document.getElementById('otpCode').addEventListener('input', function () {
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0, OTP_CONFIG.otpLength);
+            });
+
+            // Live password validation
+            document.getElementById('pass').addEventListener('input', function () {
+                if (!this.value) {
+                    document.getElementById('passValidation').className = 'validation-message';
+                } else if (this.value.length < 8) {
+                    setValidationMsg('passValidation', 'At least 8 characters required', false);
+                } else {
+                    setValidationMsg('passValidation', 'Good password', true);
+                }
+            });
+
+            document.getElementById('confirmPass').addEventListener('input', function () {
+                const p = document.getElementById('pass').value;
+                if (!this.value) {
+                    document.getElementById('confirmPassValidation').className = 'validation-message';
+                } else if (this.value !== p) {
+                    setValidationMsg('confirmPassValidation', 'Passwords do not match', false);
+                } else {
+                    setValidationMsg('confirmPassValidation', 'Passwords match ✓', true);
+                }
+            });
+
+            // Show passwords toggle
+            document.getElementById('showPassword').addEventListener('change', function () {
+                document.querySelectorAll('.password-field').forEach(f => {
+                    f.type = this.checked ? 'text' : 'password';
+                });
+            });
+
+            // Buttons
+            document.getElementById('sendOtpBtn').addEventListener('click', sendOTP);
+            document.getElementById('continueBtn').addEventListener('click', handleContinue);
+            document.getElementById('signupBtn').addEventListener('click', handleSignup);
+            document.getElementById('backBtn').addEventListener('click', () => {
+                step1Data = null;
+                goToStep(1);
+            });
+
+            // Enter key shortcuts
+            document.getElementById('otpCode').addEventListener('keydown', e => {
+                if (e.key === 'Enter') handleContinue();
+            });
+            document.getElementById('confirmPass').addEventListener('keydown', e => {
+                if (e.key === 'Enter') handleSignup();
+            });
+
+            // Login link — wave + card fade animation
+            document.getElementById('toLogin').addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = this.href;
+                const wave = document.getElementById('wave');
+                if (wave && window.innerWidth > 900) wave.classList.add('wave-exit-right');
+                document.getElementById('signupCard').classList.add('card-fade-out');
+                setTimeout(() => window.location.href = target, 500);
+            });
+
+            window.addEventListener('beforeunload', clearOTPTimer);
+        });
+    </script>
+</body>
+
+</html>

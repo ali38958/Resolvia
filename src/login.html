@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resolvia - Login</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+
+    <link rel="preload" as="image" href="assets/building.jpg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --nutech-green: rgba(8, 81, 68, 0.94);
+            --nutech-solid: #085144;
+            --text-white: #ffffff;
+            --fallback-bg: #042a23;
+            --label-color: #085144;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body,
+        html {
+            height: 100%;
+            width: 100%;
+            background: var(--fallback-bg) url('assets/building.jpg') no-repeat center center/cover;
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        /* --- Panels --- */
+        .left-panel {
+            position: relative;
+            width: 50%;
+            color: var(--text-white);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .right-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 3;
+            background: transparent;
+        }
+
+        /* --- Wave Animation --- */
+        .wave-image {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: auto;
+            min-width: 100%;
+            object-fit: cover;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.7;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
+            animation: waveInFromLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes waveInFromLeft {
+            from {
+                transform: translateX(-150%);
+            }
+
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes waveOutLeft {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-150%);
+            }
+        }
+
+        .wave-exit {
+            animation: waveOutLeft 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+        }
+
+        /* --- Content & Glass Card --- */
+        .content-wrapper {
+            max-width: 400px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .left-panel h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .left-panel h2 {
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            font-weight: 400;
+        }
+
+        .logo-circle {
+            width: clamp(120px, 15vw, 180px);
+            height: clamp(120px, 15vw, 180px);
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+            animation: floatLogo 6s ease-in-out infinite;
+            margin-bottom: 25px;
+        }
+
+        @keyframes floatLogo {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        /* --- REDESIGNED LOGIN FORM - More Prominent --- */
+        .login-glass-card {
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: clamp(20px, 5vw, 40px);
+            border-radius: 28px;
+            width: 100%;
+            max-width: 420px;
+            color: white;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .login-glass-card:hover {
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .login-glass-card h2 {
+            font-size: 2rem;
+            margin-bottom: 35px;
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+
+        /* --- Floating Label Inputs with Prominent Underline --- */
+        .input-group {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            z-index: 2;
+            transition: color 0.3s ease;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 16px 0 8px 30px;
+            border: none;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+            background: transparent;
+            font-size: 1rem;
+            color: white;
+            outline: none;
+            transition: border-color 0.3s ease;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .input-group input:focus {
+            border-bottom-color: white;
+            border-bottom-width: 3px;
+        }
+
+        .input-group input:focus+label,
+        .input-group input:not(:placeholder-shown)+label {
+            transform: translateY(-30px) scale(0.85);
+            color: white;
+            left: 30px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-group input:focus~i {
+            color: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .input-group label {
+            position: absolute;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.9);
+            pointer-events: none;
+            transition: all 0.2s ease-out;
+            font-size: 1rem;
+            transform-origin: left top;
+            font-weight: 500;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-group input::placeholder {
+            color: transparent;
+        }
+
+        /* --- Buttons - More Prominent --- */
+        .btn-login,
+        .btn-signup {
+            width: 100%;
+            padding: 16px;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-login {
+            background: white;
+            color: var(--nutech-solid);
+            margin-top: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-login:hover:not(:disabled) {
+            background: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-login:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-signup {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-signup:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        /* --- Form Options --- */
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 25px 0;
+            font-size: 0.95rem;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .form-options label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-weight: 500;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-options input[type="checkbox"] {
+            accent-color: white;
+            width: 18px;
+            height: 18px;
+            background: transparent;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .forgot-link {
+            color: white;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 2px;
+        }
+
+        .forgot-link:hover {
+            border-bottom-color: white;
+        }
+
+        /* --- Divider --- */
+        .divider {
+            margin: 25px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- Contact Link --- */
+        .contact-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .contact-link a {
+            color: white;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .contact-link a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            gap: 12px;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .contact-link i {
+            font-size: 1.1rem;
+        }
+
+        /* --- Notification Styles --- */
+        #notificationContainer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+
+        .notification {
+            padding: 15px 20px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .notification.success {
+            background: rgba(76, 175, 80, 0.95);
+        }
+
+        .notification.error {
+            background: rgba(244, 67, 54, 0.95);
+        }
+
+        .notification.info {
+            background: rgba(33, 150, 243, 0.95);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* --- RESPONSIVENESS --- */
+
+        /* Tablets and small desktops */
+        @media (max-width: 1024px) {
+            .left-panel {
+                width: 45%;
+            }
+        }
+
+        /* Mobile Devices */
+        @media (max-width: 850px) {
+            .main-container {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+
+            .left-panel {
+                width: 100%;
+                padding: 60px 20px 40px 20px;
+                min-height: auto;
+                background-color: var(--nutech-green);
+            }
+
+            .right-panel {
+                width: 100%;
+                padding: 20px;
+                background: transparent;
+            }
+
+            .wave-image {
+                display: none;
+            }
+
+            .login-glass-card {
+                max-width: 100%;
+                backdrop-filter: blur(15px);
+            }
+        }
+
+        /* Small Phones */
+        @media (max-width: 480px) {
+            .login-glass-card {
+                padding: 25px 15px;
+                border-radius: 24px;
+            }
+
+            .input-group input {
+                font-size: 0.95rem;
+            }
+
+            .btn-login,
+            .btn-signup {
+                padding: 14px;
+            }
+
+            .logo-circle {
+                margin-bottom: 15px;
+            }
+
+            .form-options {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        /* Landscape Mode */
+        @media (max-height: 600px) and (orientation: landscape) {
+            .left-panel {
+                padding: 20px;
+            }
+
+            .logo-circle {
+                width: 80px;
+                height: 80px;
+                margin-bottom: 10px;
+            }
+
+            .login-glass-card {
+                padding: 20px;
+            }
+
+            .input-group {
+                margin-bottom: 20px;
+            }
+        }
+
+        /* Loading state */
+        .btn-login.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .btn-login.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid rgba(8, 81, 68, 0.2);
+            border-top-color: var(--nutech-solid);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <div class="left-panel">
+            <div class="content-wrapper">
+                <img src="assets/logo.png" alt="Logo" class="logo-circle" />
+                <h1>Resolvia</h1>
+                <h2>Complaint Management System</h2>
+            </div>
+            <img src="assets/wave1.svg" alt="" class="wave-image" id="wave">
+        </div>
+
+        <div class="right-panel">
+            <div class="login-glass-card" id="loginCard">
+                <h2 style="font-size: 2rem; margin-bottom: 30px; text-align: center;">Login</h2>
+                <form id="loginForm">
+                    <div class="input-group">
+                        <input type="text" id="userID" placeholder=" " required>
+                        <label for="userID">Enter your ID</label>
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="password" placeholder=" " required>
+                        <label for="password">Enter Password</label>
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 0.85rem; flex-wrap: wrap; gap: 10px;">
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; color: white;">
+                            <input type="checkbox" id="showPassword" style="accent-color: var(--nutech-solid);"> Show
+                            Password
+                        </label>
+                        <a href="reset-password" id="toReset" style="color: #4da3ff; text-decoration: none;">Forgot
+                            Password?</a>
+                    </div>
+
+                    <button type="submit" class="btn-login">Login</button>
+                </form>
+
+                <div style="margin: 10px 0; display: flex; align-items: center; gap: 10px; color: #ccc;">
+                    <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.3);"></div>
+                    <span>or</span>
+                    <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.3);"></div>
+                </div>
+
+                <a href="signup" id="toSignup" style="text-decoration: none;">
+                    <button class="btn-signup" type="button">Signup</button>
+                </a>
+                <div style="text-align: center; margin-top: 10px; padding-top: 15px;">
+                    <a href="contact.html" id="toContact"
+                        style="color: rgba(255,255,255,0.9); font-size: 0.95rem; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+                        <i class="fa-regular fa-circle-question" style="font-size: 1.1rem;"></i>
+                        <span>
+                            <span style="text-decoration: none;">Questions? </span>
+                            <span style="text-decoration: underline; text-underline-offset: 3px;">Contact our support
+                                team</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // Password Toggle
+        document.getElementById('showPassword').addEventListener('change', function () {
+            document.getElementById('password').type = this.checked ? 'text' : 'password';
+        });
+
+        // Create notification container
+        const notificationContainer = document.createElement('div');
+        notificationContainer.id = 'notificationContainer';
+        notificationContainer.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        `;
+        document.body.appendChild(notificationContainer);
+
+        // Show notification function
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                animation: slideIn 0.3s ease, fadeOut 0.3s ease 4.7s forwards;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            `;
+
+            if (type === 'success') {
+                notification.style.backgroundColor = '#4CAF50';
+            } else if (type === 'error') {
+                notification.style.backgroundColor = '#F44336';
+            } else {
+                notification.style.backgroundColor = '#2196F3';
+            }
+
+            // Add icon
+            const icon = document.createElement('i');
+            icon.className = type === 'success' ? 'fas fa-check-circle' :
+                type === 'error' ? 'fas fa-exclamation-circle' :
+                    'fas fa-info-circle';
+            notification.appendChild(icon);
+
+            // Add message
+            const messageSpan = document.createElement('span');
+            messageSpan.textContent = message;
+            notification.appendChild(messageSpan);
+
+            notificationContainer.appendChild(notification);
+
+            // Remove notification after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.animation = 'slideOut 0.3s ease forwards';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notificationContainer.removeChild(notification);
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+            @keyframes fadeOut {
+                to {
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Handle form submission
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const userID = document.getElementById('userID').value.trim();
+            const password = document.getElementById('password').value;
+
+            // Disable login button during request
+            const loginBtn = document.querySelector('.btn-login');
+            const originalText = loginBtn.textContent;
+            loginBtn.textContent = 'Logging in...';
+            loginBtn.disabled = true;
+
+            try {
+                // Make login request
+                const response = await axios.post('/api/auth/login', {
+                    userID: userID,
+                    password: password
+                }, {
+                    withCredentials: true // Important for cookies
+                });
+
+                if (response.data.success) {
+                    showNotification('Login successful! Redirecting...', 'success');
+
+                    // Store user data in localStorage if needed
+                    // In login.html, inside the form submit event handler
+                    if (response.data.success) {
+                        showNotification('Login successful! Redirecting...', 'success');
+
+                        // Store user data in localStorage if needed
+                        if (response.data.user) {
+                            localStorage.setItem('user', JSON.stringify(response.data.user));
+                        }
+
+                        // Redirect to /dashboard after a short delay
+                        setTimeout(() => {
+                            window.location.href = 'customer/dashboard';
+                        }, 1500);
+                    }
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+
+                let errorMessage = 'Login failed. Please try again.';
+
+                if (error.response) {
+                    // Server responded with error status
+                    errorMessage = error.response.data.message || errorMessage;
+                } else if (error.request) {
+                    // Request made but no response
+                    errorMessage = 'Unable to connect to server. Please check your connection.';
+                }
+
+                showNotification(errorMessage, 'error');
+
+                // Re-enable login button
+                loginBtn.textContent = originalText;
+                loginBtn.disabled = false;
+            }
+        });
+
+        // Page Transition
+        document.getElementById('toSignup').addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = this.href;
+            const wave = document.getElementById('wave');
+
+            // Check if wave exists (it's hidden on mobile)
+            if (wave && window.innerWidth > 850) {
+                wave.classList.add('wave-exit');
+            }
+
+            document.getElementById('loginCard').style.opacity = '0';
+            document.getElementById('loginCard').style.transform = 'scale(0.95)';
+
+            setTimeout(() => {
+                window.location.href = target;
+            }, 500);
+        });
+
+        // Add this with your other page transition code in login.html
+        document.getElementById('toContact').addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = this.href;
+            const wave = document.getElementById('wave');
+
+            // Check if wave exists (it's hidden on mobile)
+            if (wave && window.innerWidth > 850) {
+                wave.classList.add('wave-exit');
+            }
+
+            document.getElementById('loginCard').style.opacity = '0';
+            document.getElementById('loginCard').style.transform = 'scale(0.95)';
+
+            setTimeout(() => {
+                window.location.href = target;
+            }, 500);
+        });
+
+        // Page Transition
+        document.getElementById('toReset').addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = this.href;
+            const wave = document.getElementById('wave');
+
+            // Check if wave exists (it's hidden on mobile)
+            if (wave && window.innerWidth > 850) {
+                wave.classList.add('wave-exit');
+            }
+
+            document.getElementById('loginCard').style.opacity = '0';
+            document.getElementById('loginCard').style.transform = 'scale(0.95)';
+
+            setTimeout(() => {
+                window.location.href = target;
+            }, 500);
+        });
+
+        // Enter key submits form
+        document.getElementById('password').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+
+</html>

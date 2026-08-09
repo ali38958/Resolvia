@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Natures Management</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+    <style>
+        /* ── Page-specific only ── */
+
+        /* Type tags in table */
+        .types-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+            align-items: center;
+        }
+
+        .type-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: var(--space-1) var(--space-3);
+            background: rgba(14, 90, 76, 0.08);
+            color: var(--primary);
+            border: 1px solid rgba(14, 90, 76, 0.15);
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            font-weight: 600;
+            line-height: 1;
+            transition: background 0.15s;
+        }
+
+        .type-tag:hover {
+            background: rgba(14, 90, 76, 0.13);
+        }
+
+        [data-theme="dark"] .type-tag {
+            background: rgba(26, 201, 158, 0.1);
+            color: var(--accent);
+            border-color: rgba(26, 201, 158, 0.2);
+        }
+
+        .remove-type-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.6;
+            padding: 0;
+            width: 14px;
+            height: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            transition: opacity 0.15s, background 0.15s;
+            flex-shrink: 0;
+        }
+
+        .remove-type-btn:hover {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Add type inline button */
+        .add-type-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2px dashed var(--border-strong);
+            background: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .add-type-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(14, 90, 76, 0.06);
+            transform: rotate(90deg);
+        }
+
+        /* Row number */
+        .row-num {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* Modal tag input row */
+        .tag-input-row {
+            display: flex;
+            gap: var(--space-2);
+            margin-top: var(--space-3);
+        }
+
+        .tag-input-row .form-control {
+            flex: 1;
+        }
+
+        /* Tag container inside modal */
+        .modal-tags-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+            min-height: 44px;
+            padding: var(--space-3);
+            background: var(--bg-surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            margin-top: var(--space-2);
+        }
+
+        .modal-tags-empty {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            font-style: italic;
+            align-self: center;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: var(--space-12) var(--space-6);
+        }
+
+        .empty-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-full);
+            background: var(--bg-surface-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--space-4);
+            font-size: 1.4rem;
+            color: var(--text-muted);
+        }
+
+        .empty-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+
+        .empty-text {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .page-actions .btn span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="/assets/logo.png" alt="logo" id="logo">
+            <span class="logo-text">Resolvia</span>
+        </div>
+        <div class="header-right">
+            <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+                <i class="fa fa-moon"></i>
+            </button>
+            <div class="profile-icon">
+                <i class="fa fa-user"></i>
+            </div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fa fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </nav>
+
+    <!-- Main -->
+    <main class="main-content" id="main-content">
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Natures Management</h1>
+                <p class="page-subtitle">Manage complaint natures and their associated types</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-primary" id="addNatureBtn">
+                    <i class="fas fa-plus"></i>
+                    <span>Add Nature</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="table-toolbar">
+            <div class="input-group table-search">
+                <i class="fas fa-search input-icon"></i>
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by name or type…">
+            </div>
+            <div class="table-actions" style="display:flex;align-items:center;gap:var(--space-2);">
+                <label style="font-size:.875rem;color:var(--text-secondary);white-space:nowrap;">Show</label>
+                <select id="entriesPerPage" class="form-control" style="width:80px;">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+                <label style="font-size:.875rem;color:var(--text-secondary);white-space:nowrap;">entries</label>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:52px;text-align:center;">#</th>
+                        <th style="width:200px;">Nature Name</th>
+                        <th>Types</th>
+                        <th style="width:100px;text-align:center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="naturesTableBody">
+                    <tr>
+                        <td colspan="4">
+                            <div class="empty-state">
+                                <div class="empty-icon"><i class="fas fa-spinner fa-spin"></i></div>
+                                <p class="empty-title">Loading natures…</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <span class="pagination-info" id="paginationInfo">Showing 0 of 0</span>
+                <div class="pagination-controls">
+                    <button class="page-btn" id="prevPage" disabled><i class="fas fa-chevron-left"></i></button>
+                    <span id="pageNumberBtns"></span>
+                    <button class="page-btn" id="nextPage" disabled><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ══ Add / Edit Nature Modal ══ -->
+    <div class="modal-overlay" id="natureModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Add Nature</h2>
+                <button class="modal-close" id="closeModal"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="natureName">Nature Name <span
+                            style="color:var(--error)">*</span></label>
+                    <input type="text" id="natureName" class="form-control" placeholder="e.g. Air Conditioner">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Types</label>
+                    <div class="modal-tags-wrap" id="modalTagsContainer">
+                        <span class="modal-tags-empty">No types added yet</span>
+                    </div>
+                    <div class="tag-input-row">
+                        <input type="text" id="tagInput" class="form-control"
+                            placeholder="Add a type (e.g. Capacitor fitting)">
+                        <button class="btn btn-secondary btn-sm" id="addTagBtn" style="white-space:nowrap;">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveBtn">
+                    <i class="fas fa-floppy-disk" id="saveBtnIcon"></i>
+                    <span id="saveBtnText">Save Nature</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ Manage Types Modal (for existing nature) ══ -->
+    <div class="modal-overlay" id="tagModal">
+        <div class="modal" style="max-width:480px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Manage Types — <span id="natureNameInModal"
+                        style="font-weight:400;opacity:.85;"></span></h2>
+                <button class="modal-close" id="closeTagModal"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Current Types</label>
+                    <div class="modal-tags-wrap" id="existingTagsContainer">
+                        <span class="modal-tags-empty">No types yet</span>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label" for="newTagInput">Add New Type</label>
+                    <div class="tag-input-row">
+                        <input type="text" id="newTagInput" class="form-control" placeholder="Enter new type…">
+                        <button class="btn btn-secondary btn-sm" id="addNewTagBtn" style="white-space:nowrap;">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelTagBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveTagBtn">
+                    <i class="fas fa-floppy-disk" id="saveTagBtnIcon"></i>
+                    <span id="saveTagBtnText">Save Changes</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ Remove Type Confirmation Modal ══ -->
+    <div class="modal-overlay" id="removeTypeModal">
+        <div class="modal" style="max-width:400px;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#dc2626,#b91c1c);">
+                <h2 class="modal-title">Remove Type</h2>
+                <button class="modal-close" id="closeRemoveTypeModal"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="color:var(--text-secondary);line-height:1.6;" id="removeTypeMsg"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelRemoveTypeBtn">Cancel</button>
+                <button class="btn btn-danger" id="confirmRemoveTypeBtn">
+                    <i class="fas fa-trash"></i> Remove
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+    <script>
+        const API_BASE = '/api';
+
+        // ── State ──
+        let naturesData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let editingNatureId = null;
+        let currentTags = [];          // tags in add/edit modal
+        let editingTagNatureId = null;
+        let currentTagInputs = [];          // tags in manage-types modal
+        let pendingRemove = null;        // { natureId, type }
+
+        // ── DOM ──
+        const tbody = document.getElementById('naturesTableBody');
+        const searchInput = document.getElementById('searchInput');
+        const paginationInfo = document.getElementById('paginationInfo');
+        const prevPageBtn = document.getElementById('prevPage');
+        const nextPageBtn = document.getElementById('nextPage');
+        const pageNumberBtns = document.getElementById('pageNumberBtns');
+        const entriesSelect = document.getElementById('entriesPerPage');
+
+        // Nature modal
+        const natureModal = document.getElementById('natureModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const natureNameInput = document.getElementById('natureName');
+        const tagInput = document.getElementById('tagInput');
+        const modalTagsContainer = document.getElementById('modalTagsContainer');
+        const saveBtn = document.getElementById('saveBtn');
+        const saveBtnText = document.getElementById('saveBtnText');
+        const saveBtnIcon = document.getElementById('saveBtnIcon');
+
+        // Tag modal
+        const tagModal = document.getElementById('tagModal');
+        const natureNameInModal = document.getElementById('natureNameInModal');
+        const existingTagsContainer = document.getElementById('existingTagsContainer');
+        const newTagInput = document.getElementById('newTagInput');
+        const saveTagBtn = document.getElementById('saveTagBtn');
+        const saveTagBtnText = document.getElementById('saveTagBtnText');
+        const saveTagBtnIcon = document.getElementById('saveTagBtnIcon');
+
+        // Remove type modal
+        const removeTypeModal = document.getElementById('removeTypeModal');
+        const removeTypeMsg = document.getElementById('removeTypeMsg');
+
+        // ── Init ──
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchNatures();
+
+            // Search live
+            searchInput.addEventListener('input', () => {
+                const q = searchInput.value.toLowerCase().trim();
+                filteredData = q
+                    ? naturesData.filter(n =>
+                        n.name.toLowerCase().includes(q) ||
+                        n.types.some(t => t.toLowerCase().includes(q)))
+                    : [...naturesData];
+                currentPage = 1;
+                renderTable();
+            });
+
+            // Entries per page
+            entriesSelect.addEventListener('change', () => {
+                itemsPerPage = parseInt(entriesSelect.value);
+                currentPage = 1;
+                renderTable();
+            });
+
+            // Pagination
+            prevPageBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderTable(); } });
+            nextPageBtn.addEventListener('click', () => {
+                if (currentPage < Math.ceil(filteredData.length / itemsPerPage)) { currentPage++; renderTable(); }
+            });
+
+            // Add nature button
+            document.getElementById('addNatureBtn').addEventListener('click', openAddModal);
+
+            // Nature modal buttons
+            document.getElementById('closeModal').addEventListener('click', closeNatureModal);
+            document.getElementById('cancelBtn').addEventListener('click', closeNatureModal);
+            document.getElementById('addTagBtn').addEventListener('click', addTagFromModal);
+            saveBtn.addEventListener('click', saveNature);
+            tagInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addTagFromModal(); } });
+            natureModal.addEventListener('click', e => { if (e.target === natureModal) closeNatureModal(); });
+
+            // Tag modal buttons
+            document.getElementById('closeTagModal').addEventListener('click', closeTagModal);
+            document.getElementById('cancelTagBtn').addEventListener('click', closeTagModal);
+            document.getElementById('addNewTagBtn').addEventListener('click', addNewTagInModal);
+            saveTagBtn.addEventListener('click', saveTagsFromModal);
+            newTagInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addNewTagInModal(); } });
+            tagModal.addEventListener('click', e => { if (e.target === tagModal) closeTagModal(); });
+
+            // Remove type modal buttons
+            document.getElementById('closeRemoveTypeModal').addEventListener('click', closeRemoveTypeModal);
+            document.getElementById('cancelRemoveTypeBtn').addEventListener('click', closeRemoveTypeModal);
+            document.getElementById('confirmRemoveTypeBtn').addEventListener('click', confirmRemoveType);
+            removeTypeModal.addEventListener('click', e => { if (e.target === removeTypeModal) closeRemoveTypeModal(); });
+
+            // Table event delegation
+            tbody.addEventListener('click', e => {
+                const editBtn = e.target.closest('.btn-edit-row');
+                const addTypeBtn = e.target.closest('.add-type-btn');
+                const removeTypeBtn = e.target.closest('.remove-type-btn');
+                if (editBtn) openEditModal(parseInt(editBtn.dataset.id));
+                if (addTypeBtn) openTagModalFor(parseInt(addTypeBtn.dataset.id));
+                if (removeTypeBtn) openRemoveTypeModal(parseInt(removeTypeBtn.dataset.natureId), removeTypeBtn.dataset.type);
+            });
+
+            // ESC closes any open modal
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape') {
+                    closeNatureModal();
+                    closeTagModal();
+                    closeRemoveTypeModal();
+                }
+            });
+        });
+
+        // ── Fetch ──
+        async function fetchNatures() {
+            showSkeleton();
+            try {
+                const res = await api.get(`${API_BASE}/natures`);
+                naturesData = res.data.map(n => ({
+                    id: n.id,
+                    name: n.name,
+                    types: n.types ? n.types.map(t => t.type_name) : []
+                }));
+                filteredData = [...naturesData];
+                renderTable();
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to load natures', 'error');
+                renderEmpty('Failed to load. Please refresh.');
+            }
+        }
+
+        // ── Render ──
+        function showSkeleton() {
+            tbody.innerHTML = [1, 2, 3].map(() => `
+                <tr>
+                    <td><div class="skeleton skeleton-text" style="width:24px;margin:auto;"></div></td>
+                    <td><div class="skeleton skeleton-text" style="width:130px;"></div></td>
+                    <td><div style="display:flex;gap:8px;">${[1, 2, 3].map(() => `<div class="skeleton skeleton-text" style="width:70px;height:24px;border-radius:99px;"></div>`).join('')}</div></td>
+                    <td><div class="skeleton skeleton-text" style="width:50px;margin:auto;"></div></td>
+                </tr>`).join('');
+        }
+
+        function renderEmpty(msg = 'No natures found. Click "Add Nature" to create one.') {
+            tbody.innerHTML = `
+                <tr><td colspan="4">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-tags"></i></div>
+                        <p class="empty-title">No natures found</p>
+                        <p class="empty-text">${msg}</p>
+                    </div>
+                </td></tr>`;
+            updatePagination();
+        }
+
+        function renderTable() {
+            if (filteredData.length === 0) { renderEmpty(); return; }
+
+            const start = (currentPage - 1) * itemsPerPage;
+            const pageData = filteredData.slice(start, start + itemsPerPage);
+
+            tbody.innerHTML = pageData.map((n, i) => `
+                <tr>
+                    <td class="row-num">${start + i + 1}</td>
+                    <td style="font-weight:600;">${escapeHTML(n.name)}</td>
+                    <td>
+                        <div class="types-container">
+                            ${n.types.map(t => `
+                                <span class="type-tag">
+                                    ${escapeHTML(t)}
+                                    <button class="remove-type-btn" data-nature-id="${n.id}" data-type="${escapeAttr(t)}" title="Remove type">
+                                        <i class="fas fa-xmark"></i>
+                                    </button>
+                                </span>`).join('')}
+                            <button class="add-type-btn" data-id="${n.id}" title="Add type">
+                                <i class="fas fa-plus" style="font-size:.65rem;"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td style="text-align:center;">
+                        <button class="btn btn-secondary btn-sm btn-edit-row" data-id="${n.id}" title="Edit">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>`).join('');
+
+            updatePagination();
+        }
+
+        function updatePagination() {
+            const total = filteredData.length;
+            const totalPages = Math.ceil(total / itemsPerPage);
+            const start = total === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+            const end = Math.min(currentPage * itemsPerPage, total);
+
+            paginationInfo.textContent = total === 0
+                ? 'No natures'
+                : `Showing ${start}–${end} of ${total} nature${total === 1 ? '' : 's'}`;
+
+            prevPageBtn.disabled = currentPage <= 1;
+            nextPageBtn.disabled = currentPage >= totalPages || totalPages === 0;
+
+            pageNumberBtns.innerHTML = '';
+            if (totalPages > 1) {
+                let s = Math.max(1, currentPage - 1);
+                let e = Math.min(totalPages, s + 2);
+                if (e - s < 2) s = Math.max(1, e - 2);
+                for (let i = s; i <= e; i++) {
+                    const btn = document.createElement('button');
+                    btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+                    btn.textContent = i;
+                    btn.addEventListener('click', () => { currentPage = i; renderTable(); });
+                    pageNumberBtns.appendChild(btn);
+                }
+            }
+        }
+
+        // ── Nature modal ──
+        function openAddModal() {
+            editingNatureId = null;
+            modalTitle.textContent = 'Add Nature';
+            natureNameInput.value = '';
+            currentTags = [];
+            renderModalTags(modalTagsContainer, currentTags, tag => {
+                currentTags = currentTags.filter(t => t !== tag);
+                renderModalTags(modalTagsContainer, currentTags, arguments.callee);
+            });
+            saveBtnText.textContent = 'Save Nature';
+            natureNameInput.classList.remove('is-error');
+            natureModal.classList.add('open');
+            requestAnimationFrame(() => natureNameInput.focus());
+        }
+
+        function openEditModal(id) {
+            const n = naturesData.find(x => x.id === id);
+            if (!n) return;
+            editingNatureId = id;
+            modalTitle.textContent = 'Edit Nature';
+            natureNameInput.value = n.name;
+            currentTags = [...n.types];
+            refreshModalTags();
+            saveBtnText.textContent = 'Save Changes';
+            natureNameInput.classList.remove('is-error');
+            natureModal.classList.add('open');
+            requestAnimationFrame(() => natureNameInput.focus());
+        }
+
+        function refreshModalTags() {
+            renderModalTags(modalTagsContainer, currentTags, tag => {
+                currentTags = currentTags.filter(t => t !== tag);
+                refreshModalTags();
+            });
+        }
+
+        function closeNatureModal() {
+            natureModal.classList.remove('open');
+            editingNatureId = null;
+        }
+
+        function addTagFromModal() {
+            const tag = tagInput.value.trim();
+            if (!tag) return;
+            if (currentTags.includes(tag)) { showToast('Type already exists', 'warning'); return; }
+            currentTags.push(tag);
+            tagInput.value = '';
+            refreshModalTags();
+        }
+
+        async function saveNature() {
+            const name = natureNameInput.value.trim();
+            if (!name) {
+                natureNameInput.classList.add('is-error');
+                showToast('Please enter a name for the nature', 'error');
+                natureNameInput.focus();
+                return;
+            }
+            natureNameInput.classList.remove('is-error');
+
+            saveBtn.disabled = true;
+            saveBtnIcon.className = 'fas fa-spinner fa-spin';
+            saveBtnText.textContent = 'Saving…';
+
+            try {
+                if (editingNatureId) {
+                    await api.put(`${API_BASE}/natures/${editingNatureId}`, { name, types: currentTags });
+                    showToast('Nature updated successfully', 'success');
+                } else {
+                    await api.post(`${API_BASE}/natures`, { name, types: currentTags });
+                    showToast('Nature added successfully', 'success');
+                }
+                closeNatureModal();
+                await fetchNatures();
+            } catch (err) {
+                console.error(err);
+                showToast(err?.response?.data?.message || 'Failed to save nature', 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtnIcon.className = 'fas fa-floppy-disk';
+                saveBtnText.textContent = editingNatureId ? 'Save Changes' : 'Save Nature';
+            }
+        }
+
+        // ── Tag modal ──
+        function openTagModalFor(id) {
+            const n = naturesData.find(x => x.id === id);
+            if (!n) return;
+            editingTagNatureId = id;
+            natureNameInModal.textContent = n.name;
+            currentTagInputs = [...n.types];
+            refreshTagModal();
+            newTagInput.value = '';
+            tagModal.classList.add('open');
+            requestAnimationFrame(() => newTagInput.focus());
+        }
+
+        function refreshTagModal() {
+            renderModalTags(existingTagsContainer, currentTagInputs, tag => {
+                currentTagInputs = currentTagInputs.filter(t => t !== tag);
+                refreshTagModal();
+            });
+        }
+
+        function closeTagModal() {
+            tagModal.classList.remove('open');
+            editingTagNatureId = null;
+        }
+
+        function addNewTagInModal() {
+            const tag = newTagInput.value.trim();
+            if (!tag) return;
+            if (currentTagInputs.includes(tag)) { showToast('Type already exists', 'warning'); return; }
+            currentTagInputs.push(tag);
+            newTagInput.value = '';
+            refreshTagModal();
+        }
+
+        async function saveTagsFromModal() {
+            saveTagBtn.disabled = true;
+            saveTagBtnIcon.className = 'fas fa-spinner fa-spin';
+            saveTagBtnText.textContent = 'Saving…';
+
+            try {
+                await api.put(`${API_BASE}/natures/${editingTagNatureId}/types`, { types: currentTagInputs });
+                showToast('Types updated successfully', 'success');
+                closeTagModal();
+                await fetchNatures();
+            } catch (err) {
+                console.error(err);
+                showToast(err?.response?.data?.message || 'Failed to save types', 'error');
+            } finally {
+                saveTagBtn.disabled = false;
+                saveTagBtnIcon.className = 'fas fa-floppy-disk';
+                saveTagBtnText.textContent = 'Save Changes';
+            }
+        }
+
+        // ── Remove type confirm modal ──
+        function openRemoveTypeModal(natureId, type) {
+            const n = naturesData.find(x => x.id === natureId);
+            if (!n) return;
+            pendingRemove = { natureId, type };
+            removeTypeMsg.innerHTML = `Remove type <strong>"${escapeHTML(type)}"</strong> from <strong>"${escapeHTML(n.name)}"</strong>? This cannot be undone.`;
+            removeTypeModal.classList.add('open');
+        }
+
+        function closeRemoveTypeModal() {
+            removeTypeModal.classList.remove('open');
+            pendingRemove = null;
+        }
+
+        async function confirmRemoveType() {
+            if (!pendingRemove) return;
+            const btn = document.getElementById('confirmRemoveTypeBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removing…';
+
+            try {
+                const { natureId, type } = pendingRemove;
+                const n = naturesData.find(x => x.id === natureId);
+                const updatedTypes = n.types.filter(t => t !== type);
+                await api.put(`${API_BASE}/natures/${natureId}/types`, { types: updatedTypes });
+                showToast('Type removed successfully', 'success');
+                closeRemoveTypeModal();
+                await fetchNatures();
+            } catch (err) {
+                console.error(err);
+                showToast(err?.response?.data?.message || 'Failed to remove type', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-trash"></i> Remove';
+            }
+        }
+
+        // ── Shared: render tags inside a container ──
+        function renderModalTags(container, tags, onRemove) {
+            container.innerHTML = '';
+            if (tags.length === 0) {
+                container.innerHTML = '<span class="modal-tags-empty">No types added yet</span>';
+                return;
+            }
+            tags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'type-tag';
+                span.innerHTML = `${escapeHTML(tag)}<button class="remove-type-btn" title="Remove"><i class="fas fa-xmark"></i></button>`;
+                span.querySelector('.remove-type-btn').addEventListener('click', () => onRemove(tag));
+                container.appendChild(span);
+            });
+        }
+
+        // ── Toast ──
+        function showToast(message, type = 'info') {
+            document.querySelector('.toast')?.remove();
+            const icons = { success: 'fa-circle-check', error: 'fa-circle-exclamation', warning: 'fa-triangle-exclamation', info: 'fa-circle-info' };
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type} toast-in`;
+            toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i><span>${escapeHTML(message)}</span><button class="toast-close"><i class="fas fa-xmark"></i></button>`;
+            document.body.appendChild(toast);
+            const close = () => { toast.classList.remove('toast-in'); setTimeout(() => toast.remove(), 300); };
+            toast.querySelector('.toast-close').addEventListener('click', close);
+            setTimeout(close, 4000);
+        }
+
+        // ── Helpers ──
+        function escapeHTML(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+        function escapeAttr(s) { return String(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+    </script>
+</body>
+
+</html>

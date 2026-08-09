@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Location Selector</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            overflow: hidden;
+            background: #f5f7fa;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* LEFT SECTION - FORM */
+        .left-section {
+            width: 40%;
+            min-width: 400px;
+            background: white;
+            padding: 30px;
+            overflow-y: auto;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .left-section h1 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .left-section h1 i {
+            color: #3498db;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .form-container {
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group label i {
+            color: #3498db;
+            width: 20px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 15px;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-control:read-only {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .coordinates-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .coordinates-group .form-group {
+            flex: 1;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2980b9, #2573a7);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+
+        .btn-secondary:hover {
+            background: #d5dbdb;
+            transform: translateY(-2px);
+        }
+
+        .location-status {
+            background: #e8f6ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            border-left: 5px solid #3498db;
+            display: none;
+        }
+
+        .location-status.active {
+            display: block;
+        }
+
+        .location-status h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-details {
+            color: #34495e;
+            line-height: 1.6;
+        }
+
+        .status-details strong {
+            color: #2c3e50;
+        }
+
+        /* RIGHT SECTION - MAP */
+        .right-section {
+            flex: 1;
+            position: relative;
+            min-width: 600px;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Map UI Controls */
+        .map-ui-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px 20px 15px 50px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+            font-size: 1.2rem;
+        }
+
+        .map-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .map-control-btn {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #2c3e50;
+            transition: all 0.3s;
+        }
+
+        .map-control-btn:hover {
+            background: #3498db;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .map-control-btn.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .map-instructions {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .map-instructions h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .map-instructions p {
+            color: #7f8c8d;
+            line-height: 1.5;
+        }
+
+        /* Marker popup styling */
+        .leaflet-popup-content {
+            min-width: 200px;
+            font-size: 1rem;
+        }
+
+        .leaflet-popup-content h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .popup-btn {
+            width: 100%;
+            padding: 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        .popup-btn:hover {
+            background: #2980b9;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .app-container {
+                flex-direction: column;
+            }
+
+            .left-section {
+                width: 100%;
+                min-width: 100%;
+                height: 45%;
+            }
+
+            .right-section {
+                width: 100%;
+                min-width: 100%;
+                height: 55%;
+            }
+
+            .map-instructions {
+                bottom: 10px;
+                padding: 15px;
+                max-width: 90%;
+            }
+        }
+
+        /* Animation for location selection */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .selected-marker {
+            animation: pulse 0.5s ease-in-out 2;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- LEFT SECTION: FORM FIELDS -->
+        <div class="left-section">
+            <h1><i class="fas fa-map-marker-alt"></i> Location Details</h1>
+            <p class="subtitle">Select a location on the map to automatically populate these fields</p>
+
+            <div class="form-container">
+                <div class="form-group">
+                    <label for="location"><i class="fas fa-tag"></i> Location Name</label>
+                    <input type="text" id="location" class="form-control"
+                        placeholder="e.g., Central Park, Eiffel Tower">
+                </div>
+
+                <div class="form-group">
+                    <label for="address"><i class="fas fa-road"></i> Address</label>
+                    <input type="text" id="address" class="form-control" placeholder="Street address">
+                </div>
+
+                <div class="form-group">
+                    <label for="city"><i class="fas fa-city"></i> City</label>
+                    <input type="text" id="city" class="form-control" placeholder="City name">
+                </div>
+
+                <div class="form-group">
+                    <label for="state"><i class="fas fa-landmark"></i> Province / State</label>
+                    <input type="text" id="state" class="form-control" placeholder="Province or state">
+                </div>
+
+                <div class="form-group">
+                    <label for="country"><i class="fas fa-globe"></i> Country</label>
+                    <input type="text" id="country" class="form-control" placeholder="Country name">
+                </div>
+
+                <div class="coordinates-group">
+                    <div class="form-group">
+                        <label for="latitude"><i class="fas fa-arrows-up-down"></i> Latitude</label>
+                        <input type="text" id="latitude" class="form-control" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="longitude"><i class="fas fa-arrows-left-right"></i> Longitude</label>
+                        <input type="text" id="longitude" class="form-control" readonly>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" id="saveBtn">
+                        <i class="fas fa-save"></i> Save Location
+                    </button>
+                    <button class="btn btn-secondary" id="clearBtn">
+                        <i class="fas fa-times"></i> Clear All
+                    </button>
+                </div>
+
+                <div class="location-status" id="locationStatus">
+                    <h3><i class="fas fa-check-circle"></i> Location Selected</h3>
+                    <div class="status-details" id="statusDetails">
+                        <!-- Filled dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT SECTION: INTERACTIVE MAP -->
+        <div class="right-section">
+            <!-- Map UI Controls -->
+            <div class="map-ui-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="mapSearch" placeholder="Search for a city, address, or landmark...">
+                </div>
+
+                <div class="map-controls">
+                    <button class="map-control-btn" id="zoomInBtn" title="Zoom In">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="map-control-btn" id="zoomOutBtn" title="Zoom Out">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button class="map-control-btn" id="fullScreenBtn" title="Full Screen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="map-control-btn" id="locateMeBtn" title="My Location">
+                        <i class="fas fa-location-crosshairs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Map Container -->
+            <div id="map"></div>
+
+            <!-- Instructions -->
+            <div class="map-instructions">
+                <h3><i class="fas fa-mouse-pointer"></i> Select a Location</h3>
+                <p>Click anywhere on the map or search for a location to populate the form fields</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS and plugins -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([20, 0], 2);
+
+        // Add tile layer (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Variables to track markers
+        let currentMarker = null;
+        let selectedLocation = null;
+
+        // Initialize geocoder for search
+        const geocoder = L.Control.geocoder({
+            defaultMarkGeocode: false,
+            position: 'topleft'
+        }).addTo(map);
+
+        // Handle search box input
+        const searchBox = document.getElementById('mapSearch');
+        searchBox.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                performSearch(this.value);
+            }
+        });
+
+        // Perform search function
+        function performSearch(query) {
+            if (!query.trim()) return;
+
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        const result = data[0];
+                        const lat = parseFloat(result.lat);
+                        const lon = parseFloat(result.lon);
+
+                        // Center map on result
+                        map.setView([lat, lon], 12);
+
+                        // Add marker
+                        addMarker(lat, lon, result.display_name);
+
+                        // Update form with location data
+                        updateFormWithLocation(lat, lon, result);
+                    } else {
+                        alert('Location not found. Please try a different search.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    alert('Search failed. Please try again.');
+                });
+        }
+
+        // Add marker to map
+        function addMarker(lat, lon, title = 'Selected Location') {
+            // Remove previous marker
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+            }
+
+            // Create custom icon for selected location
+            const selectedIcon = L.divIcon({
+                html: `<div style="background-color: #3498db; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.3);"><i class="fas fa-map-marker-alt"></i></div>`,
+                className: 'selected-marker',
+                iconSize: [40, 40],
+                iconAnchor: [20, 40]
+            });
+
+            // Add new marker
+            currentMarker = L.marker([lat, lon], { icon: selectedIcon }).addTo(map);
+
+            // Create popup with option to select
+            const popupContent = `
+                <h4>${title}</h4>
+                <p><strong>Coordinates:</strong><br>${lat.toFixed(6)}, ${lon.toFixed(6)}</p>
+                <button class="popup-btn" onclick="selectThisLocation(${lat}, ${lon})">
+                    <i class="fas fa-check"></i> Select This Location
+                </button>
+            `;
+
+            currentMarker.bindPopup(popupContent).openPopup();
+
+            // Store selected location
+            selectedLocation = { lat, lon, title };
+        }
+
+        // Handle map click to add marker
+        map.on('click', function (e) {
+            const { lat, lng } = e.latlng;
+            addMarker(lat, lng, 'Clicked Location');
+
+            // Reverse geocode to get address details
+            reverseGeocode(lat, lng);
+        });
+
+        // Reverse geocode function
+        function reverseGeocode(lat, lon) {
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateFormWithLocation(lat, lon, data);
+                })
+                .catch(error => {
+                    console.error('Reverse geocode error:', error);
+                    // Still update form with coordinates even if reverse geocode fails
+                    updateFormWithLocation(lat, lon, { display_name: `Location at ${lat.toFixed(4)}, ${lon.toFixed(4)}` });
+                });
+        }
+
+        // Update form with location data
+        function updateFormWithLocation(lat, lon, locationData) {
+            // Update coordinates
+            document.getElementById('latitude').value = lat.toFixed(6);
+            document.getElementById('longitude').value = lon.toFixed(6);
+
+            // Parse address components
+            const address = locationData.address || {};
+
+            // Update form fields
+            document.getElementById('location').value = locationData.display_name.split(',')[0] || 'Selected Location';
+            document.getElementById('address').value = `${address.road || ''} ${address.house_number || ''}`.trim();
+            document.getElementById('city').value = address.city || address.town || address.village || '';
+            document.getElementById('state').value = address.state || address.province || '';
+            document.getElementById('country').value = address.country || '';
+
+            // Update status panel
+            updateStatusPanel(lat, lon, locationData);
+        }
+
+        // Update status panel
+        function updateStatusPanel(lat, lon, locationData) {
+            const address = locationData.address || {};
+            const statusDetails = document.getElementById('statusDetails');
+
+            statusDetails.innerHTML = `
+                <p><strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}</p>
+                <p><strong>Address:</strong> ${locationData.display_name || 'Not available'}</p>
+                <p><strong>Type:</strong> ${locationData.type || 'Location'}</p>
+                <p>Click "Save Location" to store this information.</p>
+            `;
+
+            document.getElementById('locationStatus').classList.add('active');
+        }
+
+        // Function to select location from popup
+        window.selectThisLocation = function (lat, lon) {
+            reverseGeocode(lat, lon);
+
+            // Center map on selected location
+            map.setView([lat, lon], 14);
+        };
+
+        // Map control functions
+        document.getElementById('zoomInBtn').addEventListener('click', function () {
+            map.zoomIn();
+        });
+
+        document.getElementById('zoomOutBtn').addEventListener('click', function () {
+            map.zoomOut();
+        });
+
+        document.getElementById('fullScreenBtn').addEventListener('click', function () {
+            const mapContainer = document.querySelector('.right-section');
+            if (!document.fullscreenElement) {
+                if (mapContainer.requestFullscreen) {
+                    mapContainer.requestFullscreen();
+                } else if (mapContainer.webkitRequestFullscreen) {
+                    mapContainer.webkitRequestFullscreen();
+                }
+                this.innerHTML = '<i class="fas fa-compress"></i>';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+                this.innerHTML = '<i class="fas fa-expand"></i>';
+            }
+        });
+
+        document.getElementById('locateMeBtn').addEventListener('click', function () {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    map.setView([lat, lon], 14);
+                    addMarker(lat, lon, 'My Current Location');
+                    reverseGeocode(lat, lon);
+                }, function (error) {
+                    alert('Unable to retrieve your location. Please ensure location services are enabled.');
+                });
+            } else {
+                alert('Geolocation is not supported by your browser.');
+            }
+        });
+
+        // Save button handler
+        document.getElementById('saveBtn').addEventListener('click', function () {
+            const locationName = document.getElementById('location').value;
+            const latitude = document.getElementById('latitude').value;
+            const longitude = document.getElementById('longitude').value;
+
+            if (!latitude || !longitude) {
+                alert('Please select a location on the map first.');
+                return;
+            }
+
+            // In a real application, you would send this data to a server
+            // For this demo, we'll just show a confirmation
+
+            const savedLocation = {
+                name: locationName || 'Unnamed Location',
+                address: document.getElementById('address').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                country: document.getElementById('country').value,
+                latitude: latitude,
+                longitude: longitude,
+                timestamp: new Date().toISOString()
+            };
+
+            console.log('Location saved:', savedLocation);
+
+            alert(`Location saved successfully!\n\nName: ${savedLocation.name}\nCoordinates: ${savedLocation.latitude}, ${savedLocation.longitude}`);
+
+            // You could also store in localStorage for persistence
+            localStorage.setItem('lastSavedLocation', JSON.stringify(savedLocation));
+        });
+
+        // Clear button handler
+        document.getElementById('clearBtn').addEventListener('click', function () {
+            if (confirm('Clear all form fields and remove selected location?')) {
+                // Clear form fields
+                document.getElementById('location').value = '';
+                document.getElementById('address').value = '';
+                document.getElementById('city').value = '';
+                document.getElementById('state').value = '';
+                document.getElementById('country').value = '';
+                document.getElementById('latitude').value = '';
+                document.getElementById('longitude').value = '';
+
+                // Remove marker from map
+                if (currentMarker) {
+                    map.removeLayer(currentMarker);
+                    currentMarker = null;
+                }
+
+                // Hide status panel
+                document.getElementById('locationStatus').classList.remove('active');
+
+                // Reset map view
+                map.setView([20, 0], 2);
+            }
+        });
+
+        // Add some default markers for popular locations
+        const popularLocations = [
+            { name: "Eiffel Tower", lat: 48.8584, lng: 2.2945 },
+            { name: "Statue of Liberty", lat: 40.6892, lng: -74.0445 },
+            { name: "Sydney Opera House", lat: -33.8568, lng: 151.2153 },
+            { name: "Taj Mahal", lat: 27.1751, lng: 78.0421 },
+            { name: "Colosseum", lat: 41.8902, lng: 12.4922 }
+        ];
+
+        // Add markers for popular locations with click handlers
+        popularLocations.forEach(loc => {
+            const marker = L.marker([loc.lat, loc.lng]).addTo(map);
+            marker.bindPopup(`
+                <h4>${loc.name}</h4>
+                <button class="popup-btn" onclick="selectThisLocation(${loc.lat}, ${loc.lng})">
+                    <i class="fas fa-check"></i> Select ${loc.name}
+                </button>
+            `);
+        });
+
+        // Exit fullscreen handler
+        document.addEventListener('fullscreenchange', function () {
+            const fullScreenBtn = document.getElementById('fullScreenBtn');
+            if (!document.fullscreenElement) {
+                fullScreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+            }
+        });
+    </script>
+</body>
+
+</html>

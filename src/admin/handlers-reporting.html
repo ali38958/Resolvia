@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <title>Receiver Performance Report — Resolvia</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+    <style>
+        /* ── Page-specific styles only ── */
+
+        /* ── Table column sizing ── */
+        #receiverTable th:nth-child(1),
+        #receiverTable td:nth-child(1) {
+            width: 50px;
+            text-align: center;
+        }
+
+        #receiverTable th:nth-child(4),
+        #receiverTable td:nth-child(4) {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            color: var(--text-secondary);
+        }
+
+        #receiverTable th:nth-child(5),
+        #receiverTable td:nth-child(5) {
+            width: 110px;
+            text-align: center;
+        }
+
+        #receiverTable th:nth-child(6),
+        #receiverTable td:nth-child(6) {
+            width: 90px;
+            text-align: center;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        #receiverTable th:nth-child(7),
+        #receiverTable td:nth-child(7) {
+            width: 130px;
+            text-align: center;
+        }
+
+        #receiverTable th:nth-child(8),
+        #receiverTable td:nth-child(8) {
+            width: 110px;
+            text-align: center;
+        }
+
+        /* ── Receiver name cell ── */
+        .receiver-name {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: var(--text-sm);
+        }
+
+        .receiver-id {
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            margin-top: 2px;
+        }
+
+        /* ── Status badges ── */
+        .badge-active {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .badge-inactive {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        /* ── Action button ── */
+        .btn-details {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: 0 var(--space-3);
+            height: 30px;
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border-strong);
+            background: var(--bg-surface);
+            color: var(--primary);
+            transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast), transform var(--t-fast);
+            white-space: nowrap;
+        }
+
+        .btn-details:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            top: calc(var(--header-height) + var(--space-4));
+            right: var(--space-5);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: 500;
+            z-index: 5000;
+            box-shadow: var(--shadow-lg);
+            min-width: 260px;
+            max-width: 380px;
+            animation: toast-in 0.25s ease;
+            border-left: 4px solid transparent;
+        }
+
+        @keyframes toast-in {
+            from {
+                transform: translateX(110%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            background: var(--success-light);
+            border-color: var(--success);
+            color: #166534;
+        }
+
+        .toast.error {
+            background: var(--danger-light);
+            border-color: var(--danger);
+            color: #9f1239;
+        }
+
+        .toast.info {
+            background: var(--info-light);
+            border-color: var(--info);
+            color: #1e40af;
+        }
+
+        .toast-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.6;
+            font-size: 16px;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="/assets/logo.png" alt="Resolvia" id="logo">
+            <span class="logo-text">Resolvia</span>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" title="Toggle theme">
+                <i class="fa fa-moon icon-moon"></i>
+                <i class="fa fa-sun icon-sun"></i>
+            </button>
+            <div class="profile-icon"><i class="fa fa-user"></i></div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fa fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <nav class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </nav>
+
+    <main class="main-content" id="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Receiver Performance Report</h1>
+                <p class="page-subtitle">Track assignment efficiency and dispatch performance of managers</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-primary" id="exportCsvBtn">
+                    <i class="fas fa-file-export"></i> Export All CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Toolbar ── -->
+        <div class="table-toolbar">
+            <div class="input-group table-search">
+                <i class="fas fa-search input-icon"></i>
+                <input type="text" id="search-input" class="form-control" placeholder="Search by ID, name or email…">
+            </div>
+            <div class="table-actions">
+                <div style="display:flex;align-items:center;gap:var(--space-2);">
+                    <label class="form-label" style="margin:0;white-space:nowrap;">Show</label>
+                    <select id="entries-per-page" class="form-control" style="width:80px;">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Table ── -->
+        <div class="table-wrapper">
+            <table id="receiverTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Receiver Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Assigned</th>
+                        <th>Avg. Assign Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <tr>
+                        <td colspan="8" style="text-align:center;padding:var(--space-8);">
+                            <div class="spinner" style="margin:0 auto;"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                <span class="pagination-info" id="table-info">Showing 0 entries</span>
+                <div class="pagination-controls" id="pagination-container"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ══ DETAIL REPORT MODAL ════════════════════════════ -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal" style="max-width:480px;">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    Generate Report: <span id="modal-handler-name" style="color:var(--accent);"></span>
+                </h2>
+                <button class="modal-close" id="close-detail-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Date From <span class="form-required">*</span></label>
+                    <input type="date" id="modal-from" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date To <span class="form-required">*</span></label>
+                    <input type="date" id="modal-to" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancel-detail-btn">Cancel</button>
+                <button class="btn btn-primary" id="download-report-btn">
+                    <i class="fas fa-download"></i> Download Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+    <script>
+        // ── State ──────────────────────────────────────────
+        let allData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        let rowsPerPage = 10;
+        let selectedId = '';
+        let selectedName = '';
+
+        // ── Toast ──────────────────────────────────────────
+        function showToast(message, type = 'info') {
+            document.querySelectorAll('.toast').forEach(t => t.remove());
+            const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i>
+                <span style="flex:1">${message}</span>
+                <button class="toast-close"><i class="fas fa-times"></i></button>`;
+            document.body.appendChild(toast);
+            toast.querySelector('.toast-close').addEventListener('click', () => toast.remove());
+            setTimeout(() => toast?.remove(), 3500);
+        }
+
+        // ── Modal helpers ──────────────────────────────────
+        function openModal(id, name) {
+            selectedId = id;
+            selectedName = name;
+            document.getElementById('modal-handler-name').textContent = name;
+
+            const today = new Date().toISOString().split('T')[0];
+            const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            document.getElementById('modal-to').value = today;
+            document.getElementById('modal-from').value = from;
+
+            document.getElementById('detailModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        // ── Load data ──────────────────────────────────────
+        async function loadReceivers() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:var(--space-8);">
+                <div class="spinner" style="margin:0 auto;"></div></td></tr>`;
+            try {
+                const { data } = await api.get('/api/admin/receivers-report');
+                if (!data.success) throw new Error(data.message);
+
+                allData = data.data.map((r, i) => ({
+                    id: r.id,
+                    rowId: `RCV-${String(i + 1).padStart(3, '0')}`,
+                    name: r.name,
+                    email: r.email,
+                    phone: r.phone_number || null,
+                    status: r.status,
+                    assigned: r.assigned_count || 0,
+                    avgTimeMins: r.avg_assign_time_mins ?? null
+                }));
+                filteredData = [...allData];
+                renderTable();
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="8">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                        <p class="empty-title">Failed to load</p>
+                        <p class="empty-text">Could not fetch receiver data. Check your connection.</p>
+                    </div></td></tr>`;
+                showToast('Failed to load receiver data.', 'error');
+            }
+        }
+
+        // ── Render table ───────────────────────────────────
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            const start = (currentPage - 1) * rowsPerPage;
+            const page = filteredData.slice(start, start + rowsPerPage);
+
+            if (!page.length) {
+                tbody.innerHTML = `<tr><td colspan="8">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-magnifying-glass"></i></div>
+                        <p class="empty-title">No receivers found</p>
+                        <p class="empty-text">Try adjusting your search term.</p>
+                    </div></td></tr>`;
+                updatePaginationInfo(0, 0, 0);
+                return;
+            }
+
+            tbody.innerHTML = page.map((r, i) => {
+                const n = start + i + 1;
+                const badgeCls = r.status === 'Active' ? 'badge badge-green' : 'badge badge-red';
+                const avgStr = r.avgTimeMins != null
+                    ? `<span class="font-semibold">${fmtMins(r.avgTimeMins)}</span>`
+                    : `<span class="text-muted" style="font-style:italic;">N/A</span>`;
+
+                return `<tr>
+                    <td class="text-center text-muted font-mono">${n}</td>
+                    <td>
+                        <div class="receiver-name">${r.name}</div>
+                        <div class="receiver-id">${r.id}</div>
+                    </td>
+                    <td class="text-secondary">${r.email}</td>
+                    <td>${r.phone || '—'}</td>
+                    <td class="text-center"><span class="badge ${r.status === 'Active' ? 'badge-green' : 'badge-red'}">${r.status}</span></td>
+                    <td class="text-center">${r.assigned}</td>
+                    <td class="text-center">${avgStr}</td>
+                    <td class="text-center">
+                        <button class="btn-details" data-id="${r.id}" data-name="${r.name.replace(/"/g, '&quot;')}">
+                            <i class="fas fa-file-invoice"></i> Details
+                        </button>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            // Delegate detail button clicks
+            tbody.querySelectorAll('.btn-details').forEach(btn => {
+                btn.addEventListener('click', () => openModal(btn.dataset.id, btn.dataset.name));
+            });
+
+            updatePaginationInfo(start + 1, Math.min(start + rowsPerPage, filteredData.length), filteredData.length);
+            renderPagination();
+        }
+
+        function fmtMins(mins) {
+            if (mins == null) return '—';
+            const m = Math.round(mins);
+            if (m < 60) return `${m} min${m !== 1 ? 's' : ''}`;
+            const h = Math.floor(m / 60), rem = m % 60;
+            return rem > 0 ? `${h}h ${rem}m` : `${h}h`;
+        }
+
+        function updatePaginationInfo(s, e, total) {
+            document.getElementById('table-info').textContent =
+                total === 0 ? 'Showing 0 entries' : `Showing ${s}–${e} of ${total} entries`;
+        }
+
+        function renderPagination() {
+            const total = Math.ceil(filteredData.length / rowsPerPage) || 1;
+            const ctrl = document.getElementById('pagination-container');
+            ctrl.innerHTML = '';
+            if (total <= 1) return;
+
+            const cur = currentPage;
+            const mkBtn = (label, page, disabled = false, active = false) => {
+                const b = document.createElement('button');
+                b.className = `page-btn${active ? ' active' : ''}`;
+                b.disabled = disabled;
+                b.innerHTML = label;
+                if (!disabled) b.addEventListener('click', () => { currentPage = page; renderTable(); });
+                return b;
+            };
+
+            ctrl.appendChild(mkBtn('<i class="fas fa-chevron-left"></i>', cur - 1, cur === 1));
+            let s = Math.max(1, cur - 2), e = Math.min(total, s + 4);
+            if (e - s < 4) s = Math.max(1, e - 4);
+            if (s > 1) { ctrl.appendChild(mkBtn('1', 1)); if (s > 2) ctrl.appendChild(mkBtn('…', null, true)); }
+            for (let p = s; p <= e; p++) ctrl.appendChild(mkBtn(p, p, false, p === cur));
+            if (e < total) { if (e < total - 1) ctrl.appendChild(mkBtn('…', null, true)); ctrl.appendChild(mkBtn(total, total)); }
+            ctrl.appendChild(mkBtn('<i class="fas fa-chevron-right"></i>', cur + 1, cur === total));
+        }
+
+        // ── CSV helpers ────────────────────────────────────
+        function downloadCSV(content, filename) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([content], { type: 'text/csv;charset=utf-8;' }));
+            a.download = filename;
+            a.click();
+        }
+
+        function exportMainCSV() {
+            showToast('Preparing CSV…', 'info');
+            let csv = 'ID,Name,Email,Phone,Status,Assigned,Avg Assign Time\n';
+            filteredData.forEach(r => {
+                const avg = r.avgTimeMins != null ? fmtMins(r.avgTimeMins) : 'N/A';
+                const phone = r.phone ? `"${r.phone}"` : '—';
+                csv += `"${r.id}","${r.name}","${r.email}",${phone},${r.status},${r.assigned},"${avg}"\n`;
+            });
+            downloadCSV(csv, `Resolvia_Receiver_Report_${new Date().toISOString().split('T')[0]}.csv`);
+            showToast('Export complete!', 'success');
+        }
+
+        async function generateDetailedCSV() {
+            const from = document.getElementById('modal-from').value;
+            const to = document.getElementById('modal-to').value;
+
+            if (!from || !to) { showToast('Please select both From and To dates.', 'error'); return; }
+            if (!selectedId) { showToast('No receiver selected.', 'error'); return; }
+
+            const btn = document.getElementById('download-report-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;"></span> Generating…';
+
+            showToast(`Generating report for ${selectedName}…`, 'info');
+            closeModal();
+
+            try {
+                const { data } = await api.get(
+                    `/api/admin/receivers-report/${selectedId}/details`,
+                    { params: { from, to } }
+                );
+                if (!data.success) throw new Error(data.message);
+
+                const { receiverInfo, statusLogs, staffLogs } = data.data;
+
+                let csv = '';
+                csv += `Receiver Report\nName,"${receiverInfo.name}"\nEmail,"${receiverInfo.email}"\nStatus,${receiverInfo.status}\nDate Range,${from} to ${to}\n\n`;
+
+                csv += `=== STATUS CHANGE LOGS ===\n`;
+                if (!statusLogs.length) {
+                    csv += `No status changes recorded in this period.\n`;
+                } else {
+                    csv += `Complaint ID,Previous Status,New Status,Changed At\n`;
+                    statusLogs.forEach(r =>
+                        csv += `${r.complaint_id},"${r.previous_status}","${r.new_status}","${fmtDT(r.changed_at)}"\n`
+                    );
+                }
+
+                csv += `\n=== STAFF ASSIGNMENT LOGS ===\n`;
+                if (!staffLogs.length) {
+                    csv += `No staff assignments recorded in this period.\n`;
+                } else {
+                    csv += `Complaint ID,Previous Staff ID,Previous Staff Name,New Staff ID,New Staff Name,Changed At\n`;
+                    staffLogs.forEach(r =>
+                        csv += `${r.complaint_id},"${r.previous_staff_id || 'N/A'}","${r.previous_staff_name || 'Not Assigned'}","${r.new_staff_id}","${r.new_staff_name || ''}","${fmtDT(r.changed_at)}"\n`
+                    );
+                }
+
+                const safeName = selectedName.replace(/\s+/g, '_');
+                downloadCSV(csv, `${safeName}_Report_${from}_to_${to}.csv`);
+                showToast('Report downloaded!', 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to generate report.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-download"></i> Download Report';
+            }
+        }
+
+        function fmtDT(dt) {
+            if (!dt) return '';
+            return new Date(dt).toLocaleString('en-US', {
+                year: 'numeric', month: 'short', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', hour12: true
+            });
+        }
+
+        // ── Init ───────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', async () => {
+            rowsPerPage = parseInt(document.getElementById('entries-per-page').value, 10);
+            await loadReceivers();
+
+            // Search
+            document.getElementById('search-input').addEventListener('input', function () {
+                const q = this.value.toLowerCase();
+                filteredData = allData.filter(r =>
+                    r.name.toLowerCase().includes(q) ||
+                    r.email.toLowerCase().includes(q) ||
+                    r.rowId.toLowerCase().includes(q) ||
+                    r.id.toLowerCase().includes(q)
+                );
+                currentPage = 1;
+                renderTable();
+            });
+
+            // Entries per page
+            document.getElementById('entries-per-page').addEventListener('change', function () {
+                rowsPerPage = parseInt(this.value, 10);
+                currentPage = 1;
+                renderTable();
+            });
+
+            // Export
+            document.getElementById('exportCsvBtn').addEventListener('click', exportMainCSV);
+
+            // Modal controls
+            document.getElementById('close-detail-modal').addEventListener('click', closeModal);
+            document.getElementById('cancel-detail-btn').addEventListener('click', closeModal);
+            document.getElementById('detailModal').addEventListener('click', e => {
+                if (e.target === document.getElementById('detailModal')) closeModal();
+            });
+            document.getElementById('download-report-btn').addEventListener('click', generateDetailedCSV);
+
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && document.getElementById('detailModal').classList.contains('open'))
+                    closeModal();
+            });
+        });
+    </script>
+</body>
+
+</html>

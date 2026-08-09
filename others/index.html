@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JWT Test - SIMPLE</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .box { border: 2px solid #333; padding: 20px; margin: 10px 0; }
+        button { padding: 10px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+        pre { background: #f4f4f4; padding: 10px; overflow: auto; }
+        .green { color: green; font-weight: bold; }
+        .red { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🔥 JWT Cookie Test - SIMPLE</h1>
+    
+    <div class="box">
+        <h2>Test Credentials:</h2>
+        <p>Username: <strong>user1</strong></p>
+        <p>Password: <strong>qwerty</strong></p>
+    </div>
+    
+    <div class="box">
+        <h2>1. Test Server Connection</h2>
+        <button onclick="testServer()">Test Server</button>
+    </div>
+    
+    <div class="box">
+        <h2>2. Login</h2>
+        <input type="text" id="username" value="user1" placeholder="Username"><br>
+        <input type="password" id="password" value="qwerty" placeholder="Password"><br>
+        <button onclick="login()">Login</button>
+    </div>
+    
+    <div class="box">
+        <h2>3. Other Actions</h2>
+        <button onclick="checkCookies()">Check Cookies</button>
+        <button onclick="protectedRoute()">Protected Route</button>
+        <button onclick="logout()" style="background: #dc3545;">Logout</button>
+    </div>
+    
+    <div class="box">
+        <h2>Results:</h2>
+        <div id="result">Click buttons to see results...</div>
+        
+        <h3>Browser Cookies:</h3>
+        <div id="cookies">No cookies yet...</div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:80';
+        
+        function updateCookies() {
+            document.getElementById('cookies').textContent = 
+                document.cookie || 'No cookies in browser';
+        }
+        
+        function showResult(data) {
+            document.getElementById('result').innerHTML = 
+                '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        }
+        
+        async function testServer() {
+            try {
+                const response = await fetch(BASE_URL + '/test');
+                const data = await response.json();
+                showResult({...data, status: '✅ SERVER IS WORKING!'});
+                console.log('Test response:', data);
+            } catch (error) {
+                showResult({error: '❌ Server not responding!', details: error.message});
+            }
+        }
+        
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            console.log('Sending login:', { username, password });
+            
+            try {
+                const response = await fetch(BASE_URL + '/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include', // THIS IS CRITICAL FOR COOKIES
+                    body: JSON.stringify({ id: username, password: password })
+                });
+                
+                console.log('Response status:', response.status);
+                
+                const data = await response.json();
+                console.log('Login response:', data);
+                
+                showResult(data);
+                updateCookies();
+            } catch (error) {
+                console.error('Login error:', error);
+                showResult({
+                    error: 'Login failed!',
+                    details: error.message,
+                    note: 'Check console and server logs'
+                });
+            }
+        }
+        
+        async function checkCookies() {
+            try {
+                const response = await fetch(BASE_URL + '/check', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                showResult(data);
+                updateCookies();
+            } catch (error) {
+                showResult({error: error.message});
+            }
+        }
+        
+        async function protectedRoute() {
+            try {
+                const response = await fetch(BASE_URL + '/protected', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                showResult(data);
+            } catch (error) {
+                showResult({error: error.message});
+            }
+        }
+        
+        async function logout() {
+            try {
+                const response = await fetch(BASE_URL + '/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                showResult(data);
+                updateCookies();
+            } catch (error) {
+                showResult({error: error.message});
+            }
+        }
+        
+        // Initial cookie display
+        updateCookies();
+    </script>
+</body>
+</html>

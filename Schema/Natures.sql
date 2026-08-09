@@ -1,0 +1,22 @@
+-- Creating Natures Table
+CREATE TABLE Natures (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+        ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Creating NatureTypes Table
+CREATE TABLE NatureTypes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nature_id INT NOT NULL,
+    type_name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+        ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (nature_id) 
+        REFERENCES Natures(id) 
+        ON DELETE CASCADE
+);
+

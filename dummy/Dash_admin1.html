@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComplaintFlow · Admin dashboard</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Minimal Chart.js for demo charts (static placeholders) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: #f6f9fc;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            color: #1a2639;
+        }
+
+        /* ---------- SIDEBAR (left) ---------- */
+        .sidebar {
+            width: 260px;
+            background: white;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.02), 0 2px 6px rgba(0, 20, 40, 0.05);
+            padding: 28px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            overflow-y: auto;
+            backdrop-filter: blur(2px);
+            border-right: 1px solid #edf2f7;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-left: 6px;
+        }
+
+        .logo-icon {
+            background: linear-gradient(145deg, #4f46e5, #6366f1);
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            box-shadow: 0 6px 12px rgba(79, 70, 229, 0.2);
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 1.3rem;
+            letter-spacing: -0.4px;
+            background: linear-gradient(130deg, #1e293b, #334155);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-weight: 500;
+            color: #5b687c;
+            transition: all 0.2s;
+            cursor: default;
+        }
+
+        .nav-item i {
+            width: 22px;
+            font-size: 1.1rem;
+            color: #7c8ba0;
+        }
+
+        .nav-item.active {
+            background: #eef2ff;
+            color: #4f46e5;
+        }
+
+        .nav-item.active i {
+            color: #4f46e5;
+        }
+
+        .nav-item:not(.active):hover {
+            background: #f8fafd;
+            color: #334155;
+        }
+
+        .bottom-nav {
+            margin-top: auto;
+            border-top: 1px solid #ecf1f6;
+            padding-top: 20px;
+        }
+
+        /* ---------- MAIN LAYOUT ---------- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: #f6f9fc;
+        }
+
+        /* ---------- TOP HEADER ---------- */
+        .header {
+            background: white;
+            padding: 12px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e9edf3;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .page-title {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #232e3e;
+        }
+
+        .search-wrapper {
+            background: #f1f4f9;
+            border-radius: 40px;
+            padding: 8px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 260px;
+        }
+
+        .search-wrapper i {
+            color: #7f8fa4;
+            font-size: 0.95rem;
+        }
+
+        .search-wrapper input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 0.95rem;
+            width: 100%;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .header-right i {
+            font-size: 1.3rem;
+            color: #55657b;
+            cursor: default;
+        }
+
+        .profile-drop {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f0f4fa;
+            padding: 5px 12px 5px 8px;
+            border-radius: 40px;
+            cursor: default;
+        }
+
+        .profile-drop img {
+            width: 30px;
+            height: 30px;
+            border-radius: 30px;
+            background: #4f46e5;
+        }
+
+        .profile-drop span {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #232e3e;
+        }
+
+        /* ---------- DASHBOARD BODY (scrollable) ---------- */
+        .dashboard-body {
+            padding: 24px 28px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        /* ---------- SUMMARY CARDS (responsive grid) ---------- */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 16px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 22px;
+            padding: 18px 14px;
+            box-shadow: 0 8px 22px -8px rgba(0, 20, 40, 0.08);
+            transition: 0.15s;
+            border: 1px solid #ffffff50;
+            backdrop-filter: blur(2px);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .card-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 18px;
+            background: #f0f3ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4f46e5;
+            font-size: 1.3rem;
+        }
+
+        .card-value {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #0f1829;
+            line-height: 1.2;
+        }
+
+        .card-label {
+            color: #617388;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .trend {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            background: #e9f7eb;
+            padding: 4px 8px;
+            border-radius: 30px;
+            color: #1f9254;
+        }
+
+        .trend.down {
+            background: #fee9e7;
+            color: #c23b2b;
+        }
+
+        .trend i {
+            font-size: 0.7rem;
+        }
+
+        /* responsive cards : wrap smartly */
+        @media (max-width: 1400px) {
+            .cards-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ---------- ANALYTICS SECTION (4 charts) ---------- */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 24px;
+            padding: 18px 14px 12px 14px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.02);
+            border: 1px solid #f0f4fa;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #40536d;
+        }
+
+        .toggle-badge {
+            background: #edf2f9;
+            border-radius: 30px;
+            padding: 4px 8px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .canvas-container {
+            height: 140px;
+            width: 100%;
+            position: relative;
+        }
+
+        @media (max-width: 1100px) {
+            .analytics-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ---------- COMPLAINT MONITORING TABLE ---------- */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-pill {
+            background: white;
+            border-radius: 40px;
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid #dde3eb;
+            color: #415570;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: default;
+        }
+
+        .export-btn {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 30px;
+            padding: 8px 18px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .table-wrapper {
+            background: white;
+            border-radius: 28px;
+            padding: 16px 18px;
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.02);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px 6px 8px 6px;
+            color: #65758b;
+            font-weight: 500;
+            border-bottom: 1px solid #eef3f8;
+        }
+
+        td {
+            padding: 14px 6px;
+            border-bottom: 1px solid #f1f6fc;
+            color: #1f2b3c;
+        }
+
+        .priority-badge {
+            background: #f7dfde;
+            color: #ac3b34;
+            padding: 4px 10px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.7rem;
+        }
+
+        .priority-high {
+            background: #fee2e2;
+            color: #b34033;
+        }
+
+        .priority-med {
+            background: #fff3cd;
+            color: #8e6525;
+        }
+
+        .actions i {
+            margin: 0 6px;
+            color: #7085a3;
+            cursor: default;
+            font-size: 1rem;
+        }
+
+        .role-badge {
+            background: #e6e9ff;
+            color: #3f3d9c;
+            border-radius: 40px;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+        }
+
+        /* ---------- USER MANAGEMENT & PERFORMANCE PANELS ---------- */
+        .dual-panel {
+            display: grid;
+            grid-template-columns: 1.7fr 1fr;
+            gap: 20px;
+        }
+
+        .user-card,
+        .perf-card,
+        .alert-card {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.02);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .tab {
+            background: #f2f6fc;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .user-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f5fc;
+        }
+
+        .user-meta {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .user-actions i {
+            margin: 0 4px;
+            color: #8599b5;
+        }
+
+        .perf-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            background: #eef2f8;
+            height: 8px;
+            border-radius: 20px;
+            width: 100%;
+            margin-top: 6px;
+        }
+
+        .progress-fill {
+            background: #4f46e5;
+            width: 78%;
+            height: 8px;
+            border-radius: 20px;
+        }
+
+        .alert-item {
+            background: #fff8e7;
+            padding: 12px;
+            border-radius: 16px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .alert-icon {
+            color: #e58f2b;
+        }
+
+        hr {
+            border: 1px solid #edf2f9;
+            margin: 12px 0;
+        }
+
+        /* responsiveness */
+        @media (max-width: 1000px) {
+            .dual-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- LEFT SIDEBAR (navigation) -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <div class="logo-icon"><i class="fas fa-ticket-alt"></i></div>
+            <span class="logo-text">ComplaintFlow</span>
+        </div>
+        <div class="nav-links">
+            <div class="nav-item active"><i class="fas fa-chart-pie"></i> Dashboard</div>
+            <div class="nav-item"><i class="fas fa-clipboard-list"></i> Complaints</div>
+            <div class="nav-item"><i class="fas fa-users"></i> Customers</div>
+            <div class="nav-item"><i class="fas fa-headset"></i> Staff</div>
+            <div class="nav-item"><i class="fas fa-user-tie"></i> Handlers</div>
+            <div class="nav-item"><i class="fas fa-cog"></i> Settings</div>
+        </div>
+        <div class="bottom-nav">
+            <div class="nav-item"><i class="fas fa-question-circle"></i> Help</div>
+            <div class="nav-item"><i class="fas fa-sign-out-alt"></i> Logout</div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- TOP HEADER with search, notifications, profile -->
+        <div class="header">
+            <div class="header-left">
+                <span class="page-title">Complaint overview</span>
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search complaints...">
+                </div>
+            </div>
+            <div class="header-right">
+                <i class="far fa-bell"></i>
+                <div class="profile-drop">
+                    <img src="https://i.pravatar.cc/32?img=7" alt="admin">
+                    <span>Alex Rivera</span>
+                    <i class="fas fa-chevron-down" style="font-size: 0.8rem;"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCROLLABLE DASHBOARD BODY -->
+        <div class="dashboard-body">
+            <!-- 8 SUMMARY CARDS -->
+            <div class="cards-grid">
+                <div class="summary-card">
+                    <div class="card-row"><span class="card-value">218</span><span class="card-icon"><i
+                                class="fas-regular fa-message"></i></span></div>
+                    <div class="card-label">Total Complaints</div>
+                    <div class="trend"><i class="fas fa-arrow-up"></i> 8.2%</div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-row"><span class="card-value">42</span><span class="card-icon"><i
+                                class="fas fa-envelope-open"></i></span></div>
+                    <div class="card-label">Open</div>
+                    <div class="trend down"><i class="fas fa-arrow-down"></i> 3%</div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-row"><span class="card-value">27</span><span class="card-icon"><i
+                                class="fas fa-spinner"></i></span></div>
+                    <div class="card-label">In Progress</div>
+                    <div class="trend"><i class="fas fa-arrow-up"></i> 5%</div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-row"><span class="card-value">129</span><span class="card-icon"><i
+                                class="fas fa-check-circle"></i></span></div>
+                    <div class="card-label">Resolved</div>
+                    <div class="trend"><i class="fas fa-arrow-up"></i> 12%</div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-row"><span class="card-value">11</span><span class="card-icon"><i
+                                class="fas fa-exclamation-triangle"></i></span></div>
+                    <div class="card-label">Overdue</div>
+                    <div class="trend down"><i class="fas fa-arrow-down"></i> 2%</div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-row"><span class="card-value">1.2k</span><span class="card-icon"><i
+                                class="fas fa-user-friends"></i></span></div>
+                    <div class="card-label">Total Customers</div>
+                    <div class="trend"><i class="fas fa-arrow-up"></i> 6%</div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-row"><span class="card-value">34</span><span class="card-icon"><i
+                                class="fas fa-user-cog"></i></span></div>
+                    <div class="card-label">Total Staff</div>
+                    <div class="trend">—</div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-row"><span class="card-value">12</span><span class="card-icon"><i
+                                class="fas fa-user-tie"></i></span></div>
+                    <div class="card-label">Handlers</div>
+                    <div class="trend"><i class="fas fa-arrow-up"></i> 1</div>
+                </div>
+            </div>
+
+            <!-- ANALYTICS 4 CHARTS (static canvas with demo charts) -->
+            <div class="analytics-grid">
+                <div class="chart-card">
+                    <div class="chart-header">Complaints over time <span class="toggle-badge"><i
+                                class="far fa-calendar"></i> weekly</span></div>
+                    <div class="canvas-container"><canvas id="lineChart" width="200" height="120"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">By category</div>
+                    <div class="canvas-container"><canvas id="pieChart" width="200" height="120"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">Staff performance</div>
+                    <div class="canvas-container"><canvas id="barChart" width="200" height="120"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">Status distribution</div>
+                    <div class="canvas-container"><canvas id="doughnutChart" width="200" height="120"></canvas></div>
+                </div>
+            </div>
+
+            <!-- COMPLAINT MONITORING TABLE + FILTERS -->
+            <div>
+                <div class="section-header">
+                    <div class="filters">
+                        <span class="filter-pill"><i class="fas fa-filter"></i> Status: all</span>
+                        <span class="filter-pill"><i class="fas fa-tag"></i> Category</span>
+                        <span class="filter-pill"><i class="fas fa-calendar-alt"></i> Date range</span>
+                        <span class="filter-pill"><i class="fas fa-user"></i> Staff</span>
+                    </div>
+                    <div class="export-btn"><i class="fas fa-download"></i> PDF/Excel</div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Category</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Staff</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                        <tr>
+                            <td>#C1023</td>
+                            <td>D. Chen</td>
+                            <td>Billing</td>
+                            <td><span class="priority-badge priority-high">High</span></td>
+                            <td>Open</td>
+                            <td>M. Rivera</td>
+                            <td>2025-03-12</td>
+                            <td class="actions"><i class="fas fa-eye"></i> <i class="fas fa-exchange-alt"></i> <i
+                                    class="fas fa-arrow-up"></i></td>
+                        </tr>
+                        <tr>
+                            <td>#C1024</td>
+                            <td>L. Mbeki</td>
+                            <td>Technical</td>
+                            <td><span class="priority-badge priority-med">Med</span></td>
+                            <td>In prog.</td>
+                            <td>J. Wu</td>
+                            <td>2025-03-14</td>
+                            <td class="actions"><i class="fas fa-eye"></i> <i class="fas fa-exchange-alt"></i> <i
+                                    class="fas fa-arrow-up"></i></td>
+                        </tr>
+                        <tr>
+                            <td>#C1025</td>
+                            <td>E. Van</td>
+                            <td>Product</td>
+                            <td><span class="priority-badge">Low</span></td>
+                            <td>Resolved</td>
+                            <td>S. Kapoor</td>
+                            <td>2025-03-10</td>
+                            <td class="actions"><i class="fas fa-eye"></i> <i class="fas fa-exchange-alt"></i> <i
+                                    class="fas fa-arrow-up"></i></td>
+                        </tr>
+                        <tr>
+                            <td>#C1026</td>
+                            <td>N. Garcia</td>
+                            <td>Shipping</td>
+                            <td><span class="priority-badge priority-high">High</span></td>
+                            <td>Overdue</td>
+                            <td>—</td>
+                            <td>2025-03-05</td>
+                            <td class="actions"><i class="fas fa-eye"></i> <i class="fas fa-exchange-alt"></i> <i
+                                    class="fas fa-arrow-up"></i></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- USER MANAGEMENT & PERFORMANCE + ALERTS (dual panel) -->
+            <div class="dual-panel">
+                <!-- LEFT: User management tabs -->
+                <div class="user-card">
+                    <div class="tabs">
+                        <span class="tab">Customers</span><span class="tab">Staff</span><span
+                            class="tab">Handlers</span><span class="tab">Admins</span>
+                        <span style="flex:1"></span>
+                        <span class="filter-pill" style="background:#eef2ff;"><i class="fas fa-plus"></i> Add</span>
+                    </div>
+                    <div class="user-row">
+                        <div class="user-meta"><i class="fas fa-user-circle"></i> johndoe@mail.com <span
+                                class="role-badge">Customer</span></div>
+                        <div class="user-actions"><i class="fas fa-edit"></i> <i class="fas fa-ban"></i></div>
+                    </div>
+                    <div class="user-row">
+                        <div class="user-meta"><i class="fas fa-user-circle"></i> mrivera@company.com <span
+                                class="role-badge">Staff</span></div>
+                        <div class="user-actions"><i class="fas fa-edit"></i> <i class="fas fa-ban"></i></div>
+                    </div>
+                    <div class="user-row">
+                        <div class="user-meta"><i class="fas fa-user-circle"></i> skapoor@company.com <span
+                                class="role-badge">Handler</span></div>
+                        <div class="user-actions"><i class="fas fa-edit"></i> <i class="fas fa-ban"></i></div>
+                    </div>
+                    <div class="user-row">
+                        <div class="user-meta"><i class="fas fa-user-circle"></i> a.rivera@complaintflow <span
+                                class="role-badge">Admin</span></div>
+                        <div class="user-actions"><i class="fas fa-edit"></i> <i class="fas fa-ban"></i></div>
+                    </div>
+                    <hr>
+                    <div style="font-size:0.8rem; color:#65758b;"><i class="far fa-check-circle"></i> 3 more users...
+                    </div>
+                </div>
+                <!-- RIGHT: performance panel + alerts combined -->
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div class="perf-card">
+                        <h4 style="margin-bottom: 16px;">📊 Staff workload</h4>
+                        <div class="perf-grid">
+                            <div>
+                                <div class="metric"><span>Avg resolution time</span> <strong>4.2h</strong></div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 62%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="metric"><span>SLA compliance</span> <strong>94%</strong></div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 94%;"></div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 8px;"><span class="role-badge">open tickets: 14</span> <span
+                                    class="role-badge">overdue: 3</span></div>
+                        </div>
+                    </div>
+                    <div class="alert-card">
+                        <div style="display: flex; gap: 8px; align-items: center;"><i class="fas fa-bell"
+                                style="color:#4f46e5;"></i> <strong>Alerts</strong></div>
+                        <div class="alert-item"><i class="fas fa-clock alert-icon"></i> 6 overdue complaints</div>
+                        <div class="alert-item"><i class="fas fa-user-slash alert-icon"></i> 4 unassigned complaints
+                        </div>
+                        <div class="alert-item"><i class="fas fa-tachometer-alt alert-icon"></i> 2 staff with heavy load
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function initCharts() {
+            // small placeholder charts — modern & minimal
+            const lineCtx = document.getElementById('lineChart')?.getContext('2d');
+            if (lineCtx) new Chart(lineCtx, { type: 'line', data: { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], datasets: [{ data: [12, 19, 15, 27, 22, 30], borderColor: '#4f46e5', tension: 0.2, pointRadius: 2, fill: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+            const pieCtx = document.getElementById('pieChart')?.getContext('2d');
+            if (pieCtx) new Chart(pieCtx, { type: 'doughnut', data: { labels: ['Billing', 'Tech', 'Product', 'Other'], datasets: [{ data: [38, 45, 22, 15], backgroundColor: ['#4f46e5', '#818cf8', '#a5b4fc', '#cbd5e1'] }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 8 } } } } });
+            const barCtx = document.getElementById('barChart')?.getContext('2d');
+            if (barCtx) new Chart(barCtx, { type: 'bar', data: { labels: ['Rivera', 'Wu', 'Kapoor', 'Chen'], datasets: [{ data: [22, 18, 29, 14], backgroundColor: '#4f46e5' }] }, options: { responsive: true, plugins: { legend: { display: false } } } });
+            const donutCtx = document.getElementById('doughnutChart')?.getContext('2d');
+            if (donutCtx) new Chart(donutCtx, { type: 'doughnut', data: { labels: ['Open', 'Progress', 'Resolved', 'Overdue'], datasets: [{ data: [42, 27, 129, 11], backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444'] }] }, options: { cutout: '60%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 8 } } } } });
+        })();
+    </script>
+    <!-- subtle responsive fix: ensure canvas does not overflow -->
+    <style>
+        .canvas-container canvas {
+            max-width: 100%;
+            height: 140px !important;
+        }
+    </style>
+</body>
+
+</html>

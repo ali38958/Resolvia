@@ -1,0 +1,536 @@
+
+common-style.css:
+/* CSS Variables */
+:root {
+    --primary-color: #0E5A4C;
+    --primary-light: #BFFFF3;
+    --primary-transparent-10: rgba(14, 90, 76, 0.1);
+    --sidebar-bg: #F4F4F4;
+    --text-light: #FFFFFF;
+    --text-gray: #7B7B7B;
+    --text-hover: #0E5A4C;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --icon-bg: rgba(255, 255, 255, 0.1);
+    --icon-hover-bg: rgba(255, 255, 255, 0.2);
+    --header-height: 60px;
+    --sidebar-width: 250px;
+    --nav-item-height: 48px;
+    --icon-size: 22px;
+    --nav-font-size: 16px;
+    --badge-bg: #FF4757;
+    --badge-text: #FFFFFF;
+    --badge-size: 20px;
+    --badge-font-size: 11px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    display: flex;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--header-height);
+    background-color: var(--primary-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    padding: 0 20px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo-text {
+    color: var(--text-light);
+    font-size: 20px;
+    font-weight: 600;
+}
+
+#menu-control {
+    font-size: var(--icon-size);
+    color: var(--text-light);
+    cursor: pointer;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#logo {
+    height: 40px;
+    width: auto;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.profile-icon {
+    color: var(--text-light);
+    font-size: 20px;
+    cursor: pointer;
+    background: var(--icon-bg);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+}
+
+.profile-icon:hover {
+    background: var(--icon-hover-bg);
+}
+
+.navigation-menu {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    width: var(--sidebar-width);
+    height: calc(100vh - var(--header-height));
+    background-color: var(--sidebar-bg);
+    box-shadow: 2px 0 5px var(--shadow-color);
+    padding: 15px 0;
+    transition: transform 0.3s ease;
+    z-index: 999;
+    transform: translateX(-100%);
+    overflow-y: auto;
+}
+
+.navigation-menu.open {
+    transform: translateX(0);
+}
+
+ul {
+    list-style: none;
+    width: 100%;
+}
+
+.nav-item {
+    height: var(--nav-item-height);
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    margin: 4px 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.nav-item p, .nav-item i {
+    font-size: var(--nav-font-size);
+    color: var(--text-gray);
+}
+
+.nav-item i {
+    width: var(--icon-size);
+    text-align: center;
+    margin-right: 12px;
+    font-size: 18px;
+}
+
+.nav-item p {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 10px;
+}
+
+.nav-item:hover {
+    background-color: var(--primary-transparent-10);
+}
+
+.nav-item:hover p, .nav-item:hover i {
+    color: var(--text-hover);
+}
+
+.nav-item.active {
+    background-color: var(--primary-light);
+    border-right: 4px solid var(--primary-color);
+}
+
+.nav-item.active p, .nav-item.active i {
+    color: var(--text-hover);
+    font-weight: 600;
+}
+
+/* Badge styles */
+.nav-badge {
+    position: absolute;
+    right: 15px;
+    background-color: var(--badge-bg);
+    color: var(--badge-text);
+    font-size: var(--badge-font-size);
+    font-weight: 600;
+    min-width: var(--badge-size);
+    height: var(--badge-size);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    transition: all 0.2s ease;
+    z-index: 1;
+}
+
+.nav-badge.hidden {
+    display: none;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+    }
+    70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 4px rgba(255, 71, 87, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 71, 87, 0);
+    }
+}
+
+.nav-badge.pulse {
+    animation: pulse 2s infinite;
+}
+
+.main-content {
+    flex: 1;
+    margin-top: var(--header-height);
+    padding: 20px;
+    transition: margin-left 0.3s ease;
+    min-height: calc(100vh - var(--header-height));
+    width: 100%;
+}
+
+.main-content.shifted {
+    margin-left: var(--sidebar-width);
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    
+    /* Make sidebar full width on mobile */
+    .navigation-menu {
+        width: 280px;
+        max-width: 85%;
+    }
+    
+    /* Remove margin shift on mobile since sidebar overlays */
+    .main-content.shifted {
+        margin-left: 0;
+    }
+    
+    /* Add overlay when sidebar is open on mobile */
+    .navigation-menu.open + .main-content::before {
+        content: '';
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        width: 100%;
+        height: calc(100vh - var(--header-height));
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+    }
+    
+    /* Adjust header for mobile */
+    header {
+        padding: 0 16px;
+    }
+    
+    /* Adjust logo size for mobile */
+    #logo {
+        height: 36px;
+    }
+    
+    /* Adjust profile icon for mobile */
+    .profile-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+    
+    /* Adjust menu control for mobile */
+    #menu-control {
+        font-size: 20px;
+    }
+    
+    /* Adjust main content padding for mobile */
+    .main-content {
+        padding: 16px;
+    }
+    
+    /* Adjust badge for mobile */
+    .nav-badge {
+        right: 12px;
+        font-size: 10px;
+        min-width: 18px;
+        height: 18px;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    /* Further reduce header height on very small screens */
+    :root {
+        --header-height: 56px;
+    }
+    
+    header {
+        padding: 0 12px;
+    }
+    
+    /* Make sidebar slightly narrower on very small screens */
+    .navigation-menu {
+        width: 260px;
+        max-width: 82%;
+    }
+    
+    /* Adjust main content padding for very small screens */
+    .main-content {
+        padding: 12px;
+    }
+    
+    /* Adjust nav items for very small screens */
+    .nav-item {
+        height: 46px;
+        padding: 0 16px;
+    }
+    
+    .nav-item p, .nav-item i {
+        font-size: 15px;
+    }
+    
+    .nav-item i {
+        font-size: 17px;
+        margin-right: 10px;
+    }
+    
+    /* Adjust badge for small screens */
+    .nav-badge {
+        right: 10px;
+        font-size: 9px;
+        min-width: 16px;
+        height: 16px;
+    }
+}
+common-script.js:
+// Script for handling navigation menu toggle and active item highlighting
+
+const menuControl = document.getElementById('menu-control');
+const navigationMenu = document.getElementById('navigation-menu');
+const mainContent = document.getElementById('main-content');
+let navItems = [];
+
+// Toggle menu function
+const toggleMenu = () => {
+    navigationMenu.classList.toggle('open');
+    mainContent.classList.toggle('shifted');
+    
+    menuControl.style.opacity = '0';
+    menuControl.style.transform = 'rotate(90deg)';
+
+    setTimeout(() => {
+        if (menuControl.classList.contains('fa-bars')) {
+            menuControl.classList.remove('fa-bars');
+            menuControl.classList.add('fa-arrow-left');
+        } else {
+            menuControl.classList.remove('fa-arrow-left');
+            menuControl.classList.add('fa-bars');
+        }
+
+        menuControl.style.opacity = '1';
+        menuControl.style.transform = 'rotate(0deg)';
+    }, 200);
+};
+
+// Add click event to menu control
+menuControl.addEventListener('click', toggleMenu);
+
+// Close menu when clicking outside on mobile
+document.addEventListener('click', (event) => {
+    if (window.innerWidth <= 768 && 
+        navigationMenu.classList.contains('open') &&
+        !event.target.closest('.navigation-menu') &&
+        !event.target.closest('#menu-control')) {
+        toggleMenu();
+    }
+});
+
+// Handle window resize
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+        navigationMenu.classList.add('open');
+        mainContent.classList.add('shifted');
+        menuControl.classList.remove('fa-bars');
+        menuControl.classList.add('fa-arrow-left');
+    } else {
+        navigationMenu.classList.remove('open');
+        mainContent.classList.remove('shifted');
+        menuControl.classList.remove('fa-arrow-left');
+        menuControl.classList.add('fa-bars');
+    }
+});
+
+// Initialize based on screen size
+if (window.innerWidth > 768) {
+    navigationMenu.classList.add('open');
+    mainContent.classList.add('shifted');
+    menuControl.classList.remove('fa-bars');
+    menuControl.classList.add('fa-arrow-left');
+}
+
+// Script for dynamically loading navigation menu items from the HTTP API
+const navList = document.getElementById('nav-list');
+const authToken = localStorage.getItem('authToken');
+
+// Fetch pages via HTTP API with Authorization header
+fetch('/api/pages', {
+    headers: {
+        'Authorization': `Bearer ${authToken}`
+    }
+})
+.then(response => {
+    if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return response.json();
+})
+.then(data => {
+    navList.innerHTML = ""; // clear menu
+
+    data.pages.forEach((page, index) => {
+        const li = document.createElement('li');
+        li.classList.add('nav-item');
+
+        const currentPath = window.location.pathname.replace('/', '');
+        const pagePath = page.file.replace('.html', '');
+
+        if (currentPath === pagePath || (currentPath === '' && pagePath === 'dashboard')) {
+            li.classList.add('active');
+        }
+
+        // Get badge count from API - ONLY use what's in the API
+        const badgeCount = page.badge || 0;
+        
+        // Create badge HTML
+        let badgeHtml = '';
+        if (badgeCount > 0) {
+            const badgeText = badgeCount > 99 ? '99+' : badgeCount;
+            const pulseClass = badgeCount > 5 ? ' pulse' : '';
+            badgeHtml = `<span class="nav-badge${pulseClass}">${badgeText}</span>`;
+        } else {
+            badgeHtml = '<span class="nav-badge hidden">0</span>';
+        }
+
+        li.innerHTML = `
+            <i class="fa ${page.icon}"></i>
+            <p>${page.name}</p>
+            ${badgeHtml}
+        `;
+
+        // Click handler
+        li.addEventListener('click', () => {
+            document.querySelectorAll('.nav-item')
+                .forEach(item => item.classList.remove('active'));
+
+            li.classList.add('active');
+
+            // Navigate using clean URL
+            const pageName = page.file.replace(/\.html$/, '');
+            window.location.href = `/${pageName}`;
+        });
+
+        navList.appendChild(li);
+    });
+    
+    navItems = document.querySelectorAll('.nav-item');
+})
+.catch(err => {
+    console.error('Error fetching pages:', err);
+    navList.innerHTML = "<li class='nav-item'>Failed to load menu</li>";
+});
+.html:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <title>Layout</title>
+    <link rel="stylesheet" href="common-styles.css"> <!-- Common styles for header, menu, etc. -->
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="../assets/logo.png" alt="logo" id="logo">
+            <h2 class="logo-text">Resolvia</h2>
+        </div>
+
+        <div class="header-right">
+            <div class="profile-icon">
+                <i class="fa fa-user"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="navigation-menu" id="navigation-menu">
+        <!-- <ul>
+            <li class="nav-item active">
+                <i class="fa fa-home"></i>
+                <p>Dashboard</p>
+            </li>
+            <li class="nav-item">
+                <i class="fa fa-user"></i>
+                <p>Profile</p>
+            </li>
+            <li class="nav-item">
+                <i class="fa fa-cog"></i>
+                <p>Settings</p>
+            </li>
+            <li class="nav-item">
+                <i class="fa fa-envelope"></i>
+                <p>Messages</p>
+            </li>
+            <li class="nav-item">
+                <i class="fa fa-chart-bar"></i>
+                <p>Analytics</p>
+            </li>
+            <li class="nav-item">
+                <i class="fa fa-file-alt"></i>
+                <p>Reports</p>
+            </li>
+            <li class="nav-item">
+                <i class="fa fa-sign-out-alt"></i>
+                <p>Logout</p>
+            </li>
+        </ul> -->
+        <ul id="nav-list"></ul>
+    </div>
+
+    <div class="main-content" id="main-content">
+    </div>
+    
+
+<script src="common-script.js"></script>
+</body>
+</html>

@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <title>Colonies Management - NUTECH CMS</title>
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary-color: #0E5A4C;
+            --primary-light: #BFFFF3;
+            --primary-transparent-10: rgba(14, 90, 76, 0.1);
+            --sidebar-bg: #F4F4F4;
+            --text-light: #FFFFFF;
+            --text-gray: #7B7B7B;
+            --text-hover: #0E5A4C;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --icon-bg: rgba(255, 255, 255, 0.1);
+            --icon-hover-bg: rgba(255, 255, 255, 0.2);
+            --header-height: 60px;
+            --sidebar-width: 250px;
+            --nav-item-height: 48px;
+            --icon-size: 22px;
+            --nav-font-size: 16px;
+            --badge-bg: #FF4757;
+            --badge-text: #FFFFFF;
+            --badge-size: 20px;
+            --badge-font-size: 11px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
+            background-color: var(--primary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            padding: 0 20px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-text {
+            color: var(--text-light);
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        #menu-control {
+            font-size: var(--icon-size);
+            color: var(--text-light);
+            cursor: pointer;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        #logo {
+            height: 40px;
+            width: auto;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .profile-icon {
+            color: var(--text-light);
+            font-size: 20px;
+            cursor: pointer;
+            background: var(--icon-bg);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .profile-icon:hover {
+            background: var(--icon-hover-bg);
+        }
+
+        .navigation-menu {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
+            background-color: var(--sidebar-bg);
+            box-shadow: 2px 0 5px var(--shadow-color);
+            padding: 15px 0;
+            transition: transform 0.3s ease;
+            z-index: 999;
+            transform: translateX(-100%);
+            overflow-y: auto;
+        }
+
+        .navigation-menu.open {
+            transform: translateX(0);
+        }
+
+        ul {
+            list-style: none;
+            width: 100%;
+        }
+
+        .nav-item {
+            height: var(--nav-item-height);
+            display: flex;
+            align-items: center;
+            padding: 0 18px;
+            margin: 4px 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .nav-item p, .nav-item i {
+            font-size: var(--nav-font-size);
+            color: var(--text-gray);
+        }
+
+        .nav-item i {
+            width: var(--icon-size);
+            text-align: center;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .nav-item p {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 10px;
+        }
+
+        .nav-item:hover {
+            background-color: var(--primary-transparent-10);
+        }
+
+        .nav-item:hover p, .nav-item:hover i {
+            color: var(--text-hover);
+        }
+
+        .nav-item.active {
+            background-color: var(--primary-light);
+            border-right: 4px solid var(--primary-color);
+        }
+
+        .nav-item.active p, .nav-item.active i {
+            color: var(--text-hover);
+            font-weight: 600;
+        }
+
+        /* Badge styles */
+        .nav-badge {
+            position: absolute;
+            right: 15px;
+            background-color: var(--badge-bg);
+            color: var(--badge-text);
+            font-size: var(--badge-font-size);
+            font-weight: 600;
+            min-width: var(--badge-size);
+            height: var(--badge-size);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+            transition: all 0.2s ease;
+            z-index: 1;
+        }
+
+        .nav-badge.hidden {
+            display: none;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 4px rgba(255, 71, 87, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0);
+            }
+        }
+
+        .nav-badge.pulse {
+            animation: pulse 2s infinite;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-top: var(--header-height);
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+            min-height: calc(100vh - var(--header-height));
+            width: 100%;
+        }
+
+        .main-content.shifted {
+            margin-left: var(--sidebar-width);
+        }
+
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            
+            /* Make sidebar full width on mobile */
+            .navigation-menu {
+                width: 280px;
+                max-width: 85%;
+            }
+            
+            /* Remove margin shift on mobile since sidebar overlays */
+            .main-content.shifted {
+                margin-left: 0;
+            }
+            
+            /* Add overlay when sidebar is open on mobile */
+            .navigation-menu.open + .main-content::before {
+                content: '';
+                position: fixed;
+                top: var(--header-height);
+                left: 0;
+                width: 100%;
+                height: calc(100vh - var(--header-height));
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 998;
+            }
+            
+            /* Adjust header for mobile */
+            header {
+                padding: 0 16px;
+            }
+            
+            /* Adjust logo size for mobile */
+            #logo {
+                height: 36px;
+            }
+            
+            /* Adjust profile icon for mobile */
+            .profile-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+            }
+            
+            /* Adjust menu control for mobile */
+            #menu-control {
+                font-size: 20px;
+            }
+            
+            /* Adjust main content padding for mobile */
+            .main-content {
+                padding: 16px;
+            }
+            
+            /* Adjust badge for mobile */
+            .nav-badge {
+                right: 12px;
+                font-size: 10px;
+                min-width: 18px;
+                height: 18px;
+            }
+        }
+
+        /* Small mobile devices */
+        @media (max-width: 480px) {
+            /* Further reduce header height on very small screens */
+            :root {
+                --header-height: 56px;
+            }
+            
+            header {
+                padding: 0 12px;
+            }
+            
+            /* Make sidebar slightly narrower on very small screens */
+            .navigation-menu {
+                width: 260px;
+                max-width: 82%;
+            }
+            
+            /* Adjust main content padding for very small screens */
+            .main-content {
+                padding: 12px;
+            }
+            
+            /* Adjust nav items for very small screens */
+            .nav-item {
+                height: 46px;
+                padding: 0 16px;
+            }
+            
+            .nav-item p, .nav-item i {
+                font-size: 15px;
+            }
+            
+            .nav-item i {
+                font-size: 17px;
+                margin-right: 10px;
+            }
+            
+            /* Adjust badge for small screens */
+            .nav-badge {
+                right: 10px;
+                font-size: 9px;
+                min-width: 16px;
+                height: 16px;
+            }
+        }
+
+        /* Additional styles for the colonies page */
+        .colonies-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .page-title {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .page-description {
+            color: var(--text-gray);
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        /* Colonies selection section */
+        .colony-selection-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        
+        .section-title {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            font-size: 22px;
+        }
+        
+        .selection-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-gray);
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background-color: white;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--primary-transparent-10);
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+        }
+        
+        .btn-primary:hover {
+            background-color: #0c4c3f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow-color);
+        }
+        
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: var(--text-gray);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background-color: var(--badge-bg);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #ff3742;
+            transform: translateY(-2px);
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1100;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            color: var(--primary-color);
+            font-size: 22px;
+            margin: 0;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-gray);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            color: var(--primary-color);
+        }
+        
+        .modal-body {
+            padding: 25px;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-col {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .dynamic-input-container {
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .dynamic-input-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .dynamic-input-item input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .add-input-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--primary-color);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .add-input-btn:hover {
+            text-decoration: underline;
+        }
+        
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* Table styles */
+        .table-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-gray);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        .colonies-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        
+        .colonies-table th {
+            background-color: var(--primary-transparent-10);
+            color: var(--primary-color);
+            text-align: left;
+            padding: 15px;
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary-light);
+        }
+        
+        .colonies-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            color: var(--text-gray);
+        }
+        
+        .colonies-table tr:hover {
+            background-color: rgba(14, 90, 76, 0.03);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-gray);
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+        
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: var(--text-gray);
+        }
+        
+        /* Colony details section */
+        .colony-details-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        
+        .colony-info-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        .colony-info {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .info-item {
+            background-color: var(--primary-transparent-10);
+            border-radius: 6px;
+            padding: 15px;
+        }
+        
+        .info-item strong {
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .info-item span {
+            color: var(--text-gray);
+        }
+        
+        /* Building selection in modal */
+        .building-selection-container {
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .building-checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+        }
+        
+        .building-checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .building-info {
+            flex: 1;
+        }
+        
+        .building-number {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .building-name {
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .colonies-container {
+                padding: 15px;
+            }
+            
+            .selection-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .form-group {
+                width: 100%;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .colony-info-container {
+                flex-direction: column;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .colonies-container {
+                padding: 10px;
+            }
+            
+            .colony-selection-section, .table-section, .colony-details-section {
+                padding: 20px;
+            }
+            
+            .modal-content {
+                width: 95%;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .btn-sm {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="C:\ICAT\LOGO.jpeg" alt="logo" id="logo">
+            <h2 class="logo-text">NUTECH CMS</h2>
+        </div>
+
+        <div class="header-right">
+            <div class="profile-icon">
+                <i class="fa fa-user"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </div>
+
+    <div class="main-content" id="main-content">
+        <div class="colonies-container">
+            <h1 class="page-title">Colonies Management</h1>
+            <p class="page-description">Manage colonies and assign buildings to them. Add new colonies or edit existing ones.</p>
+            
+            <!-- Colony Selection Section -->
+            <div class="colony-selection-section">
+                <h2 class="section-title"><i class="fa fa-city"></i> Select Colony</h2>
+                
+                <div class="selection-form">
+                    <div class="form-group">
+                        <label for="colony-select">Select Colony</label>
+                        <select id="colony-select" class="form-control">
+                            <option value="">-- Select a Colony --</option>
+                            <option value="1">Main Campus Colony (C001)</option>
+                            <option value="2">Science Park Colony (C002)</option>
+                            <option value="3">Library Gardens Colony (C003)</option>
+                            <option value="4">Student Village Colony (C004)</option>
+                        </select>
+                    </div>
+                    
+                    <button id="add-colony-btn" class="btn btn-primary">
+                        <i class="fa fa-plus"></i> Add New Colony
+                    </button>
+                </div>
+                
+                <div id="colony-details" class="colony-details-section" style="display: none;">
+                    <h3 class="section-title"><i class="fa fa-info-circle"></i> Selected Colony Details</h3>
+                    <div class="colony-info-container">
+                        <div class="colony-info">
+                            <div class="info-grid" id="colony-info-grid">
+                                <!-- Colony info will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Colonies Table Section -->
+            <div class="table-section">
+                <div class="table-header">
+                    <h2 class="section-title"><i class="fa fa-list"></i> All Colonies</h2>
+                    <div class="search-box">
+                        <i class="fa fa-search"></i>
+                        <input type="text" id="colony-search" placeholder="Search by colony name or number...">
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="colonies-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Colony Number</th>
+                                <th>Number of Buildings</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="colonies-table-body">
+                            <!-- Table rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                    
+                    <div id="empty-table-message" class="empty-state">
+                        <i class="fa fa-city"></i>
+                        <h3>No Colonies Found</h3>
+                        <p>Add your first colony using the "Add New Colony" button above.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Colony Modal -->
+    <div id="colony-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Add New Colony</h3>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="colony-form">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="colony-name">Colony Name *</label>
+                            <input type="text" id="colony-name" class="form-control" required>
+                        </div>
+                        <div class="form-col">
+                            <label for="colony-number">Colony Number *</label>
+                            <input type="text" id="colony-number" class="form-control" required>
+                            <small style="color: var(--text-gray); margin-top: 5px; display: block;">Must be unique (e.g., C001, C002)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="colony-location">Location (Optional)</label>
+                        <input type="text" id="colony-location" class="form-control" placeholder="E.g., North Campus, City Center">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="colony-description">Description (Optional)</label>
+                        <textarea id="colony-description" class="form-control" rows="3" placeholder="Add any additional details about this colony..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Assign Buildings to this Colony</label>
+                        <small style="color: var(--text-gray); display: block; margin-bottom: 10px;">Select buildings from the list below to assign them to this colony</small>
+                        <div class="building-selection-container" id="building-selection-container">
+                            <!-- Building checkboxes will be populated here -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="modal-cancel">Cancel</button>
+                <button type="button" class="btn btn-primary" id="modal-save">Save Colony</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for buildings (from the Buildings page)
+        const buildingsData = [
+            {
+                id: 1,
+                number: "B001",
+                name: "Main Campus Building",
+                floorNames: ["Ground Floor", "First Floor", "Second Floor", "Third Floor", "Fourth Floor"],
+                roomNames: ["Classroom 101", "Classroom 102", "Laboratory 103", "Office 104", "Conference Room 105"],
+                description: "Primary academic building with classrooms and labs"
+            },
+            {
+                id: 2,
+                number: "B002",
+                name: "Science Complex",
+                floorNames: ["Ground Floor", "First Floor", "Second Floor", "Third Floor"],
+                roomNames: ["Chemistry Lab 201", "Physics Lab 202", "Biology Lab 203", "Research Lab 204"],
+                description: "Dedicated to science departments and research"
+            },
+            {
+                id: 3,
+                number: "B003",
+                name: "Library Wing",
+                floorNames: ["Ground Floor", "First Floor", "Second Floor"],
+                roomNames: ["Reading Room 301", "Study Area 302", "Computer Lab 303", "Archive 304"],
+                description: "Library and study spaces for students"
+            },
+            {
+                id: 4,
+                number: "B004",
+                name: "Student Center",
+                floorNames: ["Ground Floor", "First Floor"],
+                roomNames: ["Cafeteria 401", "Lounge 402", "Meeting Room 403", "Activity Room 404"],
+                description: "Student activities and social spaces"
+            },
+            {
+                id: 5,
+                number: "B005",
+                name: "Research Center",
+                floorNames: ["Ground Floor", "First Floor", "Second Floor"],
+                roomNames: ["Lab 501", "Lab 502", "Office 503", "Conference Room 504"],
+                description: "Advanced research facilities"
+            },
+            {
+                id: 6,
+                number: "B006",
+                name: "Administration Building",
+                floorNames: ["Ground Floor", "First Floor", "Second Floor"],
+                roomNames: ["Reception 601", "Office 602", "Office 603", "Meeting Room 604"],
+                description: "Administrative offices and services"
+            }
+        ];
+
+        // Sample data for colonies
+        const coloniesData = [
+            {
+                id: 1,
+                number: "C001",
+                name: "Main Campus Colony",
+                location: "North Campus Area",
+                description: "Primary campus colony housing main academic buildings",
+                buildingIds: [1, 2, 3, 4] // References to building IDs
+            },
+            {
+                id: 2,
+                number: "C002",
+                name: "Science Park Colony",
+                location: "East Campus Area",
+                description: "Colony dedicated to science and research facilities",
+                buildingIds: [2, 5] // References to building IDs
+            },
+            {
+                id: 3,
+                number: "C003",
+                name: "Library Gardens Colony",
+                location: "Central Campus Area",
+                description: "Colony focused on library and study facilities",
+                buildingIds: [3] // References to building IDs
+            },
+            {
+                id: 4,
+                number: "C004",
+                name: "Student Village Colony",
+                location: "West Campus Area",
+                description: "Colony with student accommodation and recreational facilities",
+                buildingIds: [4, 6] // References to building IDs
+            }
+        ];
+        
+        // Current state
+        let currentColonyId = null;
+        let editingColonyId = null;
+        
+        // DOM Elements
+        const colonySelect = document.getElementById('colony-select');
+        const addColonyBtn = document.getElementById('add-colony-btn');
+        const colonyDetails = document.getElementById('colony-details');
+        const colonyInfoGrid = document.getElementById('colony-info-grid');
+        const coloniesTableBody = document.getElementById('colonies-table-body');
+        const emptyTableMessage = document.getElementById('empty-table-message');
+        const colonySearch = document.getElementById('colony-search');
+        const colonyModal = document.getElementById('colony-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalClose = document.getElementById('modal-close');
+        const modalCancel = document.getElementById('modal-cancel');
+        const modalSave = document.getElementById('modal-save');
+        const colonyForm = document.getElementById('colony-form');
+        const colonyName = document.getElementById('colony-name');
+        const colonyNumber = document.getElementById('colony-number');
+        const buildingSelectionContainer = document.getElementById('building-selection-container');
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Populate colony dropdown
+            populateColonyDropdown();
+            
+            // Populate colonies table
+            populateColoniesTable();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Hide empty table message if there are colonies
+            toggleEmptyTableMessage();
+        });
+        
+        // Populate colony dropdown
+        function populateColonyDropdown() {
+            colonySelect.innerHTML = '<option value="">-- Select a Colony --</option>';
+            
+            coloniesData.forEach(colony => {
+                const option = document.createElement('option');
+                option.value = colony.id;
+                option.textContent = `${colony.name} (${colony.number})`;
+                colonySelect.appendChild(option);
+            });
+        }
+        
+        // Populate building selection checkboxes
+        function populateBuildingSelection(selectedBuildingIds = []) {
+            buildingSelectionContainer.innerHTML = '';
+            
+            if (buildingsData.length === 0) {
+                buildingSelectionContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: var(--text-gray);">
+                        <i class="fa fa-building" style="font-size: 48px; margin-bottom: 10px;"></i>
+                        <p>No buildings available. Please add buildings first.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            buildingsData.forEach(building => {
+                const isChecked = selectedBuildingIds.includes(building.id);
+                const buildingItem = document.createElement('div');
+                buildingItem.className = 'building-checkbox-item';
+                buildingItem.innerHTML = `
+                    <input type="checkbox" id="building-${building.id}" value="${building.id}" ${isChecked ? 'checked' : ''}>
+                    <div class="building-info">
+                        <div class="building-number">${building.number}</div>
+                        <div class="building-name">${building.name}</div>
+                    </div>
+                `;
+                buildingSelectionContainer.appendChild(buildingItem);
+            });
+        }
+        
+        // Get selected building IDs from checkboxes
+        function getSelectedBuildingIds() {
+            const checkboxes = buildingSelectionContainer.querySelectorAll('input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(checkbox => parseInt(checkbox.value));
+        }
+        
+        // Update colony details display
+        function updateColonyDetails(colonyId) {
+            const colony = coloniesData.find(c => c.id === parseInt(colonyId));
+            
+            if (!colony) {
+                colonyDetails.style.display = 'none';
+                return;
+            }
+            
+            // Get buildings for this colony
+            const colonyBuildings = buildingsData.filter(b => colony.buildingIds.includes(b.id));
+            
+            // Show colony details section
+            colonyDetails.style.display = 'block';
+            
+            // Populate colony info
+            colonyInfoGrid.innerHTML = `
+                <div class="info-item">
+                    <strong>Colony Name</strong>
+                    <span>${colony.name}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Colony Number</strong>
+                    <span>${colony.number}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Number of Buildings</strong>
+                    <span>${colony.buildingIds.length}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Location</strong>
+                    <span>${colony.location || 'Not specified'}</span>
+                </div>
+            `;
+            
+            // Add description if available
+            if (colony.description) {
+                colonyInfoGrid.innerHTML += `
+                    <div class="info-item" style="grid-column: 1 / -1;">
+                        <strong>Description</strong>
+                        <span>${colony.description}</span>
+                    </div>
+                `;
+            }
+            
+            // Add buildings list if available
+            if (colonyBuildings.length > 0) {
+                let buildingsHtml = '<strong>Buildings in this Colony</strong><div style="margin-top: 10px;">';
+                colonyBuildings.forEach(building => {
+                    buildingsHtml += `
+                        <div style="margin-bottom: 8px; padding: 8px; background-color: white; border-radius: 4px;">
+                            <div><strong>${building.number}</strong> - ${building.name}</div>
+                            <div style="font-size: 13px; color: var(--text-gray);">
+                                ${building.floorNames.length} floors, ${building.roomNames.length} rooms
+                            </div>
+                        </div>
+                    `;
+                });
+                buildingsHtml += '</div>';
+                
+                colonyInfoGrid.innerHTML += `
+                    <div class="info-item" style="grid-column: 1 / -1;">
+                        ${buildingsHtml}
+                    </div>
+                `;
+            } else {
+                colonyInfoGrid.innerHTML += `
+                    <div class="info-item" style="grid-column: 1 / -1;">
+                        <strong>Buildings in this Colony</strong>
+                        <span style="color: var(--text-gray);">No buildings assigned to this colony yet.</span>
+                    </div>
+                `;
+            }
+        }
+        
+        // Populate colonies table
+        function populateColoniesTable(filterText = '') {
+            coloniesTableBody.innerHTML = '';
+            
+            // Filter colonies if search text is provided
+            const filteredColonies = coloniesData.filter(colony => {
+                if (!filterText) return true;
+                
+                const searchLower = filterText.toLowerCase();
+                return colony.name.toLowerCase().includes(searchLower) || 
+                       colony.number.toLowerCase().includes(searchLower);
+            });
+            
+            // If no colonies match the filter
+            if (filteredColonies.length === 0) {
+                toggleEmptyTableMessage(true);
+                return;
+            }
+            
+            toggleEmptyTableMessage(false);
+            
+            // Add rows for each colony
+            filteredColonies.forEach((colony, index) => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><strong>${colony.name}</strong></td>
+                    <td>${colony.number}</td>
+                    <td>${colony.buildingIds.length}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary btn-sm edit-colony" data-id="${colony.id}">
+                                <i class="fa fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm delete-colony" data-id="${colony.id}">
+                                <i class="fa fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                coloniesTableBody.appendChild(row);
+            });
+            
+            // Add event listeners to buttons
+            document.querySelectorAll('.edit-colony').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const colonyId = parseInt(this.getAttribute('data-id'));
+                    editColony(colonyId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-colony').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const colonyId = parseInt(this.getAttribute('data-id'));
+                    deleteColony(colonyId);
+                });
+            });
+        }
+        
+        // Toggle empty table message
+        function toggleEmptyTableMessage(show = true) {
+            if (show) {
+                emptyTableMessage.style.display = 'block';
+                coloniesTableBody.innerHTML = '';
+            } else {
+                emptyTableMessage.style.display = 'none';
+            }
+        }
+        
+        // Edit colony
+        function editColony(colonyId) {
+            const colony = coloniesData.find(c => c.id === colonyId);
+            if (!colony) return;
+            
+            // Set modal to edit mode
+            editingColonyId = colonyId;
+            modalTitle.textContent = 'Edit Colony';
+            
+            // Fill form with colony data
+            colonyName.value = colony.name;
+            colonyNumber.value = colony.number;
+            document.getElementById('colony-location').value = colony.location || '';
+            document.getElementById('colony-description').value = colony.description || '';
+            
+            // Populate building selection with current colony's buildings
+            populateBuildingSelection(colony.buildingIds);
+            
+            // Open modal
+            colonyModal.classList.add('active');
+        }
+        
+        // Delete colony
+        function deleteColony(colonyId) {
+            if (confirm('Are you sure you want to delete this colony? This action cannot be undone.')) {
+                // Find index of colony to delete
+                const colonyIndex = coloniesData.findIndex(c => c.id === colonyId);
+                
+                if (colonyIndex !== -1) {
+                    // Remove from data array
+                    coloniesData.splice(colonyIndex, 1);
+                    
+                    // Refresh UI
+                    populateColonyDropdown();
+                    populateColoniesTable();
+                    
+                    // Reset selection if deleted colony was selected
+                    if (currentColonyId === colonyId) {
+                        resetSelection();
+                    }
+                    
+                    alert('Colony deleted successfully!');
+                }
+            }
+        }
+        
+        // Reset selection display
+        function resetSelection() {
+            currentColonyId = null;
+            colonySelect.value = '';
+            colonyDetails.style.display = 'none';
+        }
+        
+        // Open modal to add new colony
+        function openAddColonyModal() {
+            // Set modal to add mode
+            editingColonyId = null;
+            modalTitle.textContent = 'Add New Colony';
+            
+            // Clear form
+            colonyForm.reset();
+            
+            // Set default colony number (find next available)
+            const usedNumbers = coloniesData.map(c => c.number);
+            let nextNumber = 'C001';
+            for (let i = 1; i <= 999; i++) {
+                const potentialNumber = 'C' + i.toString().padStart(3, '0');
+                if (!usedNumbers.includes(potentialNumber)) {
+                    nextNumber = potentialNumber;
+                    break;
+                }
+            }
+            colonyNumber.value = nextNumber;
+            
+            // Populate building selection with no pre-selected buildings
+            populateBuildingSelection([]);
+            
+            // Open modal
+            colonyModal.classList.add('active');
+        }
+        
+        // Save colony (add or update)
+        function saveColony() {
+            // Validate form
+            if (!colonyForm.checkValidity()) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            // Check if colony number is unique (if editing, exclude current colony)
+            const colonyNum = colonyNumber.value.trim();
+            const isDuplicate = coloniesData.some(colony => 
+                colony.number === colonyNum && 
+                (editingColonyId === null || colony.id !== editingColonyId)
+            );
+            
+            if (isDuplicate) {
+                alert('Colony number must be unique. This number is already in use.');
+                return;
+            }
+            
+            // Get selected building IDs
+            const selectedBuildingIds = getSelectedBuildingIds();
+            
+            // Create colony object
+            const colonyData = {
+                id: editingColonyId || coloniesData.length > 0 ? Math.max(...coloniesData.map(c => c.id)) + 1 : 1,
+                number: colonyNum,
+                name: colonyName.value.trim(),
+                location: document.getElementById('colony-location').value.trim() || null,
+                description: document.getElementById('colony-description').value.trim() || null,
+                buildingIds: selectedBuildingIds
+            };
+            
+            if (editingColonyId) {
+                // Update existing colony
+                const colonyIndex = coloniesData.findIndex(c => c.id === editingColonyId);
+                if (colonyIndex !== -1) {
+                    coloniesData[colonyIndex] = colonyData;
+                }
+            } else {
+                // Add new colony
+                coloniesData.push(colonyData);
+            }
+            
+            // Refresh UI
+            populateColonyDropdown();
+            populateColoniesTable();
+            
+            // Close modal
+            colonyModal.classList.remove('active');
+            
+            // Show success message
+            alert(`Colony ${editingColonyId ? 'updated' : 'added'} successfully!`);
+            
+            // If this is a new colony, select it
+            if (!editingColonyId) {
+                colonySelect.value = colonyData.id;
+                colonySelect.dispatchEvent(new Event('change'));
+            }
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Colony selection change
+            colonySelect.addEventListener('change', function() {
+                const colonyId = this.value;
+                currentColonyId = colonyId;
+                
+                updateColonyDetails(colonyId);
+            });
+            
+            // Add colony button
+            addColonyBtn.addEventListener('click', openAddColonyModal);
+            
+            // Search functionality
+            colonySearch.addEventListener('input', function() {
+                populateColoniesTable(this.value);
+            });
+            
+            // Modal controls
+            modalClose.addEventListener('click', () => {
+                colonyModal.classList.remove('active');
+            });
+            
+            modalCancel.addEventListener('click', () => {
+                colonyModal.classList.remove('active');
+            });
+            
+            // Close modal when clicking outside
+            colonyModal.addEventListener('click', (e) => {
+                if (e.target === colonyModal) {
+                    colonyModal.classList.remove('active');
+                }
+            });
+            
+            // Save colony
+            modalSave.addEventListener('click', saveColony);
+            
+            // Allow Enter key to save colony in modal
+            colonyForm.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && colonyModal.classList.contains('active')) {
+                    e.preventDefault();
+                    saveColony();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

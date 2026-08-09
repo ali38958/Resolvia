@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neumorphic Login Page</title>
+    <style>
+        /* Reset & body styling */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #e0e0e0;
+        }
+
+        /* Card container */
+        .login-card {
+            background: #e0e0e0;
+            border-radius: 20px;
+            box-shadow: 9px 9px 16px #bebebe, -9px -9px 16px #ffffff;
+            padding: 40px;
+            width: 350px;
+            text-align: center;
+        }
+
+        .login-card h2 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        /* Input fields */
+        .login-card input {
+            width: 100%;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 12px;
+            border: none;
+            background: #e0e0e0;
+            box-shadow: inset 5px 5px 10px #bebebe,
+                inset -5px -5px 10px #ffffff;
+            font-size: 16px;
+            outline: none;
+        }
+
+        /* Button */
+        .login-card button {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            background: #e0e0e0;
+            box-shadow: 5px 5px 15px #bebebe,
+                -5px -5px 15px #ffffff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .login-card button:active {
+            box-shadow: inset 5px 5px 15px #bebebe,
+                inset -5px -5px 15px #ffffff;
+        }
+
+        /* Error message */
+        .error {
+            color: red;
+            margin-top: 10px;
+            font-size: 14px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-card">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username" />
+        <input type="password" id="password" placeholder="Password" />
+        <button onclick="login()">Login</button>
+        <div class="error" id="error-msg">Invalid username or password</div>
+    </div>
+
+    <script>
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('error-msg');
+
+            // Simple demo check
+            if (username === "admin" && password === "1234") {
+                alert("Login successful!");
+                errorMsg.style.display = "none";
+            } else {
+                errorMsg.style.display = "block";
+            }
+        }
+    </script>
+
+</body>
+
+</html>

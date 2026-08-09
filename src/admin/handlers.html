@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <title>Complaint Manager — Resolvia</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+    <style>
+        /* ── Page-specific only ── */
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            object-fit: cover;
+            border: 2px solid var(--border);
+            display: block;
+            margin: 0 auto;
+            transition: transform var(--t-fast), box-shadow var(--t-fast);
+        }
+
+        .avatar:hover {
+            transform: scale(1.12);
+            box-shadow: var(--shadow-md);
+        }
+
+        .avatar-placeholder {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font-size: 14px;
+            border: 2px solid var(--primary-mid);
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: 0 var(--space-3);
+            height: 28px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-strong);
+            background: var(--bg-surface);
+            font-size: var(--text-xs);
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--primary);
+            white-space: nowrap;
+            transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast), transform var(--t-fast);
+        }
+
+        .action-btn:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .upload-area {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            padding: var(--space-4);
+            background: var(--bg-surface-2);
+            border: 1.5px dashed var(--border-strong);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-5);
+            transition: border-color var(--t-fast);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+        }
+
+        .image-preview {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-full);
+            border: 2px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-surface);
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview i {
+            font-size: 24px;
+            color: var(--text-muted);
+        }
+
+        .upload-hint {
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+            margin-top: var(--space-1);
+        }
+
+        .toast {
+            position: fixed;
+            top: calc(var(--header-height) + var(--space-4));
+            right: var(--space-5);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: 500;
+            z-index: 5000;
+            box-shadow: var(--shadow-lg);
+            min-width: 260px;
+            max-width: 380px;
+            animation: toast-in 0.25s ease;
+            border-left: 4px solid transparent;
+        }
+
+        @keyframes toast-in {
+            from {
+                transform: translateX(110%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            background: var(--success-light);
+            border-color: var(--success);
+            color: #166534;
+        }
+
+        .toast.error {
+            background: var(--danger-light);
+            border-color: var(--danger);
+            color: #9f1239;
+        }
+
+        .toast.warning {
+            background: var(--warning-light);
+            border-color: var(--warning);
+            color: #92400e;
+        }
+
+        .toast-msg {
+            flex: 1;
+        }
+
+        .toast-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.6;
+            font-size: 14px;
+            padding: 0;
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+
+        #complaintTable th:nth-child(1),
+        #complaintTable td:nth-child(1) {
+            width: 50px;
+            text-align: center;
+        }
+
+        #complaintTable th:nth-child(2),
+        #complaintTable td:nth-child(2) {
+            width: 90px;
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+        }
+
+        #complaintTable th:nth-child(3),
+        #complaintTable td:nth-child(3) {
+            width: 52px;
+            text-align: center;
+        }
+
+        #complaintTable th:nth-child(7),
+        #complaintTable td:nth-child(7) {
+            width: 90px;
+            text-align: center;
+        }
+
+        #complaintTable th:nth-child(8),
+        #complaintTable td:nth-child(8) {
+            width: 110px;
+        }
+
+        #complaintTable th:nth-child(9),
+        #complaintTable td:nth-child(9) {
+            width: 80px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .upload-area {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .upload-area .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="/assets/logo.png" alt="Resolvia" id="logo">
+            <span class="logo-text">Resolvia</span>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" title="Toggle theme">
+                <i class="fa fa-moon icon-moon"></i>
+                <i class="fa fa-sun icon-sun"></i>
+            </button>
+            <div class="profile-icon"><i class="fa fa-user"></i></div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fa fa-sign-out-alt"></i><span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <nav class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </nav>
+
+    <main class="main-content" id="main-content">
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Complaint Manager</h1>
+                <p class="page-subtitle">Manage complaint receiver accounts</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-primary" id="addComplaintManagerBtn">
+                    <i class="fas fa-user-plus"></i> Add Manager
+                </button>
+            </div>
+        </div>
+
+        <div class="table-toolbar">
+            <div class="input-group table-search">
+                <i class="fas fa-search input-icon"></i>
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by name or email…">
+            </div>
+            <div class="table-actions">
+                <div class="flex items-center gap-2">
+                    <label class="form-label" style="margin:0;white-space:nowrap;">Show</label>
+                    <select id="entriesPerPage" class="form-control" style="width:80px;">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <button class="btn btn-secondary" id="searchBtn">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="complaintTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>ID</th>
+                        <th>Photo</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="complaintTableBody"></tbody>
+            </table>
+
+            <div class="pagination">
+                <span class="pagination-info" id="paginationInfo">Showing 1–10 of 0 managers</span>
+                <div class="pagination-controls">
+                    <button class="page-btn" id="prevPage" disabled><i class="fas fa-chevron-left"></i></button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn" id="nextPage"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ── Add / Edit Modal ── -->
+    <div class="modal-overlay" id="complaintModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="complaintModalTitle">Add Complaint Manager</h2>
+                <button class="modal-close" id="closeComplaintModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="complaintForm" autocomplete="off">
+
+                    <div class="upload-area">
+                        <div class="image-preview" id="imagePreview">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-secondary btn-sm" id="uploadImageBtn">
+                                <i class="fas fa-upload"></i> Upload Photo
+                            </button>
+                            <p class="upload-hint">JPG, PNG, GIF — max 2MB</p>
+                        </div>
+                        <input type="file" id="imageInput" style="display:none;" accept="image/*">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Manager ID <span class="form-required">*</span></label>
+                            <input type="text" id="complaintId" class="form-control" placeholder="e.g. MGR-001"
+                                pattern="[A-Za-z0-9\-_]+" required>
+                            <span class="form-hint">Must be unique</span>
+                            <span class="form-error" id="complaintIdError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span></span>
+                            </span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Full Name <span class="form-required">*</span></label>
+                            <input type="text" id="complaintName" class="form-control" placeholder="Enter full name"
+                                required>
+                            <span class="form-error" id="complaintNameError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Email <span class="form-required">*</span></label>
+                            <div class="input-group">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" id="complaintEmail" class="form-control"
+                                    placeholder="manager@example.com" required>
+                            </div>
+                            <span class="form-error" id="complaintEmailError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span></span>
+                            </span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <div class="input-group">
+                                <i class="fas fa-phone input-icon"></i>
+                                <input type="tel" id="complaintPhone" class="form-control"
+                                    placeholder="+1 (555) 123-4567">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" style="max-width:200px;">
+                            <label class="form-label">Status <span class="form-required">*</span></label>
+                            <select id="complaintStatus" class="form-control" required>
+                                <option value="">Select Status</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                            <span class="form-error" id="complaintStatusError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Password <span class="form-required">*</span></label>
+                            <div class="input-group">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" id="complaintPassword" class="form-control"
+                                    placeholder="Min. 6 characters">
+                            </div>
+                            <span class="form-hint">Leave blank to keep current password when editing.</span>
+                            <span class="form-error" id="complaintPasswordError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span></span>
+                            </span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm Password <span class="form-required">*</span></label>
+                            <div class="input-group">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" id="complaintConfirmPassword" class="form-control"
+                                    placeholder="Repeat password">
+                            </div>
+                            <span class="form-error" id="complaintConfirmPasswordError" style="display:none;">
+                                <i class="fas fa-circle-exclamation"></i> <span></span>
+                            </span>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelComplaintBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveComplaintBtn">
+                    <i class="fas fa-save"></i> Save Manager
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+    <script>
+        const API_BASE_URL = '/api';
+        let currentPage = 1, itemsPerPage = 10, totalManagers = 0, totalPages = 1;
+        let currentManagerId = null;
+
+        // ── Toast ──────────────────────────────────────────
+        function showToast(message, type = 'success') {
+            document.querySelectorAll('.toast').forEach(t => t.remove());
+            const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', warning: 'fa-triangle-exclamation' };
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas ${icons[type]}"></i>
+                <span class="toast-msg">${message}</span>
+                <button class="toast-close"><i class="fas fa-times"></i></button>
+            `;
+            document.body.appendChild(toast);
+            toast.querySelector('.toast-close').addEventListener('click', () => toast.remove());
+            setTimeout(() => toast?.remove(), 4000);
+        }
+
+        // ── Modal helpers ──────────────────────────────────
+        function openModal(id) { document.getElementById(id).classList.add('open'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+        // ── Table ──────────────────────────────────────────
+        async function renderTable() {
+            const tbody = document.getElementById('complaintTableBody');
+            tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding:var(--space-8)">
+                <div class="spinner" style="margin:0 auto"></div>
+            </td></tr>`;
+
+            try {
+                const search = document.getElementById('searchInput').value.trim();
+                const { data: result } = await api.get(`${API_BASE_URL}/complaint-receivers`, {
+                    params: { page: currentPage, limit: itemsPerPage, search }
+                });
+                if (!result.success) throw new Error(result.message);
+                tbody.innerHTML = '';
+
+                if (!result.data.length) {
+                    tbody.innerHTML = `<tr><td colspan="9">
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="fas fa-user-shield"></i></div>
+                            <p class="empty-title">No managers found</p>
+                            <p class="empty-text">Try adjusting your search.</p>
+                        </div>
+                    </td></tr>`;
+                    totalManagers = 0; totalPages = 1;
+                    updatePagination(); return;
+                }
+
+                result.data.forEach((m, i) => {
+                    const rowNum = (currentPage - 1) * itemsPerPage + i + 1;
+                    const avatar = m.picture
+                        ? `<img src="${m.picture}" alt="${m.name}" class="avatar"
+                               onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'avatar-placeholder',innerHTML:'<i class=\\'fas fa-user\\'></i>'}));">`
+                        : `<div class="avatar-placeholder"><i class="fas fa-user"></i></div>`;
+
+                    const statusBadge = m.status === 'Active'
+                        ? `<span class="badge badge-green"><span class="status-dot green"></span> Active</span>`
+                        : `<span class="badge badge-red"><span class="status-dot red"></span> Inactive</span>`;
+
+                    const date = new Date(m.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric', month: 'short', day: 'numeric'
+                    });
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="text-center font-mono text-muted">${rowNum}</td>
+                        <td class="font-mono">${m.id}</td>
+                        <td>${avatar}</td>
+                        <td class="font-semibold">${m.name}</td>
+                        <td class="text-secondary">${m.email}</td>
+                        <td class="text-secondary">${m.phone_number || '—'}</td>
+                        <td class="text-center">${statusBadge}</td>
+                        <td class="text-secondary">${date}</td>
+                        <td class="text-center">
+                            <button class="action-btn edit-btn" data-id="${m.id}">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                totalManagers = result.pagination.total;
+                totalPages = result.pagination.pages;
+                updatePagination();
+
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="9">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                        <p class="empty-title">Failed to load</p>
+                    </div>
+                </td></tr>`;
+                showToast('Error loading complaint managers', 'error');
+            }
+        }
+
+        // ── Pagination ─────────────────────────────────────
+        function updatePagination() {
+            const start = totalManagers ? (currentPage - 1) * itemsPerPage + 1 : 0;
+            const end = Math.min(currentPage * itemsPerPage, totalManagers);
+            document.getElementById('paginationInfo').textContent =
+                `Showing ${start}–${end} of ${totalManagers} manager${totalManagers !== 1 ? 's' : ''}`;
+
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage >= totalPages || !totalPages;
+
+            const controls = document.querySelector('.pagination-controls');
+            controls.querySelectorAll('.page-btn:not(#prevPage):not(#nextPage)').forEach(b => b.remove());
+
+            const max = 5;
+            let s = Math.max(1, currentPage - Math.floor(max / 2));
+            let e = Math.min(totalPages, s + max - 1);
+            if (e - s + 1 < max) s = Math.max(1, e - max + 1);
+
+            const nextBtn = document.getElementById('nextPage');
+            for (let p = s; p <= e; p++) {
+                const btn = document.createElement('button');
+                btn.className = `page-btn${p === currentPage ? ' active' : ''}`;
+                btn.textContent = p;
+                btn.addEventListener('click', () => { currentPage = p; renderTable(); });
+                controls.insertBefore(btn, nextBtn);
+            }
+        }
+
+        // ── Form helpers ───────────────────────────────────
+        function clearErrors() {
+            document.querySelectorAll('#complaintForm .form-error').forEach(e => e.style.display = 'none');
+            document.querySelectorAll('#complaintForm .form-control.is-error').forEach(e => e.classList.remove('is-error'));
+        }
+        function setError(inputId, errorId, msg) {
+            document.getElementById(inputId)?.classList.add('is-error');
+            const el = document.getElementById(errorId);
+            if (el) { el.querySelector('span').textContent = msg; el.style.display = 'flex'; }
+        }
+
+        function validateForm() {
+            clearErrors();
+            let valid = true;
+            const id = document.getElementById('complaintId').value.trim();
+            const nm = document.getElementById('complaintName').value.trim();
+            const em = document.getElementById('complaintEmail').value.trim();
+            const st = document.getElementById('complaintStatus').value;
+            const pw = document.getElementById('complaintPassword').value;
+            const pwc = document.getElementById('complaintConfirmPassword').value;
+
+            if (!id) { setError('complaintId', 'complaintIdError', 'Manager ID is required'); valid = false; }
+            if (!nm) { setError('complaintName', 'complaintNameError', 'Name is required'); valid = false; }
+            if (!em) { setError('complaintEmail', 'complaintEmailError', 'Email is required'); valid = false; }
+            else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+                setError('complaintEmail', 'complaintEmailError', 'Enter a valid email'); valid = false;
+            }
+            if (!st) { setError('complaintStatus', 'complaintStatusError', 'Status is required'); valid = false; }
+
+            if (!currentManagerId) {
+                if (!pw) { setError('complaintPassword', 'complaintPasswordError', 'Password is required'); valid = false; }
+                else if (pw.length < 6) { setError('complaintPassword', 'complaintPasswordError', 'Min. 6 characters'); valid = false; }
+                else if (pw !== pwc) { setError('complaintConfirmPassword', 'complaintConfirmPasswordError', 'Passwords do not match'); valid = false; }
+            } else if (pw) {
+                if (pw.length < 6) { setError('complaintPassword', 'complaintPasswordError', 'Min. 6 characters'); valid = false; }
+                else if (pw !== pwc) { setError('complaintConfirmPassword', 'complaintConfirmPasswordError', 'Passwords do not match'); valid = false; }
+            }
+
+            return valid;
+        }
+
+        function resetForm() {
+            document.getElementById('complaintForm').reset();
+            document.getElementById('imagePreview').innerHTML = '<i class="fas fa-user"></i>';
+            document.getElementById('complaintModalTitle').textContent = 'Add Complaint Manager';
+            currentManagerId = null;
+            clearErrors();
+        }
+
+        // ── Open Add ───────────────────────────────────────
+        function openAddModal() {
+            resetForm();
+            openModal('complaintModal');
+        }
+
+        // ── Open Edit ──────────────────────────────────────
+        async function openEditModal(managerId) {
+            try {
+                const { data: result } = await api.get(`${API_BASE_URL}/complaint-receivers/${managerId}`);
+                if (!result.success) throw new Error(result.message);
+                const m = result.data;
+
+                resetForm();
+                currentManagerId = managerId;
+                document.getElementById('complaintModalTitle').textContent = 'Edit Complaint Manager';
+
+                document.getElementById('complaintId').value = m.id;
+                document.getElementById('complaintName').value = m.name;
+                document.getElementById('complaintEmail').value = m.email;
+                document.getElementById('complaintPhone').value = m.phone_number || '';
+                document.getElementById('complaintStatus').value = m.status;
+                document.getElementById('complaintPassword').value = '';
+                document.getElementById('complaintConfirmPassword').value = '';
+
+                if (m.picture) {
+                    document.getElementById('imagePreview').innerHTML =
+                        `<img src="${m.picture}" alt="Preview" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-user\\'></i>'">`;
+                }
+                openModal('complaintModal');
+            } catch (err) {
+                console.error(err);
+                showToast('Error loading manager details', 'error');
+            }
+        }
+
+        // ── Save ───────────────────────────────────────────
+        async function saveManager() {
+            if (!validateForm()) return;
+
+            const btn = document.getElementById('saveComplaintBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Saving…';
+
+            try {
+                const fd = new FormData();
+                fd.append('id', document.getElementById('complaintId').value.trim());
+                fd.append('name', document.getElementById('complaintName').value.trim());
+                fd.append('email', document.getElementById('complaintEmail').value.trim());
+                fd.append('status', document.getElementById('complaintStatus').value);
+                fd.append('phone_number', document.getElementById('complaintPhone').value.trim());
+
+                const pw = document.getElementById('complaintPassword').value;
+                if (pw) fd.append('password', pw);
+                else if (!currentManagerId) throw new Error('Password is required for new manager');
+
+                const img = document.getElementById('imageInput').files[0];
+                if (img) fd.append('picture', img);
+
+                const { data: result } = currentManagerId
+                    ? await api.put(`${API_BASE_URL}/complaint-receivers/${currentManagerId}`, fd)
+                    : await api.post(`${API_BASE_URL}/complaint-receivers`, fd);
+
+                if (!result.success) throw new Error(result.message || 'Server error');
+
+                showToast(currentManagerId ? 'Manager updated successfully' : 'Manager added successfully', 'success');
+                closeModal('complaintModal');
+                renderTable();
+            } catch (err) {
+                console.error(err);
+                showToast(err.message || 'Error saving manager', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Save Manager';
+            }
+        }
+
+        // ── Real-time ID check ─────────────────────────────
+        let idCheckTimeout;
+        document.getElementById('complaintId').addEventListener('input', async function () {
+            const id = this.value.trim();
+            clearTimeout(idCheckTimeout);
+            if (id.length < 3) { document.getElementById('complaintIdError').style.display = 'none'; return; }
+            idCheckTimeout = setTimeout(async () => {
+                try {
+                    if (currentManagerId && id === currentManagerId) return;
+                    const { data } = await api.get(`${API_BASE_URL}/complaint-receivers/${id}`);
+                    if (data.success) setError('complaintId', 'complaintIdError', 'This Manager ID already exists');
+                    else document.getElementById('complaintIdError').style.display = 'none';
+                } catch { document.getElementById('complaintIdError').style.display = 'none'; }
+            }, 500);
+        });
+
+        // ── Init ───────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+
+            document.getElementById('searchBtn').addEventListener('click', () => { currentPage = 1; renderTable(); });
+            document.getElementById('searchInput').addEventListener('keypress', e => {
+                if (e.key === 'Enter') { currentPage = 1; renderTable(); }
+            });
+            document.getElementById('entriesPerPage').addEventListener('change', function () {
+                itemsPerPage = +this.value; currentPage = 1; renderTable();
+            });
+
+            document.getElementById('prevPage').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderTable(); } });
+            document.getElementById('nextPage').addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; renderTable(); } });
+
+            document.getElementById('addComplaintManagerBtn').addEventListener('click', openAddModal);
+
+            ['closeComplaintModal', 'cancelComplaintBtn'].forEach(id =>
+                document.getElementById(id).addEventListener('click', () => closeModal('complaintModal')));
+
+            document.getElementById('complaintModal').addEventListener('click', e => {
+                if (e.target === document.getElementById('complaintModal')) closeModal('complaintModal');
+            });
+
+            document.getElementById('saveComplaintBtn').addEventListener('click', saveManager);
+
+            document.getElementById('uploadImageBtn').addEventListener('click', () =>
+                document.getElementById('imageInput').click());
+            document.getElementById('imageInput').addEventListener('change', function () {
+                const file = this.files[0];
+                if (!file) return;
+                if (file.size > 2 * 1024 * 1024) { showToast('Image must be under 2MB', 'warning'); return; }
+                if (!file.type.match('image.*')) { showToast('Please select an image file', 'warning'); return; }
+                const reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById('imagePreview').innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                };
+                reader.readAsDataURL(file);
+            });
+
+            document.addEventListener('click', async e => {
+                const edit = e.target.closest('.edit-btn');
+                if (edit) await openEditModal(edit.dataset.id);
+            });
+
+            renderTable();
+        });
+    </script>
+</body>
+
+</html>

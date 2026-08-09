@@ -1,0 +1,2435 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>Found Items - NUTECH CMS</title>
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+    <style>
+        /* Page-specific styles for Found Items */
+        .main-content {
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Page header styling */
+        .founditems-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .founditems-header h2 {
+            color: var(--primary-color);
+            font-size: 22px;
+            margin: 0;
+        }
+
+        /* Search bar styling */
+        .header-search-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        @media (max-width: 768px) {
+            .founditems-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .header-search-container {
+                max-width: 100%;
+            }
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px 15px 8px 35px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+            background-color: white;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--primary-transparent-10);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        .btn-search {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .btn-search:hover {
+            background-color: #0a4539;
+            transform: translateY(-1px);
+        }
+
+        /* Page description */
+        .page-description {
+            color: var(--text-gray);
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        /* Filter section */
+        .filter-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .items-counter {
+            color: var(--text-gray);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .items-counter .count {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary-color);
+            background-color: var(--primary-transparent-10);
+        }
+
+        .filter-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .filter-btn i {
+            font-size: 12px;
+        }
+
+        /* Filter dropdowns container */
+        .filter-dropdowns {
+            display: flex;
+            gap: 10px;
+            position: relative;
+        }
+
+        .filter-dropdown {
+            position: relative;
+        }
+
+        .filter-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 200px;
+            z-index: 100;
+            display: none;
+            margin-top: 5px;
+        }
+
+        .filter-dropdown-menu.active {
+            display: block;
+        }
+
+        .filter-dropdown-content {
+            padding: 10px 0;
+        }
+
+        .filter-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .filter-option:hover {
+            background-color: var(--primary-transparent-10);
+        }
+
+        .filter-option.active {
+            background-color: var(--primary-transparent-10);
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .filter-option.active .filter-check {
+            display: block;
+        }
+
+        .filter-check {
+            color: var(--primary-color);
+            display: none;
+        }
+
+        /* Items grid */
+        .items-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .item-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+            border: 1px solid #f0f0f0;
+        }
+
+        .item-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .item-card.dull {
+            opacity: 0.7;
+            filter: grayscale(0.3);
+        }
+
+        .item-image {
+            height: 200px;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .item-image .placeholder {
+            color: var(--text-gray);
+            font-size: 50px;
+        }
+
+        .item-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            z-index: 2;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .status-returned {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .status-unavailable {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .status-collected {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .status-approved {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .status-rejected {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .item-details {
+            padding: 22px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .item-title {
+            font-size: 19px;
+            font-weight: 700;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            flex: 1;
+            margin-right: 10px;
+            line-height: 1.3;
+        }
+
+        .item-title:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        .item-date {
+            color: var(--text-gray);
+            font-size: 12px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .item-category {
+            display: inline-block;
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            align-self: flex-start;
+            letter-spacing: 0.3px;
+        }
+
+        .item-location {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            line-height: 1.4;
+        }
+
+        .item-location i {
+            color: var(--primary-color);
+            margin-top: 2px;
+        }
+
+        .btn-show-map {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 12px;
+            cursor: pointer;
+            padding: 0;
+            margin-bottom: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: underline;
+        }
+
+        .btn-show-map:hover {
+            color: #0a4539;
+        }
+
+        .claim-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            width: fit-content;
+        }
+
+        .claim-status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .claim-status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .claim-status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: auto;
+            padding-top: 18px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn-view-details {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-light);
+            padding: 11px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-align: center;
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .btn-view-details:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(14, 90, 76, 0.2);
+        }
+
+        .btn-claim {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 11px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            font-size: 14px;
+        }
+
+        .btn-claim:hover:not(:disabled) {
+            background-color: #0a453a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(14, 90, 76, 0.2);
+        }
+
+        .btn-claim:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.65;
+        }
+
+        .btn-claim.claimed {
+            background-color: #28a745;
+            cursor: default;
+        }
+
+        .btn-claim.claimed::before {
+            content: '✓';
+            margin-right: 5px;
+        }
+
+        .btn-claim.rejected {
+            background-color: #dc3545;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+
+        .btn-claim.rejected::before {
+            content: '✗';
+            margin-right: 5px;
+        }
+
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background-color: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 650px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            animation: modalAppear 0.4s ease-out forwards;
+        }
+
+        @keyframes modalAppear {
+            0% {
+                transform: translateY(30px) scale(0.95);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 22px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8f9fa;
+            border-radius: 12px 12px 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-gray);
+            cursor: pointer;
+            transition: color 0.2s ease;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close-modal:hover {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 22px;
+        }
+
+        /* Image Gallery in Modal */
+        .modal-gallery {
+            margin-bottom: 25px;
+        }
+
+        .main-modal-image {
+            width: 100%;
+            height: 300px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-modal-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .main-modal-image .placeholder {
+            color: var(--text-gray);
+            font-size: 50px;
+        }
+
+        .thumbnail-gallery {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .thumbnail {
+            width: 80px;
+            height: 80px;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            flex-shrink: 0;
+            border: 2px solid transparent;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .thumbnail:hover {
+            transform: translateY(-2px);
+        }
+
+        .thumbnail.active {
+            border-color: var(--primary-color);
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Modal details */
+        .modal-details-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .modal-detail-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 14px;
+            background-color: var(--primary-transparent-10);
+            border-radius: 8px;
+        }
+
+        .modal-detail-icon {
+            width: 42px;
+            height: 42px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 18px;
+            flex-shrink: 0;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-detail-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .modal-detail-label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+
+        .modal-detail-value {
+            color: #333;
+            font-size: 15px;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .modal-detail-value .rejected-badge {
+            background-color: #dc3545;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        /* Map container */
+        .modal-map-container {
+            margin-top: 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        #modal-map {
+            height: 250px;
+            width: 100%;
+        }
+
+        /* Claim confirmation modal */
+        .claim-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffecb5;
+            color: #856404;
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            line-height: 1.5;
+        }
+
+        .claim-warning i {
+            color: #ffc107;
+            font-size: 20px;
+            margin-top: 2px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            color: #495057;
+            padding: 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 15px;
+        }
+
+        .btn-cancel:hover {
+            background-color: #e9ecef;
+            border-color: #c1c9d0;
+        }
+
+        .btn-confirm {
+            flex: 1;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 15px;
+        }
+
+        .btn-confirm:hover:not(:disabled) {
+            background-color: #0a4539;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(14, 90, 76, 0.2);
+        }
+
+        .btn-confirm:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .btn-confirm.loading {
+            pointer-events: none;
+            color: transparent;
+            position: relative;
+        }
+
+        .btn-confirm.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        .claim-success {
+            text-align: center;
+            padding: 25px;
+        }
+
+        .claim-success i {
+            font-size: 70px;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+
+        .claim-success h3 {
+            color: #28a745;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #28a745;
+            color: white;
+            padding: 16px 22px;
+            border-radius: 8px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 3000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            max-width: 350px;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            background-color: #dc3545;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-gray);
+            grid-column: 1 / -1;
+        }
+
+        .empty-state i {
+            font-size: 70px;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 15px;
+            color: #777;
+            font-size: 22px;
+        }
+
+        /* Loading skeleton */
+        .skeleton-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* Infinite scroll loader */
+        .infinite-scroll-loader {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--text-gray);
+            font-size: 14px;
+            display: none;
+        }
+
+        .infinite-scroll-loader.active {
+            display: block;
+        }
+
+        .infinite-scroll-loader i {
+            font-size: 24px;
+            margin-top: 10px;
+            display: block;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .items-container {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 20px;
+            }
+
+            .modal {
+                width: 95%;
+                max-width: 95%;
+            }
+
+            .card-actions {
+                flex-direction: column;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+
+            .item-image {
+                height: 180px;
+            }
+
+            .filter-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .filter-buttons {
+                width: 100%;
+            }
+
+            .filter-btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="/assets/logo.png" alt="logo" id="logo">
+            <h2 class="logo-text">NUTECH CMS</h2>
+        </div>
+
+        <div class="header-right">
+            <div class="profile-icon">
+                <i class="fa fa-user"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </div>
+
+    <div class="main-content" id="main-content">
+        <div class="founditems-header">
+            <h2>Found Items</h2>
+            <div class="header-search-container">
+                <div class="search-box">
+                    <i class="fa fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Search items...">
+                </div>
+                <button class="btn-search" id="search-btn">
+                    <i class="fa fa-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <p class="page-description">Browse items found on campus. If you recognize an item as yours, you can submit a
+            claim.</p>
+
+        <div class="filter-section">
+            <div class="items-counter" id="items-counter">
+                Showing <span class="count">0</span> items
+            </div>
+
+            <div class="filter-buttons">
+                <!-- Category Filter Dropdown -->
+                <div class="filter-dropdown">
+                    <button class="filter-btn" id="category-filter-btn">
+                        <i class="fa fa-filter"></i>
+                        <span>Category: All</span>
+                        <i class="fa fa-chevron-down"></i>
+                    </button>
+                    <div class="filter-dropdown-menu" id="category-filter-menu">
+                        <div class="filter-dropdown-content">
+                            <div class="filter-option active" data-filter="all" data-type="category">
+                                <span>All Categories</span>
+                                <i class="fa fa-check filter-check"></i>
+                            </div>
+                            <div class="filter-option" data-filter="Electronics" data-type="category">
+                                <span>Electronics</span>
+                                <i class="fa fa-check filter-check"></i>
+                            </div>
+                            <div class="filter-option" data-filter="Documents" data-type="category">
+                                <span>Documents</span>
+                                <i class="fa fa-check filter-check"></i>
+                            </div>
+                            <div class="filter-option" data-filter="Personal" data-type="category">
+                                <span>Personal Items</span>
+                                <i class="fa fa-check filter-check"></i>
+                            </div>
+                            <div class="filter-option" data-filter="Clothing" data-type="category">
+                                <span>Clothing</span>
+                                <i class="fa fa-check filter-check"></i>
+                            </div>
+                            <div class="filter-option" data-filter="Books" data-type="category">
+                                <span>Books</span>
+                                <i class="fa fa-check filter-check"></i>
+                            </div>
+                            <div class="filter-option" data-filter="Other" data-type="category">
+                                <span>Other</span>
+                                <i class="fa fa-check filter-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Filter Dropdown -->
+                <div class="filter-dropdown">
+                    <button class="filter-btn" id="status-filter-btn">
+                        <i class="fa fa-flag"></i>
+                        <span>Status: All</span>
+                        <i class="fa fa-chevron-down"></i>
+                    </button>
+                    <div class="filter-dropdown-menu" id="status-filter-menu">
+                        <div class="filter-dropdown-content">
+                            <div class="filter-option active" data-filter="all" data-type="status">
+                                <span>All Statuses</span>
+                                <i class="fa fa-check filter-check"></i>
+                            </div>
+                            <div class="filter-option" data-filter="Pending" data-type="status">
+                                <span>Pending</span>
+                                <i class="fa fa-check filter-check"></i>
+                            </div>
+                            <div class="filter-option" data-filter="Collected" data-type="status">
+                                <span>Collected</span>
+                                <i class="fa fa-check filter-check"></i>
+                            </div>
+                            <div class="filter-option" data-filter="Returned" data-type="status">
+                                <span>Returned</span>
+                                <i class="fa fa-check filter-check"></i>
+                            </div>
+                            <div class="filter-option" data-filter="Unavailable" data-type="status">
+                                <span>Unavailable</span>
+                                <i class="fa fa-check filter-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Claim Status Filter Dropdown -->
+                <div class="filter-dropdown">
+                    <button class="filter-btn" id="claim-filter-btn">
+                        <i class="fa fa-hand-paper"></i>
+                        <span>Claim: All</span>
+                        <i class="fa fa-chevron-down"></i>
+                    </button>
+                    <div class="filter-dropdown-menu" id="claim-filter-menu">
+                        <div class="filter-dropdown-content">
+                            <div class="filter-option active" data-filter="all" data-type="claim">
+                                <span>All Claims</span>
+                                <i class="fa fa-check filter-check"></i>
+                            </div>
+                            <div class="filter-option" data-filter="pending" data-type="claim">
+                                <span>Pending Claims</span>
+                                <i class="fa fa-check filter-check"></i>
+                            </div>
+                            <div class="filter-option" data-filter="approved" data-type="claim">
+                                <span>Approved Claims</span>
+                                <i class="fa fa-check filter-check"></i>
+                            </div>
+                            <div class="filter-option" data-filter="rejected" data-type="claim">
+                                <span>Rejected Claims</span>
+                                <i class="fa fa-check filter-check"></i>
+                            </div>
+                            <div class="filter-option" data-filter="not-claimed" data-type="claim">
+                                <span>Not Claimed</span>
+                                <i class="fa fa-check filter-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clear Filters Button -->
+                <button class="filter-btn" id="clear-filters-btn" style="display: none;">
+                    <i class="fa fa-times"></i>
+                    Clear Filters
+                </button>
+            </div>
+        </div>
+
+        <div class="items-container" id="items-container">
+            <!-- Items will be loaded dynamically -->
+        </div>
+
+        <div class="infinite-scroll-loader" id="infinite-scroll-loader">
+            <div>Loading more items...</div>
+            <i class="fa fa-spinner fa-spin"></i>
+        </div>
+
+        <!-- Toast notification -->
+        <div class="toast" id="toast">
+            <i class="fa fa-check-circle"></i>
+            <span id="toast-message">Item claimed successfully!</span>
+        </div>
+
+        <!-- Modal for item details -->
+        <div class="modal-overlay" id="item-details-modal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 class="modal-title">Item Details</h2>
+                    <button class="close-modal" id="close-item-details-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-gallery">
+                        <div class="main-modal-image" id="modal-main-image">
+                            <div class="placeholder">
+                                <i class="fa fa-image"></i>
+                            </div>
+                        </div>
+                        <div class="thumbnail-gallery" id="thumbnail-gallery">
+                            <!-- Thumbnails will be populated here -->
+                        </div>
+                    </div>
+
+                    <div class="modal-details-container" id="modal-details-container">
+                        <!-- Item details will be populated here -->
+                    </div>
+
+                    <div class="modal-map-container" id="modal-map-container" style="display: none;">
+                        <div id="modal-map"></div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button class="btn-cancel" id="close-modal-btn">Close</button>
+                        <button class="btn-confirm" id="claim-from-modal-btn">Claim This Item</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for claim confirmation -->
+        <div class="modal-overlay" id="claim-confirmation-modal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 class="modal-title">Confirm Claim</h2>
+                    <button class="close-modal" id="close-claim-confirmation-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="claim-warning">
+                        <i class="fa fa-exclamation-triangle"></i>
+                        <div>
+                            <strong>Important:</strong> Please make sure this item belongs to you.
+                            False claims may result in penalties. You will need to provide identification
+                            when collecting the item.
+                        </div>
+                    </div>
+
+                    <div class="modal-details-container" id="claim-modal-details-container">
+                        <!-- Item details will be populated here -->
+                    </div>
+
+                    <div class="modal-actions" id="modal-actions-confirm">
+                        <button class="btn-cancel" id="cancel-claim-btn">Cancel</button>
+                        <button class="btn-confirm" id="confirm-claim-btn">Confirm Claim</button>
+                    </div>
+
+                    <div class="claim-success" id="claim-success" style="display: none;">
+                        <i class="fa fa-check-circle"></i>
+                        <h3>Claim Submitted Successfully!</h3>
+                        <p>Your claim has been recorded. The admin will review it within 24-48 hours.</p>
+                        <p>You can track your claim status in your profile.</p>
+                        <button class="btn-confirm" id="close-after-claim" style="margin-top: 20px;">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+    <script>
+        // ============================================
+        // API Service Class
+        // ============================================
+        class FoundItemsService {
+            async getFoundItems(params = {}) {
+                try {
+                    const response = await window.api.get('/api/customer/found-items', { params });
+                    return response.data.data || [];
+                } catch (error) {
+                    console.error('Error fetching found items:', error);
+                    return [];
+                }
+            }
+
+            async getUserClaims() {
+                try {
+                    const response = await window.api.get('/api/customer/my-claims');
+                    return response.data.data || {};
+                } catch (error) {
+                    console.error('Error fetching user claims:', error);
+                    return {};
+                }
+            }
+
+            async submitClaim(foundItemId) {
+                try {
+                    const response = await window.api.post(`/api/customer/found-items/${foundItemId}/claim`);
+                    return response.data;
+                } catch (error) {
+                    console.error('Error submitting claim:', error);
+                    throw error;
+                }
+            }
+        }
+
+        // ============================================
+        // URL Parameter Handler
+        // ============================================
+        class URLParams {
+            static getParams() {
+                const params = new URLSearchParams(window.location.search);
+                return {
+                    category: params.get('category') || 'all',
+                    status: params.get('status') || 'all',
+                    claim: params.get('claim') || 'all',
+                    search: params.get('search') || ''
+                };
+            }
+
+            static setParams(params) {
+                const url = new URL(window.location);
+                Object.keys(params).forEach(key => {
+                    if (params[key] && params[key] !== 'all') {
+                        url.searchParams.set(key, params[key]);
+                    } else {
+                        url.searchParams.delete(key);
+                    }
+                });
+                window.history.pushState({}, '', url);
+            }
+
+            static clearFilters() {
+                window.history.pushState({}, '', window.location.pathname);
+            }
+        }
+
+        // ============================================
+        // Main Application Class
+        // ============================================
+        class FoundItemsApp {
+            constructor() {
+                this.service = new FoundItemsService();
+                this.items = [];
+                this.filteredItems = [];
+                this.userClaims = {};
+
+                // Get filters from URL
+                const urlParams = URLParams.getParams();
+                this.currentCategoryFilter = urlParams.category;
+                this.currentStatusFilter = urlParams.status;
+                this.currentClaimFilter = urlParams.claim;
+                this.currentSearch = urlParams.search;
+
+                this.selectedItem = null;
+                this.currentPage = 0;
+                this.itemsPerPage = 6;
+                this.isLoading = false;
+                this.hasMoreItems = true;
+                this.map = null;
+
+                this.initElements();
+                this.initEventListeners();
+                this.loadData();
+            }
+
+            // ============================================
+            // Initialize DOM Elements
+            // ============================================
+            initElements() {
+                this.itemsContainer = document.getElementById('items-container');
+                this.searchInput = document.getElementById('search-input');
+                this.searchBtn = document.getElementById('search-btn');
+                this.itemDetailsModal = document.getElementById('item-details-modal');
+                this.claimConfirmationModal = document.getElementById('claim-confirmation-modal');
+                this.itemsCounter = document.getElementById('items-counter');
+
+                // Filter buttons and menus
+                this.categoryFilterBtn = document.getElementById('category-filter-btn');
+                this.statusFilterBtn = document.getElementById('status-filter-btn');
+                this.claimFilterBtn = document.getElementById('claim-filter-btn');
+                this.clearFiltersBtn = document.getElementById('clear-filters-btn');
+
+                this.categoryFilterMenu = document.getElementById('category-filter-menu');
+                this.statusFilterMenu = document.getElementById('status-filter-menu');
+                this.claimFilterMenu = document.getElementById('claim-filter-menu');
+
+                this.categoryOptions = document.querySelectorAll('[data-type="category"]');
+                this.statusOptions = document.querySelectorAll('[data-type="status"]');
+                this.claimOptions = document.querySelectorAll('[data-type="claim"]');
+
+                this.toast = document.getElementById('toast');
+                this.toastMessage = document.getElementById('toast-message');
+                this.modalDetailsContainer = document.getElementById('modal-details-container');
+                this.claimModalDetailsContainer = document.getElementById('claim-modal-details-container');
+                this.claimFromModalBtn = document.getElementById('claim-from-modal-btn');
+                this.infiniteScrollLoader = document.getElementById('infinite-scroll-loader');
+                this.modalMainImage = document.getElementById('modal-main-image');
+                this.thumbnailGallery = document.getElementById('thumbnail-gallery');
+                this.modalMapContainer = document.getElementById('modal-map-container');
+
+                // Set initial filter button text
+                this.updateFilterButtonText(this.categoryFilterBtn, 'Category', this.currentCategoryFilter);
+                this.updateFilterButtonText(this.statusFilterBtn, 'Status', this.currentStatusFilter);
+                this.updateFilterButtonText(this.claimFilterBtn, 'Claim', this.currentClaimFilter);
+
+                // Set search input value
+                if (this.currentSearch) {
+                    this.searchInput.value = this.currentSearch;
+                }
+            }
+
+            // ============================================
+            // Utility Functions
+            // ============================================
+            updateFilterButtonText(button, type, value) {
+                if (!button) return;
+                const span = button.querySelector('span');
+                if (span) {
+                    if (value === 'all') {
+                        span.textContent = `${type}: All`;
+                    } else {
+                        span.textContent = `${type}: ${value}`;
+                    }
+                }
+            }
+
+            getPlaceholderImage() {
+                return 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\' viewBox=\'0 0 400 300\'%3E%3Crect width=\'400\' height=\'300\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'24\' fill=\'%23999\'%3ENo Image%3C/text%3E%3C/svg%3E';
+            }
+
+            formatDate(dateString) {
+                if (!dateString) return 'Date not available';
+                try {
+                    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                    return new Date(dateString).toLocaleDateString('en-US', options);
+                } catch (e) {
+                    return dateString;
+                }
+            }
+
+            formatDateTime(dateString) {
+                if (!dateString) return '-';
+                try {
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                } catch (e) {
+                    return dateString;
+                }
+            }
+
+            capitalizeFirstLetter(string) {
+                if (!string) return '';
+                return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+            }
+
+            escapeHTML(str) {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            showToast(message, type = 'success') {
+                if (!this.toast || !this.toastMessage) return;
+
+                this.toastMessage.textContent = message;
+                this.toast.className = 'toast';
+                this.toast.classList.add(type === 'error' ? 'error' : 'success');
+                this.toast.classList.add('show');
+
+                setTimeout(() => {
+                    this.toast.classList.remove('show');
+                }, 3000);
+            }
+
+            showLoading() {
+                if (!this.itemsContainer) return;
+
+                this.itemsContainer.innerHTML = '';
+                for (let i = 0; i < 6; i++) {
+                    const skeleton = document.createElement('div');
+                    skeleton.className = 'skeleton-card';
+                    skeleton.innerHTML = `
+                <div class="item-image skeleton" style="height: 200px;"></div>
+                <div class="item-details">
+                    <div class="skeleton" style="height: 20px; width: 70%; margin-bottom: 10px;"></div>
+                    <div class="skeleton" style="height: 15px; width: 40%; margin-bottom: 15px;"></div>
+                    <div class="skeleton" style="height: 40px; margin-bottom: 15px;"></div>
+                    <div class="skeleton" style="height: 45px;"></div>
+                </div>
+            `;
+                    this.itemsContainer.appendChild(skeleton);
+                }
+            }
+
+            // ============================================
+            // Event Listeners Setup
+            // ============================================
+            initEventListeners() {
+                // Search
+                if (this.searchBtn) {
+                    this.searchBtn.addEventListener('click', () => this.searchItems());
+                }
+                if (this.searchInput) {
+                    this.searchInput.addEventListener('input', () => {
+                        if (!this.searchInput.value.trim()) {
+                            this.resetSearch();
+                        }
+                    });
+                    this.searchInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') this.searchItems();
+                    });
+                }
+
+                // Filter dropdown toggles
+                if (this.categoryFilterBtn) {
+                    this.categoryFilterBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.toggleFilterMenu(this.categoryFilterMenu);
+                    });
+                }
+
+                if (this.statusFilterBtn) {
+                    this.statusFilterBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.toggleFilterMenu(this.statusFilterMenu);
+                    });
+                }
+
+                if (this.claimFilterBtn) {
+                    this.claimFilterBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.toggleFilterMenu(this.claimFilterMenu);
+                    });
+                }
+
+                // Filter options
+                if (this.categoryOptions) {
+                    this.categoryOptions.forEach(option => {
+                        option.addEventListener('click', () => {
+                            const filter = option.getAttribute('data-filter');
+                            this.applyCategoryFilter(filter);
+                        });
+                    });
+                }
+
+                if (this.statusOptions) {
+                    this.statusOptions.forEach(option => {
+                        option.addEventListener('click', () => {
+                            const filter = option.getAttribute('data-filter');
+                            this.applyStatusFilter(filter);
+                        });
+                    });
+                }
+
+                if (this.claimOptions) {
+                    this.claimOptions.forEach(option => {
+                        option.addEventListener('click', () => {
+                            const filter = option.getAttribute('data-filter');
+                            this.applyClaimFilter(filter);
+                        });
+                    });
+                }
+
+                // Clear filters
+                if (this.clearFiltersBtn) {
+                    this.clearFiltersBtn.addEventListener('click', () => this.clearAllFilters());
+                }
+
+                // Close filter menus when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (this.categoryFilterBtn && !this.categoryFilterBtn.contains(e.target)) {
+                        if (this.categoryFilterMenu) this.categoryFilterMenu.classList.remove('active');
+                    }
+                    if (this.statusFilterBtn && !this.statusFilterBtn.contains(e.target)) {
+                        if (this.statusFilterMenu) this.statusFilterMenu.classList.remove('active');
+                    }
+                    if (this.claimFilterBtn && !this.claimFilterBtn.contains(e.target)) {
+                        if (this.claimFilterMenu) this.claimFilterMenu.classList.remove('active');
+                    }
+                });
+
+                // Modal close buttons
+                const closeItemDetailsBtn = document.getElementById('close-item-details-modal');
+                if (closeItemDetailsBtn) {
+                    closeItemDetailsBtn.addEventListener('click', () => this.closeItemDetailsModal());
+                }
+
+                const closeModalBtn = document.getElementById('close-modal-btn');
+                if (closeModalBtn) {
+                    closeModalBtn.addEventListener('click', () => this.closeItemDetailsModal());
+                }
+
+                const closeClaimModalBtn = document.getElementById('close-claim-confirmation-modal');
+                if (closeClaimModalBtn) {
+                    closeClaimModalBtn.addEventListener('click', () => this.closeClaimConfirmationModal());
+                }
+
+                const cancelClaimBtn = document.getElementById('cancel-claim-btn');
+                if (cancelClaimBtn) {
+                    cancelClaimBtn.addEventListener('click', () => this.closeClaimConfirmationModal());
+                }
+
+                const closeAfterClaimBtn = document.getElementById('close-after-claim');
+                if (closeAfterClaimBtn) {
+                    closeAfterClaimBtn.addEventListener('click', () => this.closeClaimConfirmationModal());
+                }
+
+                // Claim buttons
+                const confirmClaimBtn = document.getElementById('confirm-claim-btn');
+                if (confirmClaimBtn) {
+                    confirmClaimBtn.addEventListener('click', () => this.submitClaim());
+                }
+
+                if (this.claimFromModalBtn) {
+                    this.claimFromModalBtn.addEventListener('click', () => {
+                        this.closeItemDetailsModal();
+                        this.showClaimConfirmation(this.selectedItem);
+                    });
+                }
+
+                // Close modals when clicking outside
+                if (this.itemDetailsModal) {
+                    this.itemDetailsModal.addEventListener('click', (e) => {
+                        if (e.target === this.itemDetailsModal) this.closeItemDetailsModal();
+                    });
+                }
+
+                if (this.claimConfirmationModal) {
+                    this.claimConfirmationModal.addEventListener('click', (e) => {
+                        if (e.target === this.claimConfirmationModal) this.closeClaimConfirmationModal();
+                    });
+                }
+
+                // Escape key
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        if (this.itemDetailsModal?.classList.contains('active')) this.closeItemDetailsModal();
+                        if (this.claimConfirmationModal?.classList.contains('active')) this.closeClaimConfirmationModal();
+                    }
+                });
+
+                // Infinite scroll
+                window.addEventListener('scroll', () => this.handleScroll());
+
+                // Handle browser back/forward
+                window.addEventListener('popstate', () => {
+                    const urlParams = URLParams.getParams();
+                    this.currentCategoryFilter = urlParams.category;
+                    this.currentStatusFilter = urlParams.status;
+                    this.currentClaimFilter = urlParams.claim;
+                    this.currentSearch = urlParams.search;
+
+                    if (this.searchInput) {
+                        this.searchInput.value = this.currentSearch;
+                    }
+
+                    this.updateFilterButtonText(this.categoryFilterBtn, 'Category', this.currentCategoryFilter);
+                    this.updateFilterButtonText(this.statusFilterBtn, 'Status', this.currentStatusFilter);
+                    this.updateFilterButtonText(this.claimFilterBtn, 'Claim', this.currentClaimFilter);
+
+                    this.applyFilters();
+                });
+            }
+
+            // ============================================
+            // Filter Menu Functions
+            // ============================================
+            toggleFilterMenu(menu) {
+                if (!menu) return;
+
+                // Close other menus
+                [this.categoryFilterMenu, this.statusFilterMenu, this.claimFilterMenu].forEach(m => {
+                    if (m && m !== menu) m.classList.remove('active');
+                });
+                menu.classList.toggle('active');
+            }
+
+            // ============================================
+            // Data Loading Functions
+            // ============================================
+            async loadData() {
+                this.showLoading();
+                try {
+                    this.items = await this.service.getFoundItems({ limit: 1000 });
+                    this.userClaims = await this.service.getUserClaims();
+
+                    this.applyFilters();
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    this.showToast('Error loading items', 'error');
+                }
+            }
+
+            // ============================================
+            // Filter Functions
+            // ============================================
+            applyFilters() {
+                let filtered = [...this.items];
+
+                // Apply category filter
+                if (this.currentCategoryFilter !== 'all') {
+                    filtered = filtered.filter(item => item.category === this.currentCategoryFilter);
+                }
+
+                // Apply status filter
+                if (this.currentStatusFilter !== 'all') {
+                    filtered = filtered.filter(item => item.status === this.currentStatusFilter);
+                }
+
+                // Apply claim filter
+                if (this.currentClaimFilter !== 'all') {
+                    filtered = filtered.filter(item => {
+                        const claimStatus = this.userClaims[item.id]?.status;
+                        switch (this.currentClaimFilter) {
+                            case 'pending':
+                                return claimStatus === 'pending';
+                            case 'approved':
+                                return claimStatus === 'approved';
+                            case 'rejected':
+                                return claimStatus === 'rejected';
+                            case 'not-claimed':
+                                return !this.userClaims[item.id];
+                            default:
+                                return true;
+                        }
+                    });
+                }
+
+                // Apply search filter
+                if (this.currentSearch) {
+                    const searchLower = this.currentSearch.toLowerCase();
+                    filtered = filtered.filter(item =>
+                        (item.title && item.title.toLowerCase().includes(searchLower)) ||
+                        (item.description && item.description.toLowerCase().includes(searchLower)) ||
+                        (item.location && item.location.toLowerCase().includes(searchLower)) ||
+                        (item.category && item.category.toLowerCase().includes(searchLower))
+                    );
+                }
+
+                this.filteredItems = filtered;
+                this.currentPage = 0;
+                this.hasMoreItems = true;
+                this.renderItems(true);
+
+                // Show/hide clear filters button
+                const hasActiveFilters = this.currentCategoryFilter !== 'all' ||
+                    this.currentStatusFilter !== 'all' ||
+                    this.currentClaimFilter !== 'all' ||
+                    this.currentSearch;
+
+                if (this.clearFiltersBtn) {
+                    this.clearFiltersBtn.style.display = hasActiveFilters ? 'flex' : 'none';
+                }
+            }
+
+            applyCategoryFilter(filter) {
+                this.currentCategoryFilter = filter;
+
+                // Update UI
+                if (this.categoryOptions) {
+                    this.categoryOptions.forEach(opt => {
+                        if (opt.getAttribute('data-filter') === filter) {
+                            opt.classList.add('active');
+                        } else {
+                            opt.classList.remove('active');
+                        }
+                    });
+                }
+
+                this.updateFilterButtonText(this.categoryFilterBtn, 'Category', filter);
+                if (this.categoryFilterMenu) {
+                    this.categoryFilterMenu.classList.remove('active');
+                }
+
+                // Update URL
+                URLParams.setParams({
+                    category: filter,
+                    status: this.currentStatusFilter,
+                    claim: this.currentClaimFilter,
+                    search: this.currentSearch
+                });
+
+                this.applyFilters();
+            }
+
+            applyStatusFilter(filter) {
+                this.currentStatusFilter = filter;
+
+                if (this.statusOptions) {
+                    this.statusOptions.forEach(opt => {
+                        if (opt.getAttribute('data-filter') === filter) {
+                            opt.classList.add('active');
+                        } else {
+                            opt.classList.remove('active');
+                        }
+                    });
+                }
+
+                this.updateFilterButtonText(this.statusFilterBtn, 'Status', filter);
+                if (this.statusFilterMenu) {
+                    this.statusFilterMenu.classList.remove('active');
+                }
+
+                URLParams.setParams({
+                    category: this.currentCategoryFilter,
+                    status: filter,
+                    claim: this.currentClaimFilter,
+                    search: this.currentSearch
+                });
+
+                this.applyFilters();
+            }
+
+            applyClaimFilter(filter) {
+                this.currentClaimFilter = filter;
+
+                if (this.claimOptions) {
+                    this.claimOptions.forEach(opt => {
+                        if (opt.getAttribute('data-filter') === filter) {
+                            opt.classList.add('active');
+                        } else {
+                            opt.classList.remove('active');
+                        }
+                    });
+                }
+
+                this.updateFilterButtonText(this.claimFilterBtn, 'Claim', filter);
+                if (this.claimFilterMenu) {
+                    this.claimFilterMenu.classList.remove('active');
+                }
+
+                URLParams.setParams({
+                    category: this.currentCategoryFilter,
+                    status: this.currentStatusFilter,
+                    claim: filter,
+                    search: this.currentSearch
+                });
+
+                this.applyFilters();
+            }
+
+            clearAllFilters() {
+                this.currentCategoryFilter = 'all';
+                this.currentStatusFilter = 'all';
+                this.currentClaimFilter = 'all';
+                this.currentSearch = '';
+
+                if (this.searchInput) {
+                    this.searchInput.value = '';
+                }
+
+                // Update UI
+                if (this.categoryOptions) {
+                    this.categoryOptions.forEach(opt => {
+                        if (opt.getAttribute('data-filter') === 'all') {
+                            opt.classList.add('active');
+                        } else {
+                            opt.classList.remove('active');
+                        }
+                    });
+                }
+
+                if (this.statusOptions) {
+                    this.statusOptions.forEach(opt => {
+                        if (opt.getAttribute('data-filter') === 'all') {
+                            opt.classList.add('active');
+                        } else {
+                            opt.classList.remove('active');
+                        }
+                    });
+                }
+
+                if (this.claimOptions) {
+                    this.claimOptions.forEach(opt => {
+                        if (opt.getAttribute('data-filter') === 'all') {
+                            opt.classList.add('active');
+                        } else {
+                            opt.classList.remove('active');
+                        }
+                    });
+                }
+
+                this.updateFilterButtonText(this.categoryFilterBtn, 'Category', 'all');
+                this.updateFilterButtonText(this.statusFilterBtn, 'Status', 'all');
+                this.updateFilterButtonText(this.claimFilterBtn, 'Claim', 'all');
+
+                // Clear URL
+                URLParams.clearFilters();
+
+                this.applyFilters();
+            }
+
+            searchItems() {
+                if (!this.searchInput) return;
+                this.currentSearch = this.searchInput.value.trim().toLowerCase();
+
+                URLParams.setParams({
+                    category: this.currentCategoryFilter,
+                    status: this.currentStatusFilter,
+                    claim: this.currentClaimFilter,
+                    search: this.currentSearch
+                });
+
+                this.applyFilters();
+            }
+
+            resetSearch() {
+                this.currentSearch = '';
+                URLParams.setParams({
+                    category: this.currentCategoryFilter,
+                    status: this.currentStatusFilter,
+                    claim: this.currentClaimFilter,
+                    search: ''
+                });
+                this.applyFilters();
+            }
+
+            // ============================================
+            // Rendering Functions
+            // ============================================
+            async renderItems(reset = false) {
+                if (!this.itemsContainer) return;
+
+                if (reset) {
+                    this.itemsContainer.innerHTML = '';
+                    this.currentPage = 0;
+                    this.hasMoreItems = true;
+                    if (this.infiniteScrollLoader) {
+                        this.infiniteScrollLoader.classList.remove('active');
+                    }
+                }
+
+                const startIndex = this.currentPage * this.itemsPerPage;
+                const endIndex = startIndex + this.itemsPerPage;
+                const itemsToDisplay = this.filteredItems.slice(startIndex, endIndex);
+
+                this.hasMoreItems = endIndex < this.filteredItems.length;
+
+                if (itemsToDisplay.length === 0 && this.currentPage === 0) {
+                    this.itemsContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="fa fa-search"></i>
+                    <h3>No items found</h3>
+                    <p>Try adjusting your search or filter criteria</p>
+                </div>
+            `;
+                    if (this.infiniteScrollLoader) {
+                        this.infiniteScrollLoader.classList.remove('active');
+                    }
+                    return;
+                }
+
+                for (const item of itemsToDisplay) {
+                    const hasClaimed = !!this.userClaims[item.id];
+                    const claimStatus = this.userClaims[item.id]?.status;
+                    const itemElement = this.createItemCard(item, hasClaimed, claimStatus);
+                    this.itemsContainer.appendChild(itemElement);
+                }
+
+                this.updateCounter(Math.min(endIndex, this.filteredItems.length), this.filteredItems.length);
+
+                if (this.infiniteScrollLoader) {
+                    if (this.hasMoreItems) {
+                        this.infiniteScrollLoader.classList.add('active');
+                    } else {
+                        this.infiniteScrollLoader.classList.remove('active');
+                    }
+                }
+            }
+
+            createItemCard(item, hasClaimed, claimStatus) {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+
+                // Add dull class if item is unavailable or returned
+                if (item.status === 'Unavailable' || item.status === 'Returned') {
+                    card.classList.add('dull');
+                }
+
+                const statusClass = `status-${(item.status || 'pending').toLowerCase()}`;
+
+                // Determine claim button state
+                let canClaim = item.status === 'Pending' && !hasClaimed;
+                let claimButtonText = 'Claim';
+                let claimButtonClass = '';
+
+                if (hasClaimed) {
+                    if (claimStatus === 'pending') {
+                        claimButtonText = 'Claim Pending';
+                        claimButtonClass = 'claimed';
+                        canClaim = false;
+                    } else if (claimStatus === 'approved') {
+                        claimButtonText = 'Claim Approved';
+                        claimButtonClass = 'claimed';
+                        canClaim = false;
+                    } else if (claimStatus === 'rejected') {
+                        claimButtonText = 'Claim Rejected';
+                        claimButtonClass = 'rejected';
+                        canClaim = false;
+                    }
+                }
+
+                const imageUrl = item.pictures && item.pictures.length > 0 && item.pictures[0]
+                    ? item.pictures[0]
+                    : this.getPlaceholderImage();
+
+                card.innerHTML = `
+            <div class="item-image">
+                <img src="${imageUrl}" alt="${item.title || 'Item'}" onerror="this.src='${this.getPlaceholderImage()}'">
+                <span class="item-status ${statusClass}">${item.status || 'Pending'}</span>
+            </div>
+            <div class="item-details">
+                <div class="item-header">
+                    <div class="item-title" data-id="${item.id}">${this.escapeHTML(item.title) || 'Untitled'}</div>
+                    <div class="item-date">
+                        <i class="fa fa-calendar"></i>
+                        <span>${this.formatDate(item.date_found)}</span>
+                    </div>
+                </div>
+                <div class="item-category">${this.escapeHTML(item.category) || 'Other'}</div>
+                <div class="item-location">
+                    <i class="fa fa-map-marker-alt"></i>
+                    <span>${this.escapeHTML(item.location) || 'Location not specified'}</span>
+                </div>
+                ${hasClaimed ? `
+                    <div class="claim-status-badge claim-status-${claimStatus}">
+                        <i class="fa ${claimStatus === 'pending' ? 'fa-clock' : claimStatus === 'approved' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                        Claim ${claimStatus}
+                    </div>
+                ` : ''}
+                ${item.latitude && item.longitude ?
+                        `<button class="btn-show-map" data-id="${item.id}">
+                        <i class="fa fa-map"></i> Show on Map
+                    </button>` : ''}
+                <div class="card-actions">
+                    <button class="btn-view-details" data-id="${item.id}">View Details</button>
+                    <button class="btn-claim ${claimButtonClass}" data-id="${item.id}" 
+                        ${!canClaim ? 'disabled' : ''}>
+                        ${claimButtonText}
+                    </button>
+                </div>
+            </div>
+        `;
+
+                // Add event listeners
+                const titleEl = card.querySelector('.item-title');
+                if (titleEl) {
+                    titleEl.addEventListener('click', () => this.showItemDetails(item.id));
+                }
+
+                const viewBtn = card.querySelector('.btn-view-details');
+                if (viewBtn) {
+                    viewBtn.addEventListener('click', () => this.showItemDetails(item.id));
+                }
+
+                const claimBtn = card.querySelector('.btn-claim');
+                if (claimBtn && !claimBtn.disabled && claimButtonClass !== 'rejected') {
+                    claimBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.showClaimConfirmation(item);
+                    });
+                }
+
+                const mapBtn = card.querySelector('.btn-show-map');
+                if (mapBtn) {
+                    mapBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.showItemOnMap(item);
+                    });
+                }
+
+                return card;
+            }
+
+            updateCounter(shown, total) {
+                if (!this.itemsCounter) return;
+
+                let filterText = [];
+                if (this.currentCategoryFilter !== 'all') filterText.push(this.currentCategoryFilter);
+                if (this.currentStatusFilter !== 'all') filterText.push(this.currentStatusFilter);
+                if (this.currentClaimFilter !== 'all') filterText.push(`claims:${this.currentClaimFilter}`);
+
+                const filterString = filterText.length > 0 ? ` (${filterText.join(', ')})` : '';
+                const totalText = shown < total ? ` of ${total}` : '';
+                this.itemsCounter.innerHTML = `Showing <span class="count">${shown}</span>${totalText} found items${filterString}`;
+            }
+
+            handleScroll() {
+                const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+
+                // Load more when user is 200px from bottom
+                if (scrollTop + clientHeight >= scrollHeight - 200) {
+                    if (!this.isLoading && this.hasMoreItems) {
+                        this.isLoading = true;
+                        setTimeout(() => {
+                            this.currentPage++;
+                            this.renderItems();
+                            this.isLoading = false;
+                        }, 500);
+                    }
+                }
+            }
+
+            // ============================================
+            // Item Details Functions
+            // ============================================
+            async showItemDetails(itemId) {
+                try {
+                    const item = this.items.find(i => i.id === itemId);
+                    if (!item) {
+                        this.showToast('Item not found', 'error');
+                        return;
+                    }
+
+                    this.selectedItem = item;
+
+                    const hasClaimed = !!this.userClaims[item.id];
+                    const claimStatus = this.userClaims[item.id]?.status;
+
+                    const locationString = item.location || 'Location not specified';
+
+                    if (this.modalDetailsContainer) {
+                        this.modalDetailsContainer.innerHTML = this.createModalDetailsHTML(item, locationString, hasClaimed, claimStatus);
+                    }
+
+                    // Handle images with error fallback
+                    const images = item.pictures && item.pictures.length > 0 ? item.pictures : [];
+                    if (this.modalMainImage) {
+                        if (images.length > 0) {
+                            this.modalMainImage.innerHTML = `<img src="${images[0]}" alt="${item.title}" onerror="this.src='${this.getPlaceholderImage()}'">`;
+                        } else {
+                            this.modalMainImage.innerHTML = `<img src="${this.getPlaceholderImage()}" alt="No image">`;
+                        }
+                    }
+
+                    if (this.thumbnailGallery) {
+                        this.thumbnailGallery.innerHTML = '';
+                        if (images.length > 0) {
+                            images.forEach((img, index) => {
+                                const thumb = document.createElement('div');
+                                thumb.className = `thumbnail ${index === 0 ? 'active' : ''}`;
+                                thumb.innerHTML = `<img src="${img}" alt="Thumbnail ${index + 1}" onerror="this.src='${this.getPlaceholderImage()}'">`;
+                                thumb.addEventListener('click', () => {
+                                    if (this.modalMainImage) {
+                                        this.modalMainImage.innerHTML = `<img src="${img}" alt="${item.title}" onerror="this.src='${this.getPlaceholderImage()}'">`;
+                                    }
+                                    document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+                                    thumb.classList.add('active');
+                                });
+                                this.thumbnailGallery.appendChild(thumb);
+                            });
+                        }
+                    }
+
+                    if (this.modalMapContainer) {
+                        if (item.latitude && item.longitude) {
+                            this.modalMapContainer.style.display = 'block';
+                            setTimeout(() => this.initModalMap(item), 100);
+                        } else {
+                            this.modalMapContainer.style.display = 'none';
+                        }
+                    }
+
+                    const canClaim = item.status === 'Pending' && !hasClaimed;
+
+                    if (this.claimFromModalBtn) {
+                        if (!canClaim) {
+                            this.claimFromModalBtn.disabled = true;
+                            if (hasClaimed) {
+                                this.claimFromModalBtn.textContent = `Claim ${claimStatus}`;
+                            } else {
+                                this.claimFromModalBtn.textContent = 'Cannot Claim';
+                            }
+                        } else {
+                            this.claimFromModalBtn.disabled = false;
+                            this.claimFromModalBtn.textContent = 'Claim This Item';
+                        }
+                    }
+
+                    if (this.itemDetailsModal) {
+                        this.itemDetailsModal.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                    }
+                } catch (error) {
+                    console.error('Error showing item details:', error);
+                    this.showToast('Error loading item details', 'error');
+                }
+            }
+
+            createModalDetailsHTML(item, locationString, hasClaimed, claimStatus) {
+                let claimStatusHTML = '';
+                if (hasClaimed) {
+                    let statusText = claimStatus;
+                    let statusClass = claimStatus;
+
+                    if (claimStatus === 'approved') {
+                        statusText = 'Approved (Ready for pickup)';
+                        statusClass = 'approved';
+                    } else if (claimStatus === 'pending') {
+                        statusText = 'Pending Review';
+                        statusClass = 'pending';
+                    } else if (claimStatus === 'rejected') {
+                        statusText = 'Rejected';
+                        statusClass = 'rejected';
+                    }
+
+                    claimStatusHTML = `
+                <div class="modal-detail-item">
+                    <div class="modal-detail-icon"><i class="fa fa-hand-paper"></i></div>
+                    <div class="modal-detail-content">
+                        <div class="modal-detail-label">Your Claim Status</div>
+                        <div class="modal-detail-value">
+                            <span class="status-badge status-${statusClass}">${statusText}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+                }
+
+                return `
+            <div class="modal-detail-item">
+                <div class="modal-detail-icon"><i class="fa fa-tag"></i></div>
+                <div class="modal-detail-content">
+                    <div class="modal-detail-label">Title</div>
+                    <div class="modal-detail-value">${this.escapeHTML(item.title) || 'Untitled'}</div>
+                </div>
+            </div>
+            <div class="modal-detail-item">
+                <div class="modal-detail-icon"><i class="fa fa-folder"></i></div>
+                <div class="modal-detail-content">
+                    <div class="modal-detail-label">Category</div>
+                    <div class="modal-detail-value">${this.escapeHTML(item.category) || 'Other'}</div>
+                </div>
+            </div>
+            <div class="modal-detail-item">
+                <div class="modal-detail-icon"><i class="fa fa-calendar"></i></div>
+                <div class="modal-detail-content">
+                    <div class="modal-detail-label">Date Found</div>
+                    <div class="modal-detail-value">${this.formatDate(item.date_found)}</div>
+                </div>
+            </div>
+            <div class="modal-detail-item">
+                <div class="modal-detail-icon"><i class="fa fa-map-marker-alt"></i></div>
+                <div class="modal-detail-content">
+                    <div class="modal-detail-label">Location Found</div>
+                    <div class="modal-detail-value">${this.escapeHTML(locationString)}</div>
+                </div>
+            </div>
+            <div class="modal-detail-item">
+                <div class="modal-detail-icon"><i class="fa fa-info-circle"></i></div>
+                <div class="modal-detail-content">
+                    <div class="modal-detail-label">Description</div>
+                    <div class="modal-detail-value">${this.escapeHTML(item.description) || 'No description provided'}</div>
+                </div>
+            </div>
+            <div class="modal-detail-item">
+                <div class="modal-detail-icon"><i class="fa fa-flag"></i></div>
+                <div class="modal-detail-content">
+                    <div class="modal-detail-label">Item Status</div>
+                    <div class="modal-detail-value">${this.escapeHTML(item.status) || 'Pending'}</div>
+                </div>
+            </div>
+            ${claimStatusHTML}
+        `;
+            }
+
+            // ============================================
+            // Map Functions
+            // ============================================
+            initModalMap(item) {
+                try {
+                    if (this.map) {
+                        this.map.remove();
+                    }
+
+                    const mapContainer = document.getElementById('modal-map');
+                    if (!mapContainer) return;
+
+                    this.map = L.map(mapContainer).setView([item.latitude, item.longitude], 15);
+
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors'
+                    }).addTo(this.map);
+
+                    L.marker([item.latitude, item.longitude])
+                        .addTo(this.map)
+                        .bindPopup(`<b>${this.escapeHTML(item.title)}</b><br>${this.escapeHTML(item.location)}`)
+                        .openPopup();
+                } catch (error) {
+                    console.error('Error initializing map:', error);
+                }
+            }
+
+            showItemOnMap(item) {
+                this.showItemDetails(item.id);
+            }
+
+            // ============================================
+            // Claim Functions
+            // ============================================
+            async showClaimConfirmation(item) {
+                const hasClaimed = !!this.userClaims[item.id];
+                if (hasClaimed || item.status !== 'Pending') {
+                    this.showToast('This item cannot be claimed', 'error');
+                    return;
+                }
+
+                this.selectedItem = item;
+
+                if (this.claimModalDetailsContainer) {
+                    this.claimModalDetailsContainer.innerHTML = `
+                <div class="modal-detail-item">
+                    <div class="modal-detail-icon"><i class="fa fa-tag"></i></div>
+                    <div class="modal-detail-content">
+                        <div class="modal-detail-label">Item</div>
+                        <div class="modal-detail-value">${this.escapeHTML(item.title) || 'Untitled'}</div>
+                    </div>
+                </div>
+                <div class="modal-detail-item">
+                    <div class="modal-detail-icon"><i class="fa fa-folder"></i></div>
+                    <div class="modal-detail-content">
+                        <div class="modal-detail-label">Category</div>
+                        <div class="modal-detail-value">${this.escapeHTML(item.category) || 'Other'}</div>
+                    </div>
+                </div>
+                <div class="modal-detail-item">
+                    <div class="modal-detail-icon"><i class="fa fa-map-marker-alt"></i></div>
+                    <div class="modal-detail-content">
+                        <div class="modal-detail-label">Location Found</div>
+                        <div class="modal-detail-value">${this.escapeHTML(item.location) || 'Not specified'}</div>
+                    </div>
+                </div>
+            `;
+                }
+
+                const modalActionsConfirm = document.getElementById('modal-actions-confirm');
+                if (modalActionsConfirm) {
+                    modalActionsConfirm.style.display = 'flex';
+                }
+
+                const claimSuccess = document.getElementById('claim-success');
+                if (claimSuccess) {
+                    claimSuccess.style.display = 'none';
+                }
+
+                const confirmClaimBtn = document.getElementById('confirm-claim-btn');
+                if (confirmClaimBtn) {
+                    confirmClaimBtn.classList.remove('loading');
+                    confirmClaimBtn.disabled = false;
+                }
+
+                if (this.claimConfirmationModal) {
+                    this.claimConfirmationModal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+
+            async submitClaim() {
+                if (!this.selectedItem) return;
+
+                const confirmBtn = document.getElementById('confirm-claim-btn');
+                if (confirmBtn) {
+                    confirmBtn.classList.add('loading');
+                    confirmBtn.disabled = true;
+                }
+
+                try {
+                    await this.service.submitClaim(this.selectedItem.id);
+
+                    // Update local claims
+                    this.userClaims[this.selectedItem.id] = {
+                        status: 'pending'
+                    };
+
+                    const modalActionsConfirm = document.getElementById('modal-actions-confirm');
+                    if (modalActionsConfirm) {
+                        modalActionsConfirm.style.display = 'none';
+                    }
+
+                    const claimSuccess = document.getElementById('claim-success');
+                    if (claimSuccess) {
+                        claimSuccess.style.display = 'block';
+                    }
+
+                    this.showToast('Claim submitted successfully!');
+
+                    // Refresh the display
+                    this.applyFilters();
+                } catch (error) {
+                    const errorMessage = error.response?.data?.message || 'Error submitting claim';
+                    this.showToast(errorMessage, 'error');
+                    if (confirmBtn) {
+                        confirmBtn.classList.remove('loading');
+                        confirmBtn.disabled = false;
+                    }
+                }
+            }
+
+            // ============================================
+            // Modal Close Functions
+            // ============================================
+            closeItemDetailsModal() {
+                if (this.itemDetailsModal) {
+                    this.itemDetailsModal.classList.remove('active');
+                }
+                document.body.style.overflow = 'auto';
+                if (this.map) {
+                    this.map.remove();
+                    this.map = null;
+                }
+            }
+
+            closeClaimConfirmationModal() {
+                if (this.claimConfirmationModal) {
+                    this.claimConfirmationModal.classList.remove('active');
+                }
+                document.body.style.overflow = 'auto';
+                this.selectedItem = null;
+            }
+        }
+
+        // ============================================
+        // Initialize the App
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Make sure all required elements exist before initializing
+            const requiredElements = [
+                'items-container',
+                'search-input',
+                'search-btn',
+                'category-filter-btn',
+                'status-filter-btn',
+                'claim-filter-btn'
+            ];
+
+            const allElementsExist = requiredElements.every(id => document.getElementById(id));
+
+            if (allElementsExist) {
+                window.app = new FoundItemsApp();
+            } else {
+                console.error('Required elements not found. Please check the HTML structure.');
+            }
+
+            // Set active navigation
+            setTimeout(() => {
+                const navItems = document.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    const pElement = item.querySelector('p');
+                    if (pElement && pElement.textContent === 'Found Items') {
+                        navItems.forEach(nav => nav.classList.remove('active'));
+                        item.classList.add('active');
+                    }
+                });
+            }, 100);
+        });
+    </script>
+</body>
+
+</html>

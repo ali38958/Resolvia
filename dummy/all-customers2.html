@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <title>All Customers</title>
+    <link rel="stylesheet" href="/public/styles/common-styles.css"> <!-- Common styles for header, menu, etc. -->
+    <style>
+        /* Customers Management Styles */
+        .customers-management {
+            padding: 15px;
+        }
+
+        .customers-header {
+            margin-bottom: 15px;
+        }
+
+        .customers-header h2 {
+            color: var(--primary-color);
+            font-size: 20px;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 7px 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .btn-search {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            padding: 7px 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            height: 40px;
+        }
+
+        .btn-search:hover {
+            background-color: #0a4539;
+            transform: translateY(-1px);
+        }
+
+        .search-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px 12px 8px 32px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            height: 45px;
+            transition: border-color 0.2s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-gray);
+            font-size: 17px;
+        }
+
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .entries-selector {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-gray);
+            font-size: 13px;
+        }
+
+        .entries-selector select {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: var(--text-light);
+            font-size: 13px;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+
+        .entries-selector select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .table-container {
+            background: var(--text-light);
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px var(--shadow-color);
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        thead {
+            background-color: var(--primary-color);
+        }
+
+        th {
+            padding: 10px 12px;
+            text-align: left;
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        th:last-child {
+            border-right: none;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background-color: var(--primary-transparent-10);
+        }
+
+        td {
+            padding: 8px 12px;
+            color: var(--text-gray);
+            font-size: 14px;
+            border-right: 1px solid #e0e0e0;
+            vertical-align: middle;
+        }
+
+        td:last-child {
+            border-right: none;
+        }
+
+        /* Column widths for customers table */
+        th:nth-child(1),
+        td:nth-child(1) {
+            width: 50px;
+            /* # column - slightly increased */
+            text-align: center;
+        }
+
+        /* Profile Picture column */
+        th:nth-child(2),
+        td:nth-child(2) {
+            width: 70px;
+            /* Profile Picture column */
+            text-align: center;
+        }
+
+        /* Name column */
+        th:nth-child(3),
+        td:nth-child(3) {
+            width: 200px;
+            /* Name column */
+        }
+
+        /* Phone column */
+        th:nth-child(4),
+        td:nth-child(4) {
+            width: 160px;
+            /* Phone column */
+        }
+
+        /* Email column */
+        th:nth-child(5),
+        td:nth-child(5) {
+            width: calc(100% - 50px - 70px - 200px - 160px);
+            /* Email column - takes remaining space */
+        }
+
+        /* Circular profile image styles */
+        .customer-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e0e0e0;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .img-placeholder {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font-size: 16px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding: 8px 0;
+        }
+
+        .pagination-info {
+            color: var(--text-gray);
+            font-size: 13px;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 4px;
+        }
+
+        .page-btn {
+            padding: 5px 9px;
+            border: 1px solid #ddd;
+            background: var(--text-light);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+            min-width: 30px;
+        }
+
+        .page-btn:hover:not(.disabled) {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            border-color: var(--primary-color);
+        }
+
+        .page-btn.active {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            border-color: var(--primary-color);
+        }
+
+        .page-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Notification Styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 4px;
+            color: white;
+            font-size: 14px;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-width: 300px;
+            max-width: 400px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .notification.success {
+            background-color: #4caf50;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .notification.error {
+            background-color: #f44336;
+            border-left: 4px solid #c62828;
+        }
+
+        .notification.warning {
+            background-color: #ff9800;
+            border-left: 4px solid #ef6c00;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 0 0 10px;
+            opacity: 0.8;
+        }
+
+        .notification-close:hover {
+            opacity: 1;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Mobile responsive table styling */
+        @media (max-width: 768px) {
+            .customers-management {
+                padding: 12px !important;
+            }
+
+            .customers-header {
+                margin-bottom: 12px;
+            }
+
+            .customers-header h2 {
+                font-size: 18px;
+            }
+
+            .search-container {
+                flex-direction: column;
+                gap: 10px;
+                margin-bottom: 10px;
+            }
+
+            .search-box {
+                min-width: 100% !important;
+                width: 100%;
+            }
+
+            .search-box input {
+                padding: 7px 12px 7px 32px;
+                font-size: 13px;
+            }
+
+            .btn-search {
+                width: 100%;
+                justify-content: center;
+                padding: 7px;
+            }
+
+            /* Table container with horizontal scroll */
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                border-radius: 4px;
+                margin: 0 -12px;
+                width: calc(100% + 24px);
+                border: none;
+            }
+
+            .table-container::-webkit-scrollbar {
+                height: 4px;
+            }
+
+            .table-container::-webkit-scrollbar-thumb {
+                background-color: var(--primary-color);
+                border-radius: 10px;
+            }
+
+            table {
+                min-width: 600px;
+                /* Force horizontal scroll on small screens */
+            }
+
+            th,
+            td {
+                padding: 7px 10px !important;
+                font-size: 12px !important;
+            }
+
+            th {
+                padding: 9px 10px !important;
+                font-size: 11px !important;
+            }
+
+            /* Table controls adjustments */
+            .table-controls {
+                margin-bottom: 10px;
+            }
+
+            .entries-selector {
+                font-size: 12px;
+            }
+
+            .entries-selector select {
+                padding: 5px 8px;
+                font-size: 12px;
+            }
+
+            .pagination {
+                flex-direction: column;
+                gap: 8px;
+                align-items: stretch;
+                margin-top: 10px;
+            }
+
+            .pagination-info {
+                text-align: center;
+                font-size: 12px;
+            }
+
+            .pagination-controls {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .page-btn {
+                padding: 4px 7px;
+                font-size: 12px;
+                min-width: 28px;
+            }
+
+            /* Adjust column widths for mobile */
+            th:nth-child(1),
+            td:nth-child(1) {
+                width: 40px;
+            }
+
+            th:nth-child(2),
+            td:nth-child(2) {
+                width: 50px;
+                /* Profile Picture column for mobile */
+            }
+
+            th:nth-child(3),
+            td:nth-child(3) {
+                width: 150px;
+                /* Name column for mobile */
+            }
+
+            th:nth-child(4),
+            td:nth-child(4) {
+                width: 130px;
+                /* Phone column for mobile */
+            }
+
+            th:nth-child(5),
+            td:nth-child(5) {
+                width: 170px;
+                /* Email column for mobile */
+            }
+
+            .customer-img,
+            .img-placeholder {
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
+            }
+        }
+
+        /* Extra small devices (phones less than 480px) */
+        @media (max-width: 480px) {
+            .customers-management {
+                padding: 10px !important;
+            }
+
+            .customers-header h2 {
+                font-size: 16px;
+            }
+
+            .search-box input {
+                font-size: 12px;
+                padding: 6px 10px 6px 28px;
+            }
+
+            .search-box i {
+                left: 8px;
+                font-size: 12px;
+            }
+
+            .table-container {
+                margin: 0 -10px;
+                width: calc(100% + 20px);
+            }
+
+            table {
+                min-width: 550px;
+            }
+
+            th,
+            td {
+                padding: 6px 8px !important;
+                font-size: 11px !important;
+            }
+
+            th {
+                padding: 7px 8px !important;
+                font-size: 10px !important;
+            }
+
+            .customer-img,
+            .img-placeholder {
+                width: 32px;
+                height: 32px;
+                font-size: 13px;
+            }
+
+            .pagination-info {
+                font-size: 11px;
+            }
+
+            .page-btn {
+                padding: 3px 6px;
+                font-size: 11px;
+                min-width: 26px;
+            }
+        }
+
+        /* For very small screens (less than 360px) */
+        @media (max-width: 360px) {
+            .search-box input {
+                font-size: 11px;
+                padding: 5px 8px 5px 24px;
+            }
+
+            table {
+                min-width: 500px;
+            }
+
+            th,
+            td {
+                padding: 5px 6px !important;
+                font-size: 10px !important;
+            }
+
+            .customer-img,
+            .img-placeholder {
+                width: 30px;
+                height: 30px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="assets/logo.png" alt="logo" id="logo">
+            <h2 class="logo-text">Resolvia</h2>
+        </div>
+
+        <div class="header-right">
+            <div class="profile-icon">
+                <i class="fa fa-user"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </div>
+
+    <div class="main-content" id="main-content">
+        <div class="customers-management">
+            <div class="customers-header">
+                <h2>All Customers</h2>
+            </div>
+
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search customers by name, email, or phone...">
+                </div>
+                <button class="btn-search" id="searchBtn">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+
+            <div class="table-controls">
+                <div class="entries-selector">
+                    <span>Show</span>
+                    <select id="entriesPerPage">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span>entries</span>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="customersTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Profile</th>
+                            <th>Name</th>
+                            <th>Phone No.</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customersTableBody">
+                        <!-- Dummy data will be populated here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <div class="pagination-info" id="paginationInfo">
+                    Showing 1-10 of 20 customers
+                </div>
+                <div class="pagination-controls">
+                    <button class="page-btn" id="prevPage" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn" id="nextPage">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+    <script>
+        // Dummy customer data - 20 customers
+        const dummyCustomers = [
+            {
+                id: 1,
+                name: "John Smith",
+                email: "john.smith@example.com",
+                phone: "+1 (555) 123-4567",
+                profile_picture: "https://randomuser.me/api/portraits/men/32.jpg"
+            },
+            {
+                id: 2,
+                name: "Sarah Johnson",
+                email: "sarah.j@example.com",
+                phone: "+1 (555) 234-5678",
+                profile_picture: "https://randomuser.me/api/portraits/women/44.jpg"
+            },
+            {
+                id: 3,
+                name: "Michael Brown",
+                email: "michael.b@example.com",
+                phone: "+1 (555) 345-6789",
+                // No profile picture - will show user icon
+            },
+            {
+                id: 4,
+                name: "Emily Davis",
+                email: "emily.davis@example.com",
+                phone: "+1 (555) 456-7890",
+                profile_picture: "https://randomuser.me/api/portraits/women/65.jpg"
+            },
+            {
+                id: 5,
+                name: "Robert Wilson",
+                email: "robert.w@example.com",
+                phone: "+1 (555) 567-8901",
+                // No profile picture - will show user icon
+            },
+            {
+                id: 6,
+                name: "Jennifer Lee",
+                email: "jennifer.lee@example.com",
+                phone: "+1 (555) 678-9012",
+                profile_picture: "https://randomuser.me/api/portraits/women/22.jpg"
+            },
+            {
+                id: 7,
+                name: "David Miller",
+                email: "david.m@example.com",
+                phone: "+1 (555) 789-0123",
+                // No profile picture - will show user icon
+            },
+            {
+                id: 8,
+                name: "Lisa Anderson",
+                email: "lisa.a@example.com",
+                phone: "+1 (555) 890-1234",
+                profile_picture: "https://randomuser.me/api/portraits/women/33.jpg"
+            },
+            {
+                id: 9,
+                name: "Thomas Garcia",
+                email: "thomas.g@example.com",
+                phone: "+1 (555) 901-2345",
+                profile_picture: "https://randomuser.me/api/portraits/men/55.jpg"
+            },
+            {
+                id: 10,
+                name: "Maria Martinez",
+                email: "maria.m@example.com",
+                phone: "+1 (555) 012-3456",
+                // No profile picture - will show user icon
+            },
+            {
+                id: 11,
+                name: "James Taylor",
+                email: "james.t@example.com",
+                phone: "+1 (555) 123-4568",
+                profile_picture: "https://randomuser.me/api/portraits/men/67.jpg"
+            },
+            {
+                id: 12,
+                name: "Susan Clark",
+                email: "susan.c@example.com",
+                phone: "+1 (555) 234-5679",
+                profile_picture: "https://randomuser.me/api/portraits/women/77.jpg"
+            },
+            {
+                id: 13,
+                name: "William Rodriguez",
+                email: "william.r@example.com",
+                phone: "+1 (555) 345-6790",
+                // No profile picture - will show user icon
+            },
+            {
+                id: 14,
+                name: "Karen Lewis",
+                email: "karen.l@example.com",
+                phone: "+1 (555) 456-7891",
+                profile_picture: "https://randomuser.me/api/portraits/women/88.jpg"
+            },
+            {
+                id: 15,
+                name: "Richard Walker",
+                email: "richard.w@example.com",
+                phone: "+1 (555) 567-8902",
+                profile_picture: "https://randomuser.me/api/portraits/men/99.jpg"
+            },
+            {
+                id: 16,
+                name: "Jessica Hall",
+                email: "jessica.h@example.com",
+                phone: "+1 (555) 678-9013",
+                // No profile picture - will show user icon
+            },
+            {
+                id: 17,
+                name: "Charles Allen",
+                email: "charles.a@example.com",
+                phone: "+1 (555) 789-0124",
+                profile_picture: "https://randomuser.me/api/portraits/men/12.jpg"
+            },
+            {
+                id: 18,
+                name: "Amanda Young",
+                email: "amanda.y@example.com",
+                phone: "+1 (555) 890-1235",
+                profile_picture: "https://randomuser.me/api/portraits/women/23.jpg"
+            },
+            {
+                id: 19,
+                name: "Daniel King",
+                email: "daniel.k@example.com",
+                phone: "+1 (555) 901-2346",
+                // No profile picture - will show user icon
+            },
+            {
+                id: 20,
+                name: "Melissa Scott",
+                email: "melissa.s@example.com",
+                phone: "+1 (555) 012-3457",
+                profile_picture: "https://randomuser.me/api/portraits/women/34.jpg"
+            }
+        ];
+
+        // Global variables
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let totalCustomers = dummyCustomers.length;
+        let totalPages = 2;
+
+        // DOM Elements
+        const customersTableBody = document.getElementById('customersTableBody');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const prevPageBtn = document.getElementById('prevPage');
+        const nextPageBtn = document.getElementById('nextPage');
+        const paginationInfo = document.getElementById('paginationInfo');
+        const entriesPerPageSelect = document.getElementById('entriesPerPage');
+
+        // Initialize table with dummy data
+        function renderTable() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+
+            // Filter customers based on search term
+            const filteredCustomers = dummyCustomers.filter(customer => {
+                if (!searchTerm) return true;
+
+                return (
+                    (customer.name && customer.name.toLowerCase().includes(searchTerm)) ||
+                    (customer.email && customer.email.toLowerCase().includes(searchTerm)) ||
+                    (customer.phone && customer.phone.toLowerCase().includes(searchTerm))
+                );
+            });
+
+            // Calculate pagination
+            totalCustomers = filteredCustomers.length;
+            totalPages = Math.max(1, Math.ceil(totalCustomers / itemsPerPage));
+
+            // Ensure current page is within valid range
+            if (currentPage > totalPages) {
+                currentPage = totalPages;
+            }
+            if (currentPage < 1) {
+                currentPage = 1;
+            }
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, totalCustomers);
+            const currentCustomers = filteredCustomers.slice(startIndex, endIndex);
+
+            // Clear table body
+            customersTableBody.innerHTML = '';
+
+            if (currentCustomers.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-gray);">
+                        <i class="fas fa-users" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                        No customers found. Try a different search term.
+                    </td>
+                `;
+                customersTableBody.appendChild(row);
+            } else {
+                currentCustomers.forEach((customer, index) => {
+                    const row = document.createElement('tr');
+                    const rowNumber = startIndex + index + 1;
+
+                    // Create profile image or user icon placeholder
+                    let profileCell;
+                    if (customer.profile_picture) {
+                        profileCell = `<img src="${customer.profile_picture}" alt="${customer.name}" class="customer-img" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\"img-placeholder\"></div>`;
+                    } else {
+                        profileCell = `<div class="img-placeholder"><i class="fas fa-user"></i></div>`;
+                    }
+
+                    row.innerHTML = `
+                        <td>${rowNumber}</td>
+                        <td>${profileCell}</td>
+                        <td>${customer.name || 'N/A'}</td>
+                        <td>${customer.phone || 'N/A'}</td>
+                        <td>${customer.email || 'N/A'}</td>
+                    `;
+
+                    customersTableBody.appendChild(row);
+                });
+            }
+
+            updatePagination();
+        }
+
+        // Update pagination controls
+        function updatePagination() {
+            const startItem = totalCustomers > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0;
+            const endItem = Math.min(currentPage * itemsPerPage, totalCustomers);
+
+            paginationInfo.textContent = `Showing ${startItem}-${endItem} of ${totalCustomers} customers`;
+
+            prevPageBtn.disabled = currentPage === 1;
+            prevPageBtn.classList.toggle('disabled', currentPage === 1);
+
+            nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+            nextPageBtn.classList.toggle('disabled', currentPage === totalPages || totalPages === 0);
+
+            const paginationControls = document.querySelector('.pagination-controls');
+            const existingPageBtns = paginationControls.querySelectorAll('.page-btn:not(#prevPage):not(#nextPage)');
+            existingPageBtns.forEach(btn => btn.remove());
+
+            // Show limited page buttons (max 5)
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+            if (endPage - startPage + 1 < maxVisiblePages && startPage > 1) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                pageBtn.textContent = i;
+                pageBtn.addEventListener('click', () => {
+                    if (currentPage !== i) {
+                        currentPage = i;
+                        renderTable();
+                    }
+                });
+                paginationControls.insertBefore(pageBtn, nextPageBtn);
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            // Remove existing notification
+            const existingNotification = document.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <span>${message}</span>
+                <button class="notification-close">&times;</button>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
+
+            // Close button event
+            notification.querySelector('.notification-close').addEventListener('click', () => {
+                notification.remove();
+            });
+        }
+
+        // Search functionality
+        function searchCustomers() {
+            currentPage = 1;
+            renderTable();
+        }
+
+        // Change entries per page
+        function changeEntriesPerPage() {
+            itemsPerPage = parseInt(entriesPerPageSelect.value);
+            currentPage = 1;
+            renderTable();
+        }
+
+        // Event Listeners
+        searchBtn.addEventListener('click', searchCustomers);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchCustomers();
+            }
+        });
+
+        // Also trigger search on input change for better UX
+        searchInput.addEventListener('input', () => {
+            const searchTerm = searchInput.value.trim();
+            if (searchTerm.length === 0 || searchTerm.length > 2) {
+                // Debounce the search
+                clearTimeout(searchInput.timeout);
+                searchInput.timeout = setTimeout(searchCustomers, 300);
+            }
+        });
+
+        entriesPerPageSelect.addEventListener('change', changeEntriesPerPage);
+
+        // Pagination event listeners
+        prevPageBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        });
+
+        nextPageBtn.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTable();
+        });
+    </script>
+</body>
+
+</html>

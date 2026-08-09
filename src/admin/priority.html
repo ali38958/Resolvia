@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Priority Management</title>
+    <link rel="icon" type="image/png" href="/assets/logo_nobg.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/public/styles/common-styles.css">
+    <style>
+        /* ── Page-specific styles only — layout handled by common-styles.css ── */
+
+        /* ── Empty state ── */
+        .empty-state {
+            text-align: center;
+            padding: var(--space-12) var(--space-6);
+        }
+
+        .empty-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-full);
+            background: var(--bg-surface-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--space-4);
+            font-size: 1.4rem;
+            color: var(--text-muted);
+        }
+
+        .empty-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+
+        .empty-text {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* ── Value badge ── */
+        .value-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: var(--space-1) var(--space-3);
+            background: rgba(14, 90, 76, 0.08);
+            color: var(--primary);
+            border: 1px solid rgba(14, 90, 76, 0.15);
+            border-radius: var(--radius-full);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+
+        [data-theme="dark"] .value-badge {
+            background: rgba(26, 201, 158, 0.1);
+            color: var(--accent);
+            border-color: rgba(26, 201, 158, 0.2);
+        }
+
+        /* ── Row number ── */
+        .row-num {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* Center-align action column */
+        .col-actions {
+            text-align: center;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .page-actions .btn span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-left">
+            <i class="fa fa-bars" id="menu-control"></i>
+            <img src="/assets/logo.png" alt="logo" id="logo">
+            <span class="logo-text">Resolvia</span>
+        </div>
+        <div class="header-right">
+            <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+                <i class="fa fa-moon"></i>
+            </button>
+            <div class="profile-icon">
+                <i class="fa fa-user"></i>
+            </div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fa fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="navigation-menu" id="navigation-menu">
+        <ul id="nav-list"></ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Priority Management</h1>
+                <p class="page-subtitle">Define complaint priorities and their resolution time targets</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-primary" id="addPriorityBtn">
+                    <i class="fas fa-plus"></i>
+                    <span>Add Priority</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Table toolbar -->
+        <div class="table-toolbar">
+            <div class="input-group table-search">
+                <i class="fas fa-search input-icon"></i>
+                <input type="text" id="searchInput" class="form-control" placeholder="Search priorities…">
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:52px; text-align:center;">#</th>
+                        <th>Priority Name</th>
+                        <th style="width:140px; text-align:center;">Value (hrs)</th>
+                        <th style="width:140px; text-align:center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="prioritiesTableBody">
+                    <tr>
+                        <td colspan="4">
+                            <div class="empty-state">
+                                <div class="empty-icon"><i class="fas fa-spinner fa-spin"></i></div>
+                                <p class="empty-title">Loading priorities…</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <span class="pagination-info" id="paginationInfo">Showing 0 of 0 priorities</span>
+                <div class="pagination-controls">
+                    <button class="page-btn" id="prevPage" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span id="pageNumberBtns"></span>
+                    <button class="page-btn" id="nextPage" disabled>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ── Add / Edit Modal ── -->
+    <div class="modal-overlay" id="priorityModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Add Priority</h2>
+                <button class="modal-close" id="closeModal"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="priorityName">Priority Name</label>
+                    <input type="text" id="priorityName" class="form-control" placeholder="e.g. Critical, High, Medium">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="priorityValue">Resolution Time (hours)</label>
+                    <input type="number" id="priorityValue" class="form-control" placeholder="e.g. 2, 8, 24" min="1"
+                        max="720">
+                    <span class="form-hint">Time allowed to resolve — between 1 and 720 hours.</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveBtn">
+                    <i class="fas fa-floppy-disk" id="saveBtnIcon"></i>
+                    <span id="saveBtnText">Save Priority</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Delete Confirmation Modal ── -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal" style="max-width:420px;">
+            <div class="modal-header" style="background: linear-gradient(135deg,#dc2626,#b91c1c);">
+                <h2 class="modal-title">Delete Priority</h2>
+                <button class="modal-close" id="closeDeleteModal"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="color:var(--text-secondary);line-height:1.6;" id="deleteModalMsg">
+                    Are you sure you want to delete this priority? This action cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i>
+                    <span>Delete</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/axios.min.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/common-script.js"></script>
+    <script>
+        const API_BASE = SERVER_URL + '/api';
+
+        // ── State ──
+        let prioritiesData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let editingId = null;
+        let pendingDeleteId = null;
+
+        // ── DOM refs ──
+        const tbody = document.getElementById('prioritiesTableBody');
+        const searchInput = document.getElementById('searchInput');
+        const paginationInfo = document.getElementById('paginationInfo');
+        const prevPageBtn = document.getElementById('prevPage');
+        const nextPageBtn = document.getElementById('nextPage');
+        const pageNumberBtns = document.getElementById('pageNumberBtns');
+
+        const priorityModal = document.getElementById('priorityModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const nameInput = document.getElementById('priorityName');
+        const valueInput = document.getElementById('priorityValue');
+        const saveBtn = document.getElementById('saveBtn');
+        const saveBtnText = document.getElementById('saveBtnText');
+        const saveBtnIcon = document.getElementById('saveBtnIcon');
+
+        const deleteModal = document.getElementById('deleteModal');
+        const deleteModalMsg = document.getElementById('deleteModalMsg');
+
+        // ── Init ──
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchPriorities();
+
+            // Search
+            searchInput.addEventListener('input', () => {
+                const q = searchInput.value.toLowerCase().trim();
+                filteredData = q
+                    ? prioritiesData.filter(p =>
+                        p.name.toLowerCase().includes(q) ||
+                        String(p.value).includes(q))
+                    : [...prioritiesData];
+                currentPage = 1;
+                renderTable();
+            });
+
+            // Add button
+            document.getElementById('addPriorityBtn').addEventListener('click', openAddModal);
+
+            // Pagination
+            prevPageBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderTable(); } });
+            nextPageBtn.addEventListener('click', () => {
+                if (currentPage < Math.ceil(filteredData.length / itemsPerPage)) { currentPage++; renderTable(); }
+            });
+
+            // Priority modal buttons
+            document.getElementById('closeModal').addEventListener('click', closePriorityModal);
+            document.getElementById('cancelBtn').addEventListener('click', closePriorityModal);
+            document.getElementById('saveBtn').addEventListener('click', savePriority);
+            priorityModal.addEventListener('click', e => { if (e.target === priorityModal) closePriorityModal(); });
+
+            // Delete modal buttons
+            document.getElementById('closeDeleteModal').addEventListener('click', closeDeleteModal);
+            document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+            document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+            deleteModal.addEventListener('click', e => { if (e.target === deleteModal) closeDeleteModal(); });
+
+            // Table delegation
+            tbody.addEventListener('click', e => {
+                const editBtn = e.target.closest('.btn-edit-row');
+                const deleteBtn = e.target.closest('.btn-delete-row');
+                if (editBtn) openEditModal(parseInt(editBtn.dataset.id));
+                if (deleteBtn) openDeleteModal(parseInt(deleteBtn.dataset.id));
+            });
+
+            // Enter key
+            nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') valueInput.focus(); });
+            valueInput.addEventListener('keydown', e => { if (e.key === 'Enter') savePriority(); });
+
+            // ESC closes modals
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape') { closePriorityModal(); closeDeleteModal(); }
+            });
+        });
+
+        // ── Fetch ──
+        async function fetchPriorities() {
+            showSkeleton();
+            try {
+                const res = await api.get(`${API_BASE}/priorities`);
+                prioritiesData = res.data;
+                filteredData = [...prioritiesData];
+                renderTable();
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to load priorities', 'error');
+                renderEmpty();
+            }
+        }
+
+        // ── Render ──
+        function showSkeleton() {
+            tbody.innerHTML = [1, 2, 3].map(() => `
+                <tr>
+                    <td><div class="skeleton skeleton-text" style="width:24px;margin:auto;"></div></td>
+                    <td><div class="skeleton skeleton-text" style="width:140px;"></div></td>
+                    <td style="text-align:center"><div class="skeleton skeleton-text" style="width:60px;margin:auto;"></div></td>
+                    <td style="text-align:center"><div class="skeleton skeleton-text" style="width:100px;margin:auto;"></div></td>
+                </tr>`).join('');
+        }
+
+        function renderEmpty() {
+            tbody.innerHTML = `
+                <tr><td colspan="4">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-layer-group"></i></div>
+                        <p class="empty-title">No priorities found</p>
+                        <p class="empty-text">Add a priority to get started</p>
+                    </div>
+                </td></tr>`;
+            updatePagination();
+        }
+
+        function renderTable() {
+            if (filteredData.length === 0) { renderEmpty(); return; }
+
+            const start = (currentPage - 1) * itemsPerPage;
+            const pageData = filteredData.slice(start, start + itemsPerPage);
+
+            tbody.innerHTML = pageData.map((p, i) => `
+                <tr>
+                    <td class="row-num">${start + i + 1}</td>
+                    <td style="font-weight:500;">${escapeHTML(p.name)}</td>
+                    <td style="text-align:center;">
+                        <span class="value-badge">
+                            <i class="fas fa-clock" style="font-size:.7rem;"></i>
+                            ${p.value} hrs
+                        </span>
+                    </td>
+                    <td class="col-actions">
+                        <div style="display:flex;gap:var(--space-2);justify-content:center;">
+                            <button class="btn btn-secondary btn-sm btn-edit-row" data-id="${p.id}" title="Edit">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm btn-delete-row" data-id="${p.id}" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>`).join('');
+
+            updatePagination();
+        }
+
+        function updatePagination() {
+            const total = filteredData.length;
+            const totalPages = Math.ceil(total / itemsPerPage);
+            const start = total === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+            const end = Math.min(currentPage * itemsPerPage, total);
+
+            paginationInfo.textContent = total === 0
+                ? 'No priorities'
+                : `Showing ${start}–${end} of ${total} priorit${total === 1 ? 'y' : 'ies'}`;
+
+            prevPageBtn.disabled = currentPage <= 1;
+            nextPageBtn.disabled = currentPage >= totalPages || totalPages === 0;
+
+            // Page number buttons
+            pageNumberBtns.innerHTML = '';
+            if (totalPages > 1) {
+                let s = Math.max(1, currentPage - 1);
+                let e = Math.min(totalPages, s + 2);
+                if (e - s < 2) s = Math.max(1, e - 2);
+                for (let i = s; i <= e; i++) {
+                    const btn = document.createElement('button');
+                    btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+                    btn.textContent = i;
+                    btn.addEventListener('click', () => { currentPage = i; renderTable(); });
+                    pageNumberBtns.appendChild(btn);
+                }
+            }
+        }
+
+        // ── Priority modal ──
+        function openAddModal() {
+            editingId = null;
+            modalTitle.textContent = 'Add Priority';
+            nameInput.value = '';
+            valueInput.value = '';
+            saveBtnText.textContent = 'Save Priority';
+            clearFormErrors();
+            priorityModal.classList.add('open');
+            requestAnimationFrame(() => nameInput.focus());
+        }
+
+        function openEditModal(id) {
+            const p = prioritiesData.find(x => x.id === id);
+            if (!p) return;
+            editingId = id;
+            modalTitle.textContent = 'Edit Priority';
+            nameInput.value = p.name;
+            valueInput.value = p.value;
+            saveBtnText.textContent = 'Save Changes';
+            clearFormErrors();
+            priorityModal.classList.add('open');
+            requestAnimationFrame(() => nameInput.focus());
+        }
+
+        function closePriorityModal() {
+            priorityModal.classList.remove('open');
+            editingId = null;
+        }
+
+        function clearFormErrors() {
+            [nameInput, valueInput].forEach(el => {
+                el.classList.remove('is-error');
+                const err = el.parentNode.querySelector('.form-error');
+                if (err) err.remove();
+            });
+        }
+
+        function setFieldError(input, msg) {
+            input.classList.add('is-error');
+            let err = input.parentNode.querySelector('.form-error');
+            if (!err) {
+                err = document.createElement('span');
+                err.className = 'form-error';
+                input.parentNode.appendChild(err);
+            }
+            err.textContent = msg;
+        }
+
+        async function savePriority() {
+            clearFormErrors();
+
+            const name = nameInput.value.trim();
+            const value = parseInt(valueInput.value);
+            let valid = true;
+
+            if (!name) {
+                setFieldError(nameInput, 'Priority name is required');
+                valid = false;
+            }
+            if (!valueInput.value || isNaN(value) || value < 1 || value > 720) {
+                setFieldError(valueInput, 'Enter a value between 1 and 720 hours');
+                valid = false;
+            }
+            if (!valid) return;
+
+            // Loading state
+            saveBtn.disabled = true;
+            saveBtnIcon.className = 'fas fa-spinner fa-spin';
+            saveBtnText.textContent = 'Saving…';
+
+            try {
+                if (editingId) {
+                    await api.put(`${API_BASE}/priorities/${editingId}`, { name, value });
+                    showToast('Priority updated successfully', 'success');
+                } else {
+                    await api.post(`${API_BASE}/priorities`, { name, value });
+                    showToast('Priority added successfully', 'success');
+                }
+                closePriorityModal();
+                await fetchPriorities();
+            } catch (err) {
+                console.error(err);
+                showToast(err?.response?.data?.message || 'Failed to save priority', 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtnIcon.className = 'fas fa-floppy-disk';
+                saveBtnText.textContent = editingId ? 'Save Changes' : 'Save Priority';
+            }
+        }
+
+        // ── Delete modal ──
+        function openDeleteModal(id) {
+            const p = prioritiesData.find(x => x.id === id);
+            if (!p) return;
+            pendingDeleteId = id;
+            deleteModalMsg.innerHTML = `Are you sure you want to delete the priority <strong>"${escapeHTML(p.name)}"</strong>? This action cannot be undone.`;
+            deleteModal.classList.add('open');
+        }
+
+        function closeDeleteModal() {
+            deleteModal.classList.remove('open');
+            pendingDeleteId = null;
+        }
+
+        async function confirmDelete() {
+            if (!pendingDeleteId) return;
+            const btn = document.getElementById('confirmDeleteBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting…';
+
+            try {
+                await api.delete(`${API_BASE}/priorities/${pendingDeleteId}`);
+                showToast('Priority deleted successfully', 'success');
+                closeDeleteModal();
+                await fetchPriorities();
+            } catch (err) {
+                console.error(err);
+                showToast(err?.response?.data?.message || 'Failed to delete priority', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-trash"></i> <span>Delete</span>';
+            }
+        }
+
+        // ── Toast ──
+        function showToast(message, type = 'info') {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+
+            const icons = { success: 'fa-circle-check', error: 'fa-circle-exclamation', warning: 'fa-triangle-exclamation', info: 'fa-circle-info' };
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type} toast-in`;
+            toast.innerHTML = `
+                <i class="fas ${icons[type] || icons.info}"></i>
+                <span>${escapeHTML(message)}</span>
+                <button class="toast-close"><i class="fas fa-xmark"></i></button>`;
+            document.body.appendChild(toast);
+
+            const close = () => { toast.classList.remove('toast-in'); setTimeout(() => toast.remove(), 300); };
+            toast.querySelector('.toast-close').addEventListener('click', close);
+            setTimeout(close, 4000);
+        }
+
+        // ── Helpers ──
+        function escapeHTML(str) {
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+
+</html>
