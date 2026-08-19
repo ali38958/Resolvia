@@ -301,6 +301,102 @@ router.get('/daily-report', authenticateToken, async (req, res) => {
     }
 });
 
+async function getHandlerDashboardStats(handlerId) {
+    const pool = await getDBPool();
+    const [counts] = await pool.execute(`
+        SELECT 
+            COUNT(*) as total,
+            SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) as pending,
+            SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) as inProgress,
+            SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) as completed
+        FROM complaint
+        WHERE receiver_id = ?
+    `, [handlerId]);
+    return counts[0] || { total: 0, pending: 0, inProgress: 0, completed: 0 };
+}
+
+async function getFoundItemsStats() {
+    const pool = await getDBPool();
+    const [counts] = await pool.execute(`
+        SELECT 
+            (SELECT COUNT(*) FROM found_items) as total,
+            (SELECT COUNT(*) FROM found_items WHERE status = 'Returned') as returned,
+            (SELECT COUNT(*) FROM found_item_claims WHERE status = 'pending') as pendingClaims
+    `);
+    return counts[0];
+}
+
+async function getHandlerChartData(handlerId, period = 'week') {
+    const pool = await getDBPool();
+    const statuses = ['Pending', 'In Progress', 'On Hold', 'Completed', 'Rejected', 'Cancelled'];
+
+    let labels = [];
+    let datasets = statuses.map(status => ({ label: status, data: [] }));
+
+    if (period === 'week') {
+        labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        // Get counts for the last 7 days partitioned by status
+        const [rows] = await pool.execute(`
+            SELECT 
+                DAYOFWEEK(created_at) as day_index,
+                status,
+                COUNT(*) as count
+            FROM complaint
+            WHERE receiver_id = ? AND created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+            GROUP BY day_index, status
+        `, [handlerId]);
+
+        // Initialize with zeros
+        datasets.forEach(ds => ds.data = new Array(7).fill(0));
+
+        rows.forEach(row => {
+            const ds = datasets.find(d => d.label === row.status);
+            if (ds) ds.data[row.day_index - 1] = row.count;
+        });
+    } else {
+        labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+        const [rows] = await pool.execute(`
+            SELECT 
+                FLOOR((DAY(created_at)-1)/7) + 1 as week_index,
+                status,
+                COUNT(*) as count
+            FROM complaint
+            WHERE receiver_id = ? AND created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+            GROUP BY week_index, status
+        `, [handlerId]);
+
+        datasets.forEach(ds => ds.data = new Array(4).fill(0));
+
+        rows.forEach(row => {
+            const weekIdx = Math.min(row.week_index - 1, 3);
+            const ds = datasets.find(d => d.label === row.status);
+            if (ds) ds.data[weekIdx] = row.count;
+        });
+    }
+
+    return { labels, datasets };
+}
+
+async function getHandlerCategoryDistribution(handlerId) {
+    const pool = await getDBPool();
+    const [rows] = await pool.execute(`
+        SELECT n.name as label, COUNT(c.id) as value
+        FROM Natures n
+        LEFT JOIN complaint c ON n.id = c.nature_id AND c.receiver_id = ?
+        GROUP BY n.id
+        HAVING value > 0
+        ORDER BY value DESC
+        LIMIT 10
+    `, [handlerId]);
+    return rows;
+}
+
+async function getHandlerUserInfo(id) {
+    const pool = await getDBPool();
+    const [rows] = await pool.execute('SELECT name, picture FROM ComplaintReceiver WHERE id = ?', [id]);
+    return rows[0] || { name: 'Unknown Handler', picture: null };
+}
+
 router.get('/dashboard-summary', authenticateToken, async (req, res) => {
     console.log('--- Handler Dashboard Summary API Hit ---');
     try {
