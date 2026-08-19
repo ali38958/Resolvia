@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/logo.png" alt="Resolvia Logo" width="150" height="150" style="border-radius: 50%; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+  <img src="assets/logo1.png" alt="Resolvia Logo" width="150" height="150" style="border-radius: 50%; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
   
   # Resolvia
 
