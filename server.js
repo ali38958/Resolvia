@@ -11,9 +11,23 @@ const { CONFIG, JWT_CONFIG } = require('./config/app');
 const { getDBPool } = require('./config/db');
 const { cleanupExpiredOTPs } = require('./utils/otp');
 
+const fs = require('fs');
+
 const app = express();
-const server = http.createServer(app);
-const PORT = process.env.PORT || 80;
+const PORT = process.env.PORT || 443;
+let server;
+
+try {
+    const options = {
+        key: fs.readFileSync(path.join(__dirname, 'server.key')),
+        cert: fs.readFileSync(path.join(__dirname, 'server.cert'))
+    };
+    server = require('https').createServer(options, app);
+    console.log('✅ HTTPS Server enabled');
+} catch (err) {
+    console.warn('⚠️ SSL keys not found or invalid. Falling back to HTTP.');
+    server = http.createServer(app);
+}
 
 // ====================================================
 // ✅ Middleware
@@ -258,8 +272,9 @@ cleanupExpiredOTPs();
 setInterval(cleanupExpiredOTPs, 5 * 60 * 1000);
 
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
-    console.log(`📁 API available at http://localhost:${PORT}/api`);
+    const protocol = PORT == 443 ? 'https' : 'http';
+    console.log(`🚀 Server running at ${protocol}://localhost:${PORT}`);
+    console.log(`📁 API available at ${protocol}://localhost:${PORT}/api`);
     console.log(`🔧 OTP Configuration:`);
     console.log(`   Life: ${CONFIG.OTP_LIFE_MINUTES} minutes`);
     console.log(`   Cooldown: ${CONFIG.OTP_RESEND_COOLDOWN_SECONDS} seconds`);
