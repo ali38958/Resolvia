@@ -7,11 +7,11 @@ function validateUserID(userID) {
 
 async function checkEmailExistsGlobally(email, excludeUserId = null) {
     const pool = await getDBPool();
-    const tables = ['Admin', 'ComplaintReceiver', 'Customer', 'Staff'];
+    const tables = ['admin', 'complaintreceiver', 'customer', 'staff'];
 
     for (const table of tables) {
         let query;
-        const idField = table === 'Customer' ? 'customer_id' : 'id';
+        const idField = table === 'customer' ? 'customer_id' : 'id';
 
         if (excludeUserId) {
             query = `SELECT ${idField} FROM ${table} WHERE email = ? AND ${idField} != ?`;
@@ -30,10 +30,10 @@ async function getUserTypeByEmail(email) {
     const pool = await getDBPool();
     
     const tables = [
-        { table: 'Admin', idField: 'id' },
-        { table: 'ComplaintReceiver', idField: 'id' },
-        { table: 'Customer', idField: 'customer_id' },
-        { table: 'Staff', idField: 'id' }
+        { table: 'admin', idField: 'id' },
+        { table: 'complaintreceiver', idField: 'id' },
+        { table: 'customer', idField: 'customer_id' },
+        { table: 'staff', idField: 'id' }
     ];
 
     for (const { table, idField } of tables) {

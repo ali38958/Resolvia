@@ -28,7 +28,7 @@ router.get('/verify', authenticateToken, async (req, res) => {
         }
 
         let idColumn = 'id';
-        if (table === 'Customer') idColumn = 'customer_id';
+        if (table === 'customer') idColumn = 'customer_id';
 
         const [rows] = await pool.execute(`SELECT * FROM ${table} WHERE ${idColumn} = ?`, [id]);
 
@@ -70,7 +70,7 @@ router.post('/login', async (req, res) => {
         const pool = await getDBPool();
 
         // Check in all tables
-        const tables = ['Admin', 'ComplaintReceiver', 'Customer', 'Staff'];
+        const tables = ['admin', 'complaintreceiver', 'customer', 'staff'];
         let user = null;
         let userType = null;
         let tableName = null;
@@ -79,7 +79,7 @@ router.post('/login', async (req, res) => {
             let query;
             let idField = 'id';
 
-            if (table === 'Customer') {
+            if (table === 'customer') {
                 idField = 'customer_id';
                 query = `SELECT *, 'customer' as role FROM ${table} WHERE (${idField} = ? OR email = ?)`;
                 const [rows] = await pool.execute(query, [userID, userID]);
@@ -220,7 +220,7 @@ router.post('/refresh', async (req, res) => {
         let query;
         let idField = 'id';
 
-        if (decoded.table === 'Customer') {
+        if (decoded.table === 'customer') {
             idField = 'customer_id';
         }
 
@@ -406,10 +406,10 @@ router.get('/profile-image', authenticateToken, async (req, res) => {
         let user = null;
 
         // Query the appropriate table based on user's role/table
-        if (userTable === 'Customer') {
-            // Customer table uses customer_id
+        if (userTable === 'customer') {
+            // customer table uses customer_id
             const [rows] = await pool.execute(
-                'SELECT picture FROM Customer WHERE customer_id = ?',
+                'SELECT picture FROM customer WHERE customer_id = ?',
                 [userId]
             );
             user = rows[0];
@@ -457,7 +457,7 @@ router.get('/me', authenticateToken, async (req, res) => {
 
         const [users] = await pool.query(
             `SELECT customer_id, name, email, phone_number, picture 
-             FROM Customer 
+             FROM customer 
              WHERE customer_id = ?`,
             [userId]
         );

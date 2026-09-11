@@ -15,8 +15,8 @@ router.get('/natures', authenticateToken, async (req, res) => {
                 n.name AS nature_name, 
                 nt.id AS type_id, 
                 nt.type_name 
-            FROM Natures n
-            LEFT JOIN NatureTypes nt ON n.id = nt.nature_id
+            FROM natures n
+            LEFT JOIN naturetypes nt ON n.id = nt.nature_id
             ORDER BY n.id, nt.id;
         `;
 
@@ -60,8 +60,8 @@ router.get('/natures/:id', authenticateToken, async (req, res) => {
                 n.name AS nature_name, 
                 nt.id AS type_id, 
                 nt.type_name 
-            FROM Natures n
-            LEFT JOIN NatureTypes nt ON n.id = nt.nature_id
+            FROM natures n
+            LEFT JOIN naturetypes nt ON n.id = nt.nature_id
             WHERE n.id = ?
             ORDER BY nt.id;
         `;
@@ -111,7 +111,7 @@ router.post('/natures', authenticateToken, async (req, res) => {
 
         // Insert the nature
         const [natureResult] = await connection.query(
-            'INSERT INTO Natures (name) VALUES (?)',
+            'INSERT INTO natures (name) VALUES (?)',
             [name.trim()]
         );
 
@@ -121,7 +121,7 @@ router.post('/natures', authenticateToken, async (req, res) => {
         if (types.length > 0) {
             const typeValues = types.map(type => [natureId, type.trim()]);
             await connection.query(
-                'INSERT INTO NatureTypes (nature_id, type_name) VALUES ?',
+                'INSERT INTO naturetypes (nature_id, type_name) VALUES ?',
                 [typeValues]
             );
         }
@@ -135,8 +135,8 @@ router.post('/natures', authenticateToken, async (req, res) => {
                 n.name AS nature_name, 
                 nt.id AS type_id, 
                 nt.type_name 
-            FROM Natures n
-            LEFT JOIN NatureTypes nt ON n.id = nt.nature_id
+            FROM natures n
+            LEFT JOIN naturetypes nt ON n.id = nt.nature_id
             WHERE n.id = ?
             ORDER BY nt.id;
         `, [natureId]);
@@ -189,7 +189,7 @@ router.put('/natures/:id', authenticateToken, async (req, res) => {
 
         // Check if nature exists
         const [existing] = await connection.query(
-            'SELECT id FROM Natures WHERE id = ?',
+            'SELECT id FROM natures WHERE id = ?',
             [natureId]
         );
 
@@ -200,7 +200,7 @@ router.put('/natures/:id', authenticateToken, async (req, res) => {
 
         // Update nature name
         await connection.query(
-            'UPDATE Natures SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            'UPDATE natures SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
             [name.trim(), natureId]
         );
 
@@ -208,7 +208,7 @@ router.put('/natures/:id', authenticateToken, async (req, res) => {
         if (types !== undefined) {
             // Delete existing types
             await connection.query(
-                'DELETE FROM NatureTypes WHERE nature_id = ?',
+                'DELETE FROM naturetypes WHERE nature_id = ?',
                 [natureId]
             );
 
@@ -216,7 +216,7 @@ router.put('/natures/:id', authenticateToken, async (req, res) => {
             if (types.length > 0) {
                 const typeValues = types.map(type => [natureId, type.trim()]);
                 await connection.query(
-                    'INSERT INTO NatureTypes (nature_id, type_name) VALUES ?',
+                    'INSERT INTO naturetypes (nature_id, type_name) VALUES ?',
                     [typeValues]
                 );
             }
@@ -231,8 +231,8 @@ router.put('/natures/:id', authenticateToken, async (req, res) => {
                 n.name AS nature_name, 
                 nt.id AS type_id, 
                 nt.type_name 
-            FROM Natures n
-            LEFT JOIN NatureTypes nt ON n.id = nt.nature_id
+            FROM natures n
+            LEFT JOIN naturetypes nt ON n.id = nt.nature_id
             WHERE n.id = ?
             ORDER BY nt.id;
         `, [natureId]);
@@ -280,7 +280,7 @@ router.put('/natures/:id/types', authenticateToken, async (req, res) => {
 
         // Check if nature exists
         const [existing] = await connection.query(
-            'SELECT id FROM Natures WHERE id = ?',
+            'SELECT id FROM natures WHERE id = ?',
             [natureId]
         );
 
@@ -291,7 +291,7 @@ router.put('/natures/:id/types', authenticateToken, async (req, res) => {
 
         // Delete existing types
         await connection.query(
-            'DELETE FROM NatureTypes WHERE nature_id = ?',
+            'DELETE FROM naturetypes WHERE nature_id = ?',
             [natureId]
         );
 
@@ -299,7 +299,7 @@ router.put('/natures/:id/types', authenticateToken, async (req, res) => {
         if (types.length > 0) {
             const typeValues = types.map(type => [natureId, type.trim()]);
             await connection.query(
-                'INSERT INTO NatureTypes (nature_id, type_name) VALUES ?',
+                'INSERT INTO naturetypes (nature_id, type_name) VALUES ?',
                 [typeValues]
             );
         }
@@ -313,8 +313,8 @@ router.put('/natures/:id/types', authenticateToken, async (req, res) => {
                 n.name AS nature_name, 
                 nt.id AS type_id, 
                 nt.type_name 
-            FROM Natures n
-            LEFT JOIN NatureTypes nt ON n.id = nt.nature_id
+            FROM natures n
+            LEFT JOIN naturetypes nt ON n.id = nt.nature_id
             WHERE n.id = ?
             ORDER BY nt.id;
         `, [natureId]);
@@ -356,7 +356,7 @@ router.delete('/natures/:id', authenticateToken, async (req, res) => {
 
         // Check if nature exists
         const [existing] = await connection.query(
-            'SELECT id FROM Natures WHERE id = ?',
+            'SELECT id FROM natures WHERE id = ?',
             [natureId]
         );
 
@@ -367,7 +367,7 @@ router.delete('/natures/:id', authenticateToken, async (req, res) => {
 
         // Delete nature (cascade will delete types)
         await connection.query(
-            'DELETE FROM Natures WHERE id = ?',
+            'DELETE FROM natures WHERE id = ?',
             [natureId]
         );
 
@@ -395,7 +395,7 @@ router.delete('/nature-types/:id', authenticateToken, async (req, res) => {
 
         // Check if type exists
         const [existing] = await pool.query(
-            'SELECT id FROM NatureTypes WHERE id = ?',
+            'SELECT id FROM naturetypes WHERE id = ?',
             [typeId]
         );
 
@@ -405,7 +405,7 @@ router.delete('/nature-types/:id', authenticateToken, async (req, res) => {
 
         // Delete type
         await pool.query(
-            'DELETE FROM NatureTypes WHERE id = ?',
+            'DELETE FROM naturetypes WHERE id = ?',
             [typeId]
         );
 

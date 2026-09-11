@@ -70,7 +70,7 @@ router.get('/complaints/natures', authenticateToken, async (req, res) => {
         // Get all natures
         const [natures] = await pool.query(`
             SELECT id, name 
-            FROM Natures 
+            FROM natures 
             ORDER BY name
         `);
 
@@ -78,7 +78,7 @@ router.get('/complaints/natures', authenticateToken, async (req, res) => {
         const naturesWithTypes = await Promise.all(natures.map(async (nature) => {
             const [types] = await pool.query(`
                 SELECT id, type_name 
-                FROM NatureTypes 
+                FROM naturetypes 
                 WHERE nature_id = ?
                 ORDER BY type_name
             `, [nature.id]);
@@ -197,8 +197,8 @@ router.post('/complaint', authenticateToken, uploadComplaintImage.single('compla
         // Verify nature_type_id exists
         const [natureType] = await pool.query(
             `SELECT nt.id, nt.nature_id, n.name as nature_name, nt.type_name 
-             FROM NatureTypes nt
-             JOIN Natures n ON nt.nature_id = n.id
+             FROM naturetypes nt
+             JOIN natures n ON nt.nature_id = n.id
              WHERE nt.id = ?`,
             [complaintData.nature_type_id]
         );
@@ -213,7 +213,7 @@ router.post('/complaint', authenticateToken, uploadComplaintImage.single('compla
 
         // Verify user exists
         const [user] = await pool.query(
-            'SELECT customer_id, name FROM Customer WHERE customer_id = ?',
+            'SELECT customer_id, name FROM customer WHERE customer_id = ?',
             [userId]
         );
 
@@ -366,16 +366,16 @@ router.get('/complaint/:id', authenticateToken, async (req, res) => {
                 s.email as staff_email,
                 rcv.name as receiver_name
             FROM complaint c
-            LEFT JOIN Natures n ON c.nature_id = n.id
-            LEFT JOIN NatureTypes nt ON c.nature_type_id = nt.id
+            LEFT JOIN natures n ON c.nature_id = n.id
+            LEFT JOIN naturetypes nt ON c.nature_type_id = nt.id
             LEFT JOIN room r ON c.room_id = r.id
             LEFT JOIN floor f ON r.floor_id = f.id
             LEFT JOIN building b ON f.building_id = b.id
             LEFT JOIN colony col ON b.colony_id = col.id
-            LEFT JOIN Customer cust ON c.customer_id = cust.customer_id
-            LEFT JOIN Staff s ON c.staff_id = s.id
-            LEFT JOIN Staff rcv ON c.receiver_id = rcv.id
-            WHERE c.id = ? AND (c.customer_id = ? OR ? IN (SELECT customer_id FROM Customer WHERE role = 'admin'))
+            LEFT JOIN customer cust ON c.customer_id = cust.customer_id
+            LEFT JOIN staff s ON c.staff_id = s.id
+            LEFT JOIN staff rcv ON c.receiver_id = rcv.id
+            WHERE c.id = ? AND (c.customer_id = ? OR ? IN (SELECT customer_id FROM customer WHERE role = 'admin'))
             AND c.deleted_at IS NULL
         `, [req.params.id, userId, userId]);
 
@@ -424,8 +424,8 @@ router.get('/my-complaints', authenticateToken, async (req, res) => {
                 f.floor_name,
                 b.name as building_name
             FROM complaint c
-            LEFT JOIN Natures n ON c.nature_id = n.id
-            LEFT JOIN NatureTypes nt ON c.nature_type_id = nt.id
+            LEFT JOIN natures n ON c.nature_id = n.id
+            LEFT JOIN naturetypes nt ON c.nature_type_id = nt.id
             LEFT JOIN room r ON c.room_id = r.id
             LEFT JOIN floor f ON r.floor_id = f.id
             LEFT JOIN building b ON f.building_id = b.id
@@ -471,7 +471,7 @@ router.get('/complaint-stats', authenticateToken, async (req, res) => {
 
         // Check if user is admin
         const [user] = await pool.query(
-            'SELECT role FROM Customer WHERE customer_id = ? AND deleted_at IS NULL',
+            'SELECT role FROM customer WHERE customer_id = ? AND deleted_at IS NULL',
             [userId]
         );
 
@@ -481,7 +481,7 @@ router.get('/complaint-stats', authenticateToken, async (req, res) => {
         let queryParams = [];
 
         if (isAdmin) {
-            // Admin sees all stats
+            // admin sees all stats
             statsQuery = `
                 SELECT 
                     DATE(created_at) as date,
@@ -555,7 +555,7 @@ router.put('/complaint/:id/update-status', authenticateToken, async (req, res) =
         const [complaint] = await pool.query(
             `SELECT c.*, cust.role 
              FROM complaint c
-             JOIN Customer cust ON c.customer_id = cust.customer_id
+             JOIN customer cust ON c.customer_id = cust.customer_id
              WHERE c.id = ? AND c.deleted_at IS NULL`,
             [req.params.id]
         );
@@ -630,8 +630,8 @@ router.get('/complaint-receivers', authenticateToken, async (req, res) => {
         const offset = (page - 1) * limit;
         const search = req.query.search || '';
 
-        let query = `SELECT * FROM ComplaintReceiver WHERE 1=1`;
-        let countQuery = `SELECT COUNT(*) as total FROM ComplaintReceiver WHERE 1=1`;
+        let query = `SELECT * FROM complaintreceiver WHERE 1=1`;
+        let countQuery = `SELECT COUNT(*) as total FROM complaintreceiver WHERE 1=1`;
         const params = [];
         const countParams = [];
 
@@ -678,7 +678,7 @@ router.get('/complaint-receivers/:id', authenticateToken, async (req, res) => {
     try {
         const pool = await getDBPool();
         const [rows] = await pool.execute(
-            'SELECT * FROM ComplaintReceiver WHERE id = ?',
+            'SELECT * FROM complaintreceiver WHERE id = ?',
             [req.params.id]
         );
 
@@ -721,13 +721,13 @@ router.post('/complaint-receivers', authenticateToken, complaintManagerUpload.si
         const [existingId] = await pool.execute(
             `
             SELECT id FROM (
-                SELECT id FROM Admin
+                SELECT id FROM admin
                 UNION
-                SELECT id FROM Staff
+                SELECT id FROM staff
                 UNION
-                SELECT id FROM ComplaintReceiver
+                SELECT id FROM complaintreceiver
                 UNION
-                SELECT customer_id AS id FROM Customer
+                SELECT customer_id AS id FROM customer
             ) AS all_ids
             WHERE id = ?
             `,
@@ -761,7 +761,7 @@ router.post('/complaint-receivers', authenticateToken, complaintManagerUpload.si
 
         // Insert complaint manager
         await pool.execute(
-            `INSERT INTO ComplaintReceiver 
+            `INSERT INTO complaintreceiver 
              (id, name, picture, email, phone_number, status, password_hash) 
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [id, name, picturePath, email, phone_number || null, status, password_hash]
@@ -769,7 +769,7 @@ router.post('/complaint-receivers', authenticateToken, complaintManagerUpload.si
 
         // Get the created manager
         const [newManagerRows] = await pool.execute(
-            'SELECT * FROM ComplaintReceiver WHERE id = ?',
+            'SELECT * FROM complaintreceiver WHERE id = ?',
             [id]
         );
 
@@ -801,7 +801,7 @@ router.put('/complaint-receivers/:id', authenticateToken, complaintManagerUpload
 
         // Check if manager exists
         const [existingManager] = await pool.execute(
-            'SELECT * FROM ComplaintReceiver WHERE id = ?',
+            'SELECT * FROM complaintreceiver WHERE id = ?',
             [managerId]
         );
 
@@ -854,13 +854,13 @@ router.put('/complaint-receivers/:id', authenticateToken, complaintManagerUpload
 
         // Update manager
         await pool.execute(
-            `UPDATE ComplaintReceiver SET ${updateFields.join(', ')} WHERE id = ?`,
+            `UPDATE complaintreceiver SET ${updateFields.join(', ')} WHERE id = ?`,
             params
         );
 
         // Get updated manager
         const [updatedRows] = await pool.execute(
-            'SELECT * FROM ComplaintReceiver WHERE id = ?',
+            'SELECT * FROM complaintreceiver WHERE id = ?',
             [managerId]
         );
 
@@ -885,7 +885,7 @@ router.delete('/complaint-receivers/:id', authenticateToken, async (req, res) =>
 
         // Check if manager exists
         const [existingManager] = await pool.execute(
-            'SELECT picture FROM ComplaintReceiver WHERE id = ?',
+            'SELECT picture FROM complaintreceiver WHERE id = ?',
             [managerId]
         );
 
@@ -900,7 +900,7 @@ router.delete('/complaint-receivers/:id', authenticateToken, async (req, res) =>
         }
 
         // Delete manager from database
-        await pool.execute('DELETE FROM ComplaintReceiver WHERE id = ?', [managerId]);
+        await pool.execute('DELETE FROM complaintreceiver WHERE id = ?', [managerId]);
 
         res.json({
             success: true,

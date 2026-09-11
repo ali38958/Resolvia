@@ -1,5 +1,5 @@
 /**
- * Admin dashboard, reports, profile
+ * admin dashboard, reports, profile
  */
 const router = require('express').Router();
 const { getDBPool } = require('../config/db');
@@ -14,7 +14,7 @@ router.get('/dashboard-stats', authenticateToken, async (req, res) => {
     try {
         const role = req.user.role.toLowerCase();
         if (role !== 'admin' && role !== 'superadmin') {
-            return res.status(403).json({ success: false, message: 'Forbidden: Admin access required' });
+            return res.status(403).json({ success: false, message: 'Forbidden: admin access required' });
         }
 
         const pool = await getDBPool();
@@ -41,7 +41,7 @@ router.get('/dashboard-stats', authenticateToken, async (req, res) => {
         // 3. Complaints by Category (Nature)
         const [complaintsByCategory] = await pool.execute(`
             SELECT n.name as label, COUNT(c.id) as value
-            FROM Natures n
+            FROM natures n
             LEFT JOIN complaint c ON n.id = c.nature_id
             GROUP BY n.id, n.name
             HAVING value > 0
@@ -58,10 +58,10 @@ router.get('/dashboard-stats', authenticateToken, async (req, res) => {
         `);
 
         // 5. People & Places Counts
-        const [customerCount] = await pool.execute('SELECT COUNT(*) as count FROM Customer');
-        const [staffCount] = await pool.execute('SELECT COUNT(*) as count FROM Staff');
-        const [adminCount] = await pool.execute('SELECT COUNT(*) as count FROM Admin');
-        const [handlerCount] = await pool.execute('SELECT COUNT(*) as count FROM ComplaintReceiver');
+        const [customerCount] = await pool.execute('SELECT COUNT(*) as count FROM customer');
+        const [staffCount] = await pool.execute('SELECT COUNT(*) as count FROM staff');
+        const [adminCount] = await pool.execute('SELECT COUNT(*) as count FROM admin');
+        const [handlerCount] = await pool.execute('SELECT COUNT(*) as count FROM complaintreceiver');
         const [roomCount] = await pool.execute('SELECT COUNT(*) as count FROM room');
         const [colonyCount] = await pool.execute('SELECT COUNT(*) as count FROM colony');
         const [buildingCount] = await pool.execute('SELECT COUNT(*) as count FROM building');
@@ -120,7 +120,7 @@ router.get('/dashboard-stats', authenticateToken, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Admin dashboard stats error:', error);
+        console.error('admin dashboard stats error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch admin dashboard statistics' });
     }
 });
@@ -141,8 +141,8 @@ router.get('/staff-stats', authenticateToken, async (req, res) => {
                 COUNT(c.id) as total,
                 SUM(CASE WHEN c.status = 'In Progress' THEN 1 ELSE 0 END) as inprogress,
                 SUM(CASE WHEN c.status = 'Completed' THEN 1 ELSE 0 END) as completed
-            FROM Staff s
-            LEFT JOIN Designation d ON s.designation_id = d.id
+            FROM staff s
+            LEFT JOIN designation d ON s.designation_id = d.id
             LEFT JOIN complaint c ON s.id = c.staff_id
             GROUP BY s.id, s.name, d.name, s.email
         `;
@@ -177,10 +177,10 @@ router.get('/staff-complaints-report', authenticateToken, async (req, res) => {
                 c.completed_at,
                 c.status
             FROM complaint c
-            JOIN Staff s ON c.staff_id = s.id
-            LEFT JOIN Natures n ON c.nature_id = n.id
-            LEFT JOIN NatureTypes nt ON c.nature_type_id = nt.id
-            LEFT JOIN Customer cust ON c.customer_id = cust.customer_id
+            JOIN staff s ON c.staff_id = s.id
+            LEFT JOIN natures n ON c.nature_id = n.id
+            LEFT JOIN naturetypes nt ON c.nature_type_id = nt.id
+            LEFT JOIN customer cust ON c.customer_id = cust.customer_id
             LEFT JOIN room r ON c.room_id = r.id
             LEFT JOIN floor f ON r.floor_id = f.id
             LEFT JOIN building b ON f.building_id = b.id
@@ -236,7 +236,7 @@ router.get('/receivers-report', authenticateToken, async (req, res) => {
                         TIMESTAMPDIFF(MINUTE, c.created_at, sal.changed_at)
                     ), 1
                 )                                                      AS avg_assign_time_mins
-            FROM ComplaintReceiver cr
+            FROM complaintreceiver cr
             LEFT JOIN complaint c
                 ON c.receiver_id = cr.id
             LEFT JOIN (
@@ -270,7 +270,7 @@ router.get('/receivers-report/:id/details', authenticateToken, async (req, res) 
 
         // 1. Receiver info
         const [receiverRows] = await pool.execute(
-            'SELECT id, name, email, status FROM ComplaintReceiver WHERE id = ?',
+            'SELECT id, name, email, status FROM complaintreceiver WHERE id = ?',
             [receiverId]
         );
         if (receiverRows.length === 0) {
@@ -290,7 +290,7 @@ router.get('/receivers-report/:id/details', authenticateToken, async (req, res) 
             ORDER BY csh.changed_at ASC
         `, [receiverId, from, toEndOfDay]);
 
-        // 3. Staff assignment logs (assignments this receiver made)
+        // 3. staff assignment logs (assignments this receiver made)
         const [staffLogs] = await pool.execute(`
             SELECT
                 sal.complaint_id,
@@ -300,8 +300,8 @@ router.get('/receivers-report/:id/details', authenticateToken, async (req, res) 
                 sal.new_staff_id,
                 sal.changed_at
             FROM staff_assignment_logs sal
-            LEFT JOIN Staff prev_s ON prev_s.id = sal.previous_staff_id
-            LEFT JOIN Staff new_s  ON new_s.id  = sal.new_staff_id
+            LEFT JOIN staff prev_s ON prev_s.id = sal.previous_staff_id
+            LEFT JOIN staff new_s  ON new_s.id  = sal.new_staff_id
             WHERE sal.changed_by_receiver_id = ?
               AND sal.changed_at BETWEEN ? AND ?
             ORDER BY sal.changed_at ASC
@@ -325,10 +325,10 @@ router.get('/profile', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id || req.user.userId;
         const pool = await getDBPool();
-        const [rows] = await pool.execute('SELECT * FROM Admin WHERE id = ?', [userId]);
+        const [rows] = await pool.execute('SELECT * FROM admin WHERE id = ?', [userId]);
 
         if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'Admin not found' });
+            return res.status(404).json({ success: false, message: 'admin not found' });
         }
 
         const { password_hash, ...admin } = rows[0];
@@ -370,7 +370,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
         params.push(userId);
 
         await pool.execute(
-            `UPDATE Admin SET ${updateFields.join(', ')} WHERE id = ?`,
+            `UPDATE admin SET ${updateFields.join(', ')} WHERE id = ?`,
             params
         );
 
@@ -387,14 +387,14 @@ router.put('/profile/password', authenticateToken, async (req, res) => {
         const { currentPassword, newPassword } = req.body;
         const pool = await getDBPool();
 
-        const [admin] = await pool.execute('SELECT password_hash FROM Admin WHERE id = ?', [userId]);
+        const [admin] = await pool.execute('SELECT password_hash FROM admin WHERE id = ?', [userId]);
         if (admin.length === 0) return res.status(404).json({ success: false, message: 'User not found' });
 
         const isValid = await bcrypt.compare(currentPassword, admin[0].password_hash);
         if (!isValid) return res.status(400).json({ success: false, message: 'Incorrect current password' });
 
         const newHash = await bcrypt.hash(newPassword, 10);
-        await pool.execute('UPDATE Admin SET password_hash = ? WHERE id = ?', [newHash, userId]);
+        await pool.execute('UPDATE admin SET password_hash = ? WHERE id = ?', [newHash, userId]);
 
         res.json({ success: true, message: 'Password updated successfully' });
     } catch (error) {
@@ -410,13 +410,13 @@ router.post('/profile/picture', authenticateToken, adminUpload.single('picture')
         const picturePath = `/assets/admins/${req.file.filename}`;
         const pool = await getDBPool();
 
-        const [old] = await pool.execute('SELECT picture FROM Admin WHERE id = ?', [userId]);
+        const [old] = await pool.execute('SELECT picture FROM admin WHERE id = ?', [userId]);
         if (old.length > 0 && old[0].picture) {
             const oldPath = path.join(__dirname, '..', old[0].picture);
             if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
         }
 
-        await pool.execute('UPDATE Admin SET picture = ? WHERE id = ?', [picturePath, userId]);
+        await pool.execute('UPDATE admin SET picture = ? WHERE id = ?', [picturePath, userId]);
         res.json({ success: true, message: 'Picture updated', data: { picture: `/assets/admins/${req.file.filename}` } });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Server error' });

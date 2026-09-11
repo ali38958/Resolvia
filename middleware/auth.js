@@ -24,7 +24,7 @@ const authenticateToken = async (req, res, next) => {
         const pool = await getDBPool();
 
         let idField = 'id';
-        if (req.user.table === 'Customer') {
+        if (req.user.table === 'customer') {
             idField = 'customer_id';
         }
 

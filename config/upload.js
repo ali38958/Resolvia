@@ -21,7 +21,7 @@ function ensureDir(dirPath) {
     }
 }
 
-// Staff upload (generic)
+// staff upload (generic)
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadPath = path.join(__dirname, '..', 'assets', 'staff');
@@ -40,7 +40,7 @@ const upload = multer({
     fileFilter: createImageFilter()
 });
 
-// Customer profile picture upload
+// customer profile picture upload
 const customerStorage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadPath = path.join(__dirname, '..', 'assets', 'customers');
@@ -61,7 +61,7 @@ const customerUpload = multer({
     fileFilter: createImageFilter()
 });
 
-// Staff profile picture upload
+// staff profile picture upload
 const staffStorage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadPath = path.join(__dirname, '..', 'assets', 'staff');
@@ -82,7 +82,7 @@ const staffUpload = multer({
     fileFilter: createImageFilter()
 });
 
-// Admin upload
+// admin upload
 const adminStorage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadPath = path.join(__dirname, '..', 'assets', 'admins');

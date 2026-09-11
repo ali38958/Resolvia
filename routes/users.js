@@ -18,8 +18,8 @@ router.get('/admins', authenticateToken, async (req, res) => {
         const offset = (page - 1) * limit;
         const search = req.query.search || '';
 
-        let query = `SELECT * FROM Admin WHERE 1=1`;
-        let countQuery = `SELECT COUNT(*) as total FROM Admin WHERE 1=1`;
+        let query = `SELECT * FROM admin WHERE 1=1`;
+        let countQuery = `SELECT COUNT(*) as total FROM admin WHERE 1=1`;
         const params = [];
         const countParams = [];
 
@@ -67,12 +67,12 @@ router.get('/admins/:id', authenticateToken, async (req, res) => {
     try {
         const pool = await getDBPool();
         const [rows] = await pool.execute(
-            'SELECT * FROM Admin WHERE id = ?',
+            'SELECT * FROM admin WHERE id = ?',
             [req.params.id]
         );
 
         if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'Admin not found' });
+            return res.status(404).json({ success: false, message: 'admin not found' });
         }
 
         const { password_hash, ...admin } = rows[0];
@@ -111,13 +111,13 @@ router.post('/admins', authenticateToken, adminUpload.single('picture'), async (
         const [existingId] = await pool.execute(
             `
             SELECT id FROM (
-                SELECT id FROM Admin
+                SELECT id FROM admin
                 UNION
-                SELECT id FROM Staff
+                SELECT id FROM staff
                 UNION
-                SELECT id FROM ComplaintReceiver
+                SELECT id FROM complaintreceiver
                 UNION
-                SELECT customer_id AS id FROM Customer
+                SELECT customer_id AS id FROM customer
             ) AS all_ids
             WHERE id = ?
             `,
@@ -127,7 +127,7 @@ router.post('/admins', authenticateToken, adminUpload.single('picture'), async (
         if (existingId.length > 0) {
             return res.status(400).json({
                 success: false,
-                message: 'Admin ID already exists'
+                message: 'admin ID already exists'
             });
         }
 
@@ -154,7 +154,7 @@ router.post('/admins', authenticateToken, adminUpload.single('picture'), async (
 
         // Insert admin
         await pool.execute(
-            `INSERT INTO Admin 
+            `INSERT INTO admin 
              (id, name, picture, email, status, password_hash, is_superadmin) 
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [id, name, picturePath, email, status, password_hash, isSuperadmin]
@@ -162,7 +162,7 @@ router.post('/admins', authenticateToken, adminUpload.single('picture'), async (
 
         // Get the created admin
         const [newAdminRows] = await pool.execute(
-            'SELECT * FROM Admin WHERE id = ?',
+            'SELECT * FROM admin WHERE id = ?',
             [id]
         );
 
@@ -172,7 +172,7 @@ router.post('/admins', authenticateToken, adminUpload.single('picture'), async (
 
         res.status(201).json({
             success: true,
-            message: 'Admin created successfully',
+            message: 'admin created successfully',
             data: admin
         });
     } catch (error) {
@@ -195,12 +195,12 @@ router.put('/admins/:id', authenticateToken, adminUpload.single('picture'), asyn
 
         // Check if admin exists
         const [existingAdmin] = await pool.execute(
-            'SELECT * FROM Admin WHERE id = ?',
+            'SELECT * FROM admin WHERE id = ?',
             [adminId]
         );
 
         if (existingAdmin.length === 0) {
-            return res.status(404).json({ success: false, message: 'Admin not found' });
+            return res.status(404).json({ success: false, message: 'admin not found' });
         }
 
         // Check if trying to update a superadmin
@@ -255,13 +255,13 @@ router.put('/admins/:id', authenticateToken, adminUpload.single('picture'), asyn
 
         // Update admin
         await pool.execute(
-            `UPDATE Admin SET ${updateFields.join(', ')} WHERE id = ?`,
+            `UPDATE admin SET ${updateFields.join(', ')} WHERE id = ?`,
             params
         );
 
         // Get updated admin
         const [updatedRows] = await pool.execute(
-            'SELECT * FROM Admin WHERE id = ?',
+            'SELECT * FROM admin WHERE id = ?',
             [adminId]
         );
 
@@ -271,7 +271,7 @@ router.put('/admins/:id', authenticateToken, adminUpload.single('picture'), asyn
 
         res.json({
             success: true,
-            message: 'Admin updated successfully',
+            message: 'admin updated successfully',
             data: admin
         });
     } catch (error) {
@@ -287,12 +287,12 @@ router.delete('/admins/:id', authenticateToken, async (req, res) => {
 
         // Check if admin exists
         const [existingAdmin] = await pool.execute(
-            'SELECT * FROM Admin WHERE id = ?',
+            'SELECT * FROM admin WHERE id = ?',
             [adminId]
         );
 
         if (existingAdmin.length === 0) {
-            return res.status(404).json({ success: false, message: 'Admin not found' });
+            return res.status(404).json({ success: false, message: 'admin not found' });
         }
 
         // Check if trying to delete a superadmin
@@ -310,11 +310,11 @@ router.delete('/admins/:id', authenticateToken, async (req, res) => {
         }
 
         // Delete admin from database
-        await pool.execute('DELETE FROM Admin WHERE id = ?', [adminId]);
+        await pool.execute('DELETE FROM admin WHERE id = ?', [adminId]);
 
         res.json({
             success: true,
-            message: 'Admin deleted successfully'
+            message: 'admin deleted successfully'
         });
     } catch (error) {
         console.error('Error deleting admin:', error);
@@ -332,11 +332,11 @@ router.get('/staff', authenticateToken, async (req, res) => {
 
         let query = `
             SELECT s.*, d.name as designation_name 
-            FROM Staff s 
-            LEFT JOIN Designation d ON s.designation_id = d.id
+            FROM staff s 
+            LEFT JOIN designation d ON s.designation_id = d.id
             WHERE 1=1
         `;
-        let countQuery = `SELECT COUNT(*) as total FROM Staff s WHERE 1=1`;
+        let countQuery = `SELECT COUNT(*) as total FROM staff s WHERE 1=1`;
         const params = [];
         const countParams = [];
 
@@ -385,14 +385,14 @@ router.get('/staff/:id', authenticateToken, async (req, res) => {
         const pool = await getDBPool();
         const [rows] = await pool.execute(
             `SELECT s.*, d.name as designation_name 
-             FROM Staff s 
-             LEFT JOIN Designation d ON s.designation_id = d.id 
+             FROM staff s 
+             LEFT JOIN designation d ON s.designation_id = d.id 
              WHERE s.id = ?`,
             [req.params.id]
         );
 
         if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'Staff not found' });
+            return res.status(404).json({ success: false, message: 'staff not found' });
         }
 
         const { password_hash, ...staff } = rows[0];
@@ -409,7 +409,7 @@ router.post('/staff', authenticateToken, upload.single('picture'), async (req, r
     try {
         const pool = await getDBPool();
 
-        console.log('=== START STAFF CREATION ===');
+        console.log('=== START staff CREATION ===');
         console.log('Request body:', req.body);
         console.log('Files:', req.file);
 
@@ -427,7 +427,7 @@ router.post('/staff', authenticateToken, upload.single('picture'), async (req, r
         console.log('ID:', id);
         console.log('Name:', name);
         console.log('Email:', email);
-        console.log('Designation ID:', designation_id);
+        console.log('designation ID:', designation_id);
         console.log('Password exists:', !!password);
 
         // Validate required fields
@@ -443,13 +443,13 @@ router.post('/staff', authenticateToken, upload.single('picture'), async (req, r
         const [existingId] = await pool.execute(
             `
             SELECT id FROM (
-                SELECT id FROM Admin
+                SELECT id FROM admin
                 UNION
-                SELECT id FROM Staff
+                SELECT id FROM staff
                 UNION
-                SELECT id FROM ComplaintReceiver
+                SELECT id FROM complaintreceiver
                 UNION
-                SELECT customer_id AS id FROM Customer
+                SELECT customer_id AS id FROM customer
             ) AS all_ids
             WHERE id = ?
             `,
@@ -485,7 +485,7 @@ router.post('/staff', authenticateToken, upload.single('picture'), async (req, r
         let finalDesignationId = designation_id;
         if (isNaN(designation_id) && designation_id) {
             const [designationRows] = await pool.execute(
-                'SELECT id FROM Designation WHERE name = ?',
+                'SELECT id FROM designation WHERE name = ?',
                 [designation_id]
             );
             if (designationRows.length > 0) {
@@ -493,7 +493,7 @@ router.post('/staff', authenticateToken, upload.single('picture'), async (req, r
             } else {
                 // Create new designation
                 const [newDesignation] = await pool.execute(
-                    'INSERT INTO Designation (name) VALUES (?)',
+                    'INSERT INTO designation (name) VALUES (?)',
                     [designation_id]
                 );
                 finalDesignationId = newDesignation.insertId;
@@ -507,7 +507,7 @@ router.post('/staff', authenticateToken, upload.single('picture'), async (req, r
         // Insert staff
         console.log('Inserting staff with ID:', id);
         const result = await pool.execute(
-            `INSERT INTO Staff 
+            `INSERT INTO staff 
              (id, name, picture, phone, email, designation_id, status, password_hash) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [id, name, picturePath, phone, email, finalDesignationId, status, password_hash]
@@ -520,8 +520,8 @@ router.post('/staff', authenticateToken, upload.single('picture'), async (req, r
         console.log('Fetching created staff...');
         const [newStaffRows] = await pool.execute(
             `SELECT s.*, d.name as designation_name 
-             FROM Staff s 
-             LEFT JOIN Designation d ON s.designation_id = d.id 
+             FROM staff s 
+             LEFT JOIN designation d ON s.designation_id = d.id 
              WHERE s.id = ?`,
             [id]  // ✅ Using user-provided ID
         );
@@ -530,11 +530,11 @@ router.post('/staff', authenticateToken, upload.single('picture'), async (req, r
         console.log('New staff rows:', newStaffRows);
 
         if (newStaffRows.length === 0) {
-            console.log('ERROR: Staff was inserted but not found when fetching!');
+            console.log('ERROR: staff was inserted but not found when fetching!');
             // Even if not found, return success since it was inserted
             return res.status(201).json({
                 success: true,
-                message: 'Staff created successfully (but could not fetch details)',
+                message: 'staff created successfully (but could not fetch details)',
                 data: { id, name, email, status }
             });
         }
@@ -543,11 +543,11 @@ router.post('/staff', authenticateToken, upload.single('picture'), async (req, r
         staff.picture = staff.picture ? `/assets/staff/${path.basename(staff.picture)}` : null;
 
         console.log('Final staff data to send:', staff);
-        console.log('=== END STAFF CREATION ===');
+        console.log('=== END staff CREATION ===');
 
         res.status(201).json({
             success: true,
-            message: 'Staff created successfully',
+            message: 'staff created successfully',
             data: staff
         });
     } catch (error) {
@@ -572,12 +572,12 @@ router.put('/staff/:id', authenticateToken, upload.single('picture'), async (req
 
         // Check if staff exists
         const [existingStaff] = await pool.execute(
-            'SELECT * FROM Staff WHERE id = ?',
+            'SELECT * FROM staff WHERE id = ?',
             [staffId]
         );
 
         if (existingStaff.length === 0) {
-            return res.status(404).json({ success: false, message: 'Staff not found' });
+            return res.status(404).json({ success: false, message: 'staff not found' });
         }
 
         // Check if email is being changed and already exists globally
@@ -612,7 +612,7 @@ router.put('/staff/:id', authenticateToken, upload.single('picture'), async (req
         if (designation_id !== undefined) {
             if (isNaN(designation_id) && designation_id) {
                 const [designationRows] = await pool.execute(
-                    'SELECT id FROM Designation WHERE name = ?',
+                    'SELECT id FROM designation WHERE name = ?',
                     [designation_id]
                 );
                 if (designationRows.length > 0) {
@@ -620,7 +620,7 @@ router.put('/staff/:id', authenticateToken, upload.single('picture'), async (req
                 } else {
                     // Create new designation
                     const [newDesignation] = await pool.execute(
-                        'INSERT INTO Designation (name) VALUES (?)',
+                        'INSERT INTO designation (name) VALUES (?)',
                         [designation_id]
                     );
                     finalDesignationId = newDesignation.insertId;
@@ -648,15 +648,15 @@ router.put('/staff/:id', authenticateToken, upload.single('picture'), async (req
 
         // Update staff
         await pool.execute(
-            `UPDATE Staff SET ${updateFields.join(', ')} WHERE id = ?`,
+            `UPDATE staff SET ${updateFields.join(', ')} WHERE id = ?`,
             params
         );
 
         // Get updated staff
         const [updatedRows] = await pool.execute(
             `SELECT s.*, d.name as designation_name 
-             FROM Staff s 
-             LEFT JOIN Designation d ON s.designation_id = d.id 
+             FROM staff s 
+             LEFT JOIN designation d ON s.designation_id = d.id 
              WHERE s.id = ?`,
             [staffId]
         );
@@ -666,7 +666,7 @@ router.put('/staff/:id', authenticateToken, upload.single('picture'), async (req
 
         res.json({
             success: true,
-            message: 'Staff updated successfully',
+            message: 'staff updated successfully',
             data: staff
         });
     } catch (error) {
@@ -682,12 +682,12 @@ router.delete('/staff/:id', authenticateToken, async (req, res) => {
 
         // Check if staff exists
         const [existingStaff] = await pool.execute(
-            'SELECT picture FROM Staff WHERE id = ?',
+            'SELECT picture FROM staff WHERE id = ?',
             [staffId]
         );
 
         if (existingStaff.length === 0) {
-            return res.status(404).json({ success: false, message: 'Staff not found' });
+            return res.status(404).json({ success: false, message: 'staff not found' });
         }
 
         // Delete image file if exists
@@ -697,11 +697,11 @@ router.delete('/staff/:id', authenticateToken, async (req, res) => {
         }
 
         // Delete staff from database
-        await pool.execute('DELETE FROM Staff WHERE id = ?', [staffId]);
+        await pool.execute('DELETE FROM staff WHERE id = ?', [staffId]);
 
         res.json({
             success: true,
-            message: 'Staff deleted successfully'
+            message: 'staff deleted successfully'
         });
     } catch (error) {
         console.error('Error deleting staff:', error);
@@ -712,7 +712,7 @@ router.delete('/staff/:id', authenticateToken, async (req, res) => {
 router.get('/designations', authenticateToken, async (req, res) => {
     try {
         const pool = await getDBPool();
-        const [rows] = await pool.execute('SELECT * FROM Designation ORDER BY name');
+        const [rows] = await pool.execute('SELECT * FROM designation ORDER BY name');
         res.json({ success: true, data: rows });
     } catch (error) {
         console.error('Error fetching designations:', error);
@@ -726,22 +726,22 @@ router.post('/designations', authenticateToken, async (req, res) => {
         const { name } = req.body;
 
         if (!name) {
-            return res.status(400).json({ success: false, message: 'Designation name is required' });
+            return res.status(400).json({ success: false, message: 'designation name is required' });
         }
 
         const [result] = await pool.execute(
-            'INSERT INTO Designation (name) VALUES (?)',
+            'INSERT INTO designation (name) VALUES (?)',
             [name]
         );
 
         res.status(201).json({
             success: true,
-            message: 'Designation created successfully',
+            message: 'designation created successfully',
             data: { id: result.insertId, name }
         });
     } catch (error) {
         if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(400).json({ success: false, message: 'Designation already exists' });
+            return res.status(400).json({ success: false, message: 'designation already exists' });
         }
         console.error('Error creating designation:', error);
         res.status(500).json({ success: false, message: 'Error creating designation' });
@@ -754,21 +754,21 @@ router.put('/designations/:id', authenticateToken, async (req, res) => {
         const { name } = req.body;
 
         if (!name) {
-            return res.status(400).json({ success: false, message: 'Designation name is required' });
+            return res.status(400).json({ success: false, message: 'designation name is required' });
         }
 
         await pool.execute(
-            'UPDATE Designation SET name = ? WHERE id = ?',
+            'UPDATE designation SET name = ? WHERE id = ?',
             [name, req.params.id]
         );
 
         res.json({
             success: true,
-            message: 'Designation updated successfully'
+            message: 'designation updated successfully'
         });
     } catch (error) {
         if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(400).json({ success: false, message: 'Designation already exists' });
+            return res.status(400).json({ success: false, message: 'designation already exists' });
         }
         console.error('Error updating designation:', error);
         res.status(500).json({ success: false, message: 'Error updating designation' });
@@ -782,7 +782,7 @@ router.delete('/designations/:id', authenticateToken, async (req, res) => {
 
         // Check if any staff uses this designation
         const [staffUsing] = await pool.execute(
-            'SELECT COUNT(*) as count FROM Staff WHERE designation_id = ?',
+            'SELECT COUNT(*) as count FROM staff WHERE designation_id = ?',
             [designationId]
         );
 
@@ -793,11 +793,11 @@ router.delete('/designations/:id', authenticateToken, async (req, res) => {
             });
         }
 
-        await pool.execute('DELETE FROM Designation WHERE id = ?', [designationId]);
+        await pool.execute('DELETE FROM designation WHERE id = ?', [designationId]);
 
         res.json({
             success: true,
-            message: 'Designation deleted successfully'
+            message: 'designation deleted successfully'
         });
     } catch (error) {
         console.error('Error deleting designation:', error);
@@ -813,8 +813,8 @@ router.get('/customers', authenticateToken, async (req, res) => {
         const offset = (page - 1) * limit;
         const search = req.query.search || '';
 
-        let query = `SELECT * FROM Customer WHERE 1=1`;
-        let countQuery = `SELECT COUNT(*) as total FROM Customer WHERE 1=1`;
+        let query = `SELECT * FROM customer WHERE 1=1`;
+        let countQuery = `SELECT COUNT(*) as total FROM customer WHERE 1=1`;
         const params = [];
         const countParams = [];
 
@@ -859,12 +859,12 @@ router.get('/customers/:id', authenticateToken, async (req, res) => {
     try {
         const pool = await getDBPool();
         const [rows] = await pool.execute(
-            'SELECT * FROM Customer WHERE customer_id = ?',
+            'SELECT * FROM customer WHERE customer_id = ?',
             [req.params.id]
         );
 
         if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'Customer not found' });
+            return res.status(404).json({ success: false, message: 'customer not found' });
         }
 
         const customer = rows[0];
@@ -891,23 +891,23 @@ router.put('/customers/:id/status', authenticateToken, async (req, res) => {
 
         // Check if customer exists
         const [existingCustomer] = await pool.execute(
-            'SELECT customer_id FROM Customer WHERE customer_id = ?',
+            'SELECT customer_id FROM customer WHERE customer_id = ?',
             [req.params.id]
         );
 
         if (existingCustomer.length === 0) {
-            return res.status(404).json({ success: false, message: 'Customer not found' });
+            return res.status(404).json({ success: false, message: 'customer not found' });
         }
 
         // Update status
         await pool.execute(
-            'UPDATE Customer SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE customer_id = ?',
+            'UPDATE customer SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE customer_id = ?',
             [status, req.params.id]
         );
 
         // Get updated customer
         const [updatedCustomer] = await pool.execute(
-            'SELECT * FROM Customer WHERE customer_id = ?',
+            'SELECT * FROM customer WHERE customer_id = ?',
             [req.params.id]
         );
 
@@ -916,7 +916,7 @@ router.put('/customers/:id/status', authenticateToken, async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Customer status updated successfully',
+            message: 'customer status updated successfully',
             data: customer
         });
     } catch (error) {

@@ -14,15 +14,15 @@ router.get('/pages', authenticateToken, (req, res) => {
         const pages = [
             { name: "Dashboard", file: "/admin/dashboard", icon: "fa fa-tachometer-alt", badge: 0 },
 
-            { name: "Priority Management", file: "/admin/priority", icon: "fa fa-exclamation-triangle", badge: 0, category: "Management" },
-            { name: "Natures", file: "/admin/natures", icon: "fa fa-tags", badge: 0, category: "Management" },
+            { name: "priority Management", file: "/admin/priority", icon: "fa fa-exclamation-triangle", badge: 0, category: "Management" },
+            { name: "natures", file: "/admin/natures", icon: "fa fa-tags", badge: 0, category: "Management" },
 
             { name: "Colonies", file: "/admin/colonies", icon: "fa fa-city", badge: 0, category: "Locations" },
             { name: "Buildings", file: "/admin/buildings", icon: "fa fa-building", badge: 0, category: "Locations" },
             { name: "Floors", file: "/admin/floors-management", icon: "fa fa-layer-group", badge: 0, category: "Locations" },
 
             { name: "All Customers", file: "/admin/all-customers", icon: "fa fa-user-friends", badge: 0, category: "Users" },
-            { name: "Staff", file: "/admin/staff-management", icon: "fa fa-screwdriver-wrench", badge: 0, category: "Users" },
+            { name: "staff", file: "/admin/staff-management", icon: "fa fa-screwdriver-wrench", badge: 0, category: "Users" },
             { name: "Handlers", file: "/admin/handlers", icon: "fa fa-headset", badge: 0, category: "Users" },
             { name: "Admins", file: "/admin/admins", icon: "fa fa-user-shield", badge: 0, category: "Users" },
 
@@ -30,7 +30,7 @@ router.get('/pages', authenticateToken, (req, res) => {
             { name: "Complaints Report", file: "/admin/complaints-report", icon: "fa-solid fa-file-lines", badge: 0, category: "Reports" },
             { name: "Found Items Report", file: "/admin/found-items-report", icon: "fa-solid fa-file-lines", badge: 0, category: "Reports" },
             { name: "Handlers Report", file: "/admin/handlers-reporting", icon: "fa-solid fa-file-lines", badge: 0, category: "Reports" },
-            { name: "Staff Report", file: "/admin/staff-reporting", icon: "fa-solid fa-file-lines", badge: 0, category: "Reports" },
+            { name: "staff Report", file: "/admin/staff-reporting", icon: "fa-solid fa-file-lines", badge: 0, category: "Reports" },
 
             { name: "Profile", file: "/admin/profile", icon: "fa fa-user-circle", badge: 0, category: "Account" },
         ];
@@ -38,26 +38,26 @@ router.get('/pages', authenticateToken, (req, res) => {
         return res.json({ success: true, pages });
     }
 
-    // ================= ADMIN =================
+    // ================= admin =================
     if (role === 'admin') {
         const pages = [
             { name: "Dashboard", file: "/admin/dashboard", icon: "fa fa-tachometer-alt", badge: 0 },
 
-            { name: "Priority Management", file: "/admin/priority", icon: "fa fa-exclamation-triangle", badge: 0, category: "Management" },
-            { name: "Natures", file: "/admin/natures", icon: "fa fa-tags", badge: 0, category: "Management" },
+            { name: "priority Management", file: "/admin/priority", icon: "fa fa-exclamation-triangle", badge: 0, category: "Management" },
+            { name: "natures", file: "/admin/natures", icon: "fa fa-tags", badge: 0, category: "Management" },
 
             { name: "Colonies", file: "/admin/colonies", icon: "fa fa-city", badge: 0, category: "Locations" },
             { name: "Buildings", file: "/admin/buildings", icon: "fa fa-building", badge: 0, category: "Locations" },
             { name: "Floors", file: "/admin/floors-management", icon: "fa fa-layer-group", badge: 0, category: "Locations" },
 
             { name: "All Customers", file: "/admin/all-customers", icon: "fa fa-user-friends", badge: 0, category: "Users" },
-            { name: "Staff", file: "/admin/staff-management", icon: "fa fa-screwdriver-wrench", badge: 0, category: "Users" },
+            { name: "staff", file: "/admin/staff-management", icon: "fa fa-screwdriver-wrench", badge: 0, category: "Users" },
             { name: "Handlers", file: "/admin/handlers", icon: "fa fa-headset", badge: 0, category: "Users" },
 
             { name: "Daily Report", file: "/admin/daily-report", icon: "fa-solid fa-file-lines", badge: 0, category: "Reports" },
             { name: "Complaints Report", file: "/admin/complaints-report", icon: "fa-solid fa-file-lines", badge: 0, category: "Reports" },
             { name: "Handlers Report", file: "/admin/handlers-reporting", icon: "fa-solid fa-file-lines", badge: 0, category: "Reports" },
-            { name: "Staff Report", file: "/admin/staff-reporting", icon: "fa-solid fa-file-lines", badge: 0, category: "Reports" },
+            { name: "staff Report", file: "/admin/staff-reporting", icon: "fa-solid fa-file-lines", badge: 0, category: "Reports" },
 
             { name: "Profile", file: "/admin/profile", icon: "fa fa-user-circle", badge: 0, category: "Account" },
         ];
@@ -65,7 +65,7 @@ router.get('/pages', authenticateToken, (req, res) => {
         return res.json({ success: true, pages });
     }
 
-    // ================= CUSTOMER =================
+    // ================= customer =================
     if (role === 'customer') {
         const pages = [
             { name: "Dashboard", file: "/customer/dashboard", icon: "fa fa-tachometer-alt", badge: 0 },
@@ -83,7 +83,7 @@ router.get('/pages', authenticateToken, (req, res) => {
         return res.json({ success: true, pages });
     }
 
-    // ================= STAFF =================
+    // ================= staff =================
     if (role === 'staff') {
         const pages = [
             { name: "Dashboard", file: "/staff/dashboard", icon: "fa fa-home", badge: 0 },
@@ -106,7 +106,7 @@ router.get('/pages', authenticateToken, (req, res) => {
             { name: "Complaints Report", file: "/handler/complaints-report", icon: "fa-solid fa-file-lines", badge: 0, category: "Reports" },
             { name: "Found Items Report", file: "/handler/found-items-report", icon: "fa-solid fa-file-lines", badge: 0, category: "Reports" },
 
-            { name: "Natures", file: "/handler/natures", icon: "fa fa-tags", badge: 0, category: "Reference" },
+            { name: "natures", file: "/handler/natures", icon: "fa fa-tags", badge: 0, category: "Reference" },
 
             { name: "Profile", file: "/handler/profile", icon: "fa fa-user-circle", badge: 0, category: "Account" },
         ];

@@ -192,7 +192,7 @@ router.get('/found-items', authenticateToken, async (req, res) => {
                     fic.claim_date,
                     fic.status
                  FROM found_item_claims fic
-                 JOIN Customer c ON fic.customer_id = c.customer_id
+                 JOIN customer c ON fic.customer_id = c.customer_id
                  WHERE fic.found_item_id = ?
                  ORDER BY fic.claim_date DESC`,
                 [item.id]
@@ -254,7 +254,7 @@ router.get('/found-items/:id', authenticateToken, async (req, res) => {
                 CONCAT(fi.location, ', ', fi.city, ', ', fi.state_province, ', ', fi.country) as full_location,
                 CONCAT(fi.location, ' - ', fi.city) as detailedLocation
              FROM found_items fi
-             LEFT JOIN Customer c ON fi.customer_id = c.customer_id
+             LEFT JOIN customer c ON fi.customer_id = c.customer_id
              WHERE fi.id = ?`,
             [id]
         );
@@ -288,7 +288,7 @@ router.get('/found-items/:id', authenticateToken, async (req, res) => {
                 fic.claim_date,
                 fic.status
              FROM found_item_claims fic
-             JOIN Customer c ON fic.customer_id = c.customer_id
+             JOIN customer c ON fic.customer_id = c.customer_id
              WHERE fic.found_item_id = ?
              ORDER BY fic.claim_date DESC`,
             [id]
@@ -345,7 +345,7 @@ router.post('/found-items/:id/claims/:claimId/approve', authenticateToken, async
         const [claim] = await connection.execute(
             `SELECT fic.id, c.name 
              FROM found_item_claims fic
-             JOIN Customer c ON fic.customer_id = c.customer_id
+             JOIN customer c ON fic.customer_id = c.customer_id
              WHERE fic.id = ? AND fic.found_item_id = ? AND fic.status = 'pending'`,
             [claimId, itemId]
         );

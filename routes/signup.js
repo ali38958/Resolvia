@@ -31,7 +31,7 @@ router.post('/signup', async (req, res) => {
             // Check if email already exists
             const [existing] = await connection.execute(
                 `SELECT id FROM (
-                    SELECT customer_id AS id FROM Customer WHERE email = ?
+                    SELECT customer_id AS id FROM customer WHERE email = ?
                     UNION
                     SELECT id FROM complaintreceiver WHERE email = ?
                     UNION
@@ -42,7 +42,7 @@ router.post('/signup', async (req, res) => {
                 [email, email, email, email]
             );
             // const [existing] = await connection.execute(
-            //     'SELECT customer_id FROM Customer WHERE email = ?',
+            //     'SELECT customer_id FROM customer WHERE email = ?',
             //     [email]
             // );
 
@@ -174,7 +174,7 @@ router.post('/signup', async (req, res) => {
 
             // Check if userID already exists (customer_id)
             const [existingUserID] = await connection.execute(
-                'SELECT customer_id FROM Customer WHERE customer_id = ?',
+                'SELECT customer_id FROM customer WHERE customer_id = ?',
                 [userID]
             );
 
@@ -205,7 +205,7 @@ router.post('/signup', async (req, res) => {
 
             // Insert customer with userID as customer_id
             await connection.execute(
-                `INSERT INTO Customer 
+                `INSERT INTO customer 
                  (customer_id, name, email, password_hash, phone_number, picture) 
                  VALUES (?, ?, ?, ?, ?, ?)`,
                 [userID, fullName, email, passwordHash, null, '/assets/customers/default.png']
@@ -270,7 +270,7 @@ router.post('/check-userid', async (req, res) => {
         // Check if userID exists
         const [existing] = await pool.execute(
             `SELECT id FROM (
-                SELECT customer_id AS id FROM Customer
+                SELECT customer_id AS id FROM customer
                 UNION
                 SELECT id FROM complaintreceiver
                 UNION
@@ -282,7 +282,7 @@ router.post('/check-userid', async (req, res) => {
             [userID]
         );
         // const [existing] = await pool.execute(
-        //     'SELECT customer_id FROM Customer WHERE customer_id = ?',
+        //     'SELECT customer_id FROM customer WHERE customer_id = ?',
         //     [userID]
         // );
 
@@ -325,18 +325,18 @@ router.post('/check-email-exists', async (req, res) => {
         const pool = await getDBPool();
 
         // Check across all user tables
-        const tables = ['Customer', 'Admin', 'ComplaintReceiver', 'Staff'];
+        const tables = ['customer', 'admin', 'complaintreceiver', 'staff'];
 
         for (const table of tables) {
             let query;
-            const idField = table === 'Customer' ? 'customer_id' : 'id';
+            const idField = table === 'customer' ? 'customer_id' : 'id';
 
             // Add status check for tables that have status column
-            if (table === 'Customer') {
+            if (table === 'customer') {
                 query = `SELECT ${idField} FROM ${table} WHERE email = ? AND status = 'Active'`;
-            } else if (table === 'Admin' || table === 'ComplaintReceiver') {
+            } else if (table === 'admin' || table === 'complaintreceiver') {
                 query = `SELECT ${idField} FROM ${table} WHERE email = ? AND status = 'Active'`;
-            } else if (table === 'Staff') {
+            } else if (table === 'staff') {
                 query = `SELECT ${idField} FROM ${table} WHERE email = ? AND status = 'Active'`;
             } else {
                 query = `SELECT ${idField} FROM ${table} WHERE email = ?`;

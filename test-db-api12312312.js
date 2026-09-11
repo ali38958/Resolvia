@@ -12,7 +12,7 @@ async function run() {
         });
 
         // Use a known user or create one
-        let [rows] = await pool.execute('SELECT * FROM ComplaintReceiver LIMIT 1');
+        let [rows] = await pool.execute('SELECT * FROM complaintreceiver LIMIT 1');
 
         let userId;
         let plaintextpwd = "password123";
@@ -25,7 +25,7 @@ async function run() {
 
             // force update password to known
             const hashed = await bcrypt.hash(plaintextpwd, 10);
-            await pool.execute('UPDATE ComplaintReceiver SET password = ? WHERE receiver_id = ?', [hashed, userId]);
+            await pool.execute('UPDATE complaintreceiver SET password = ? WHERE receiver_id = ?', [hashed, userId]);
             console.log("Updated password for", userId);
         }
 

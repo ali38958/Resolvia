@@ -1,5 +1,5 @@
 /**
- * Customer profile, dashboard, complaints, found items
+ * customer profile, dashboard, complaints, found items
  */
 const router = require('express').Router();
 const { getDBPool } = require('../config/db');
@@ -35,7 +35,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
                 phone_number,
                 picture,
                 created_at
-             FROM Customer 
+             FROM customer 
              WHERE customer_id = ?`,
             [userId]  // Use the correct variable
         );
@@ -43,7 +43,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
         if (rows.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Customer not found'
+                message: 'customer not found'
             });
         }
 
@@ -55,7 +55,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
             phone: customer.phone_number || 'Not set',
             picture: customer.picture ? (customer.picture.startsWith('/') ? customer.picture : '/' + customer.picture) : '/assets/customers/default.png',
             joinDate: customer.created_at,
-            designation: 'Customer'
+            designation: 'customer'
         };
 
         res.json({
@@ -159,7 +159,7 @@ router.get('/dashboard-summary', authenticateToken, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Customer dashboard summary error:', error);
+        console.error('customer dashboard summary error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch dashboard summary' });
     }
 });
@@ -185,7 +185,7 @@ router.put('/profile/name', authenticateToken, async (req, res) => {
 
         const pool = await getDBPool();
         await pool.execute(
-            'UPDATE Customer SET name = ? WHERE customer_id = ?',
+            'UPDATE customer SET name = ? WHERE customer_id = ?',
             [name.trim(), userId]  // Use userId
         );
 
@@ -227,7 +227,7 @@ router.put('/profile/phone', authenticateToken, async (req, res) => {
         const phoneValue = phone ? phone.trim() : null;
 
         await pool.execute(
-            'UPDATE Customer SET phone_number = ? WHERE customer_id = ?',
+            'UPDATE customer SET phone_number = ? WHERE customer_id = ?',
             [phoneValue, userId]  // Use userId
         );
 
@@ -360,13 +360,13 @@ router.post('/profile/email/verify-and-change', authenticateToken, async (req, r
         // Update email in database - FIXED bind parameter
         const pool = await getDBPool();
         await pool.execute(
-            'UPDATE Customer SET email = ? WHERE customer_id = ?',
+            'UPDATE customer SET email = ? WHERE customer_id = ?',
             [newEmail, userId]  // Use userId instead of req.user.userId
         );
 
         // Generate new JWT token with updated email
         const [customer] = await pool.execute(
-            'SELECT customer_id, name, email FROM Customer WHERE customer_id = ?',
+            'SELECT customer_id, name, email FROM customer WHERE customer_id = ?',
             [userId]  // Use userId
         );
 
@@ -429,14 +429,14 @@ router.put('/profile/password', authenticateToken, async (req, res) => {
 
         // Get current password hash
         const [customer] = await pool.execute(
-            'SELECT password_hash FROM Customer WHERE customer_id = ?',
+            'SELECT password_hash FROM customer WHERE customer_id = ?',
             [userId]  // Use userId
         );
 
         if (customer.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Customer not found'
+                message: 'customer not found'
             });
         }
 
@@ -454,7 +454,7 @@ router.put('/profile/password', authenticateToken, async (req, res) => {
 
         // Update password
         await pool.execute(
-            'UPDATE Customer SET password_hash = ? WHERE customer_id = ?',
+            'UPDATE customer SET password_hash = ? WHERE customer_id = ?',
             [newPasswordHash, userId]  // Use userId
         );
 
@@ -497,13 +497,13 @@ router.post('/profile/picture',
 
             // Get old picture to delete it later
             const [oldData] = await pool.execute(
-                'SELECT picture FROM Customer WHERE customer_id = ?',
+                'SELECT picture FROM customer WHERE customer_id = ?',
                 [userId]  // Use userId
             );
 
             // Update database with new picture path
             await pool.execute(
-                'UPDATE Customer SET picture = ? WHERE customer_id = ?',
+                'UPDATE customer SET picture = ? WHERE customer_id = ?',
                 [filePath, userId]  // Use userId
             );
 
@@ -554,7 +554,7 @@ router.delete('/profile/picture', authenticateToken, async (req, res) => {
 
         // Get current picture
         const [customer] = await pool.execute(
-            'SELECT picture FROM Customer WHERE customer_id = ?',
+            'SELECT picture FROM customer WHERE customer_id = ?',
             [userId]  // Use userId
         );
 
@@ -575,7 +575,7 @@ router.delete('/profile/picture', authenticateToken, async (req, res) => {
         // Set to default picture
         const defaultPath = '/assets/customers/default.png';
         await pool.execute(
-            'UPDATE Customer SET picture = ? WHERE customer_id = ?',
+            'UPDATE customer SET picture = ? WHERE customer_id = ?',
             [defaultPath, userId]  // Use userId
         );
 
@@ -648,9 +648,9 @@ router.get('/complaints', authenticateToken, async (req, res) => {
                 b.name as building_name,
                 col.name as colony_name
             FROM complaint c
-            LEFT JOIN Natures n ON c.nature_id = n.id
-            LEFT JOIN Priority p ON c.priority_id = p.id
-            LEFT JOIN Staff s ON c.staff_id = s.id
+            LEFT JOIN natures n ON c.nature_id = n.id
+            LEFT JOIN priority p ON c.priority_id = p.id
+            LEFT JOIN staff s ON c.staff_id = s.id
             LEFT JOIN room r ON c.room_id = r.id
             LEFT JOIN floor f ON r.floor_id = f.id
             LEFT JOIN building b ON f.building_id = b.id
@@ -679,7 +679,7 @@ router.get('/complaints', authenticateToken, async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Fetch Customer Complaints Error:', error);
+        console.error('Fetch customer Complaints Error:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to fetch complaints'

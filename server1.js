@@ -226,15 +226,15 @@ app.get('/api/pages', authenticateToken, (req, res) => {
 
     const role = req.user.role.toLowerCase();
 
-    // ================= ADMIN / SUPERADMIN =================
+    // ================= admin / SUPERADMIN =================
     if (role === 'admin' || role === 'superadmin') {
 
         const pages = [
             { name: "Dashboard", file: "/admin/dashboard", icon: "fa fa-tachometer-alt", badge: 0 },
 
             // Management Core
-            { name: "Priority Management", file: "/admin/priority", icon: "fa fa-exclamation-triangle", badge: 0 },
-            { name: "Natures", file: "/admin/natures", icon: "fa fa-tags", badge: 1 },
+            { name: "priority Management", file: "/admin/priority", icon: "fa fa-exclamation-triangle", badge: 0 },
+            { name: "natures", file: "/admin/natures", icon: "fa fa-tags", badge: 1 },
 
             // Location Structure
             { name: "Colonies", file: "/admin/colonies", icon: "fa fa-city", badge: 1 },
@@ -243,14 +243,14 @@ app.get('/api/pages', authenticateToken, (req, res) => {
 
             // User Management
             { name: "All Customers", file: "/admin/all-customers", icon: "fa fa-user-friends", badge: 0 },
-            { name: "Staff", file: "/admin/staff-management", icon: "fa fa-screwdriver-wrench", badge: 1 },
+            { name: "staff", file: "/admin/staff-management", icon: "fa fa-screwdriver-wrench", badge: 1 },
             { name: "Handlers", file: "/admin/handlers", icon: "fa fa-headset", badge: 1 },
             { name: "Admins", file: "/admin/admins", icon: "fa fa-user-shield", badge: 1 },
 
             // Reporting Section
             { name: "Complaints Report", file: "/admin/complaints-report", icon: "fa-solid fa-file-lines", badge: 1 },
             { name: "Handlers Report", file: "/admin/handlers-reporting", icon: "fa-solid fa-file-lines", badge: 1 },
-            { name: "Staff Report", file: "/admin/staff-reporting", icon: "fa-solid fa-file-lines", badge: 1 },
+            { name: "staff Report", file: "/admin/staff-reporting", icon: "fa-solid fa-file-lines", badge: 1 },
 
             // Account
             { name: "Profile", file: "/admin/profile", icon: "fa fa-user-circle", badge: 0 }
@@ -260,7 +260,7 @@ app.get('/api/pages', authenticateToken, (req, res) => {
         return res.json({ success: true, pages });
     }
 
-    // ================= CUSTOMER =================
+    // ================= customer =================
     if (role === 'customer') {
 
         const pages = [
@@ -283,7 +283,7 @@ app.get('/api/pages', authenticateToken, (req, res) => {
         return res.json({ success: true, pages });
     }
 
-    // ================= STAFF =================
+    // ================= staff =================
     if (role === 'staff') {
 
         const pages = [
@@ -311,7 +311,7 @@ app.get('/api/pages', authenticateToken, (req, res) => {
             { name: "Found Items Report", file: "/handler/found-items-report", icon: "fa-solid fa-file-lines", badge: 0 },
 
             // Reference / Categories
-            { name: "Natures", file: "/handler/natures", icon: "fa fa-tags", badge: 0 },
+            { name: "natures", file: "/handler/natures", icon: "fa fa-tags", badge: 0 },
 
             // Account
             { name: "Profile", file: "/handler/profile", icon: "fa fa-user-circle", badge: 0 }
@@ -494,11 +494,11 @@ async function verifyAndUseOTP(email, providedOTP, purpose = 'signup') {
 // ====================================================
 async function checkEmailExistsGlobally(email, excludeUserId = null) {
     const pool = await getDBPool();
-    const tables = ['Admin', 'ComplaintReceiver', 'Customer', 'Staff'];
+    const tables = ['admin', 'complaintreceiver', 'customer', 'staff'];
 
     for (const table of tables) {
         let query;
-        const idField = table === 'Customer' ? 'customer_id' : 'id';
+        const idField = table === 'customer' ? 'customer_id' : 'id';
 
         if (excludeUserId) {
             query = `SELECT ${idField} FROM ${table} WHERE email = ? AND ${idField} != ?`;
@@ -535,7 +535,7 @@ app.post('/api/signup', async (req, res) => {
 
             // Check if email already exists
             const [existing] = await connection.execute(
-                'SELECT customer_id FROM Customer WHERE email = ?',
+                'SELECT customer_id FROM customer WHERE email = ?',
                 [email]
             );
 
@@ -667,7 +667,7 @@ app.post('/api/signup', async (req, res) => {
 
             // Check if userID already exists (customer_id)
             const [existingUserID] = await connection.execute(
-                'SELECT customer_id FROM Customer WHERE customer_id = ?',
+                'SELECT customer_id FROM customer WHERE customer_id = ?',
                 [userID]
             );
 
@@ -698,7 +698,7 @@ app.post('/api/signup', async (req, res) => {
 
             // Insert customer with userID as customer_id
             await connection.execute(
-                `INSERT INTO Customer 
+                `INSERT INTO customer 
                  (customer_id, name, email, password_hash, phone_number, picture) 
                  VALUES (?, ?, ?, ?, ?, ?)`,
                 [userID, fullName, email, passwordHash, null, '/assets/customers/default.png']
@@ -829,7 +829,7 @@ app.post('/api/check-userid', async (req, res) => {
 
         // Check if userID exists
         const [existing] = await pool.execute(
-            'SELECT customer_id FROM Customer WHERE customer_id = ?',
+            'SELECT customer_id FROM customer WHERE customer_id = ?',
             [userID]
         );
 
@@ -949,18 +949,18 @@ app.post('/api/check-email-exists', async (req, res) => {
         const pool = await getDBPool();
 
         // Check across all user tables
-        const tables = ['Customer', 'Admin', 'ComplaintReceiver', 'Staff'];
+        const tables = ['customer', 'admin', 'complaintreceiver', 'staff'];
 
         for (const table of tables) {
             let query;
-            const idField = table === 'Customer' ? 'customer_id' : 'id';
+            const idField = table === 'customer' ? 'customer_id' : 'id';
 
             // Add status check for tables that have status column
-            if (table === 'Customer') {
+            if (table === 'customer') {
                 query = `SELECT ${idField} FROM ${table} WHERE email = ? AND status = 'Active'`;
-            } else if (table === 'Admin' || table === 'ComplaintReceiver') {
+            } else if (table === 'admin' || table === 'complaintreceiver') {
                 query = `SELECT ${idField} FROM ${table} WHERE email = ? AND status = 'Active'`;
-            } else if (table === 'Staff') {
+            } else if (table === 'staff') {
                 query = `SELECT ${idField} FROM ${table} WHERE email = ? AND status = 'Active'`;
             } else {
                 query = `SELECT ${idField} FROM ${table} WHERE email = ?`;
@@ -1001,21 +1001,21 @@ async function getUserTypeByEmail(email) {
     const pool = await getDBPool();
 
     const tables = [
-        { name: 'Customer', idField: 'customer_id' },
-        { name: 'Admin', idField: 'id' },
-        { name: 'ComplaintReceiver', idField: 'id' },
-        { name: 'Staff', idField: 'id' }
+        { name: 'customer', idField: 'customer_id' },
+        { name: 'admin', idField: 'id' },
+        { name: 'complaintreceiver', idField: 'id' },
+        { name: 'staff', idField: 'id' }
     ];
 
     for (const table of tables) {
         let query;
 
         // Add status check for tables that have status column
-        if (table.name === 'Customer') {
+        if (table.name === 'customer') {
             query = `SELECT ${table.idField} FROM ${table.name} WHERE email = ? AND status = 'Active'`;
-        } else if (table.name === 'Admin' || table.name === 'ComplaintReceiver') {
+        } else if (table.name === 'admin' || table.name === 'complaintreceiver') {
             query = `SELECT ${table.idField} FROM ${table.name} WHERE email = ? AND status = 'Active'`;
-        } else if (table.name === 'Staff') {
+        } else if (table.name === 'staff') {
             query = `SELECT ${table.idField} FROM ${table.name} WHERE email = ? AND status = 'Active'`;
         } else {
             query = `SELECT ${table.idField} FROM ${table.name} WHERE email = ?`;
@@ -1279,7 +1279,7 @@ app.get('/api/auth/verify', authenticateToken, async (req, res) => {
         }
 
         let idColumn = 'id';
-        if (table === 'Customer') idColumn = 'customer_id';
+        if (table === 'customer') idColumn = 'customer_id';
 
         const [rows] = await pool.execute(`SELECT * FROM ${table} WHERE ${idColumn} = ?`, [id]);
 
@@ -1322,7 +1322,7 @@ app.post('/api/auth/login', async (req, res) => {
         const pool = await getDBPool();
 
         // Check in all tables
-        const tables = ['Admin', 'ComplaintReceiver', 'Customer', 'Staff'];
+        const tables = ['admin', 'complaintreceiver', 'customer', 'staff'];
         let user = null;
         let userType = null;
         let tableName = null;
@@ -1331,7 +1331,7 @@ app.post('/api/auth/login', async (req, res) => {
             let query;
             let idField = 'id';
 
-            if (table === 'Customer') {
+            if (table === 'customer') {
                 idField = 'customer_id';
                 query = `SELECT *, 'customer' as role FROM ${table} WHERE (${idField} = ? OR email = ?)`;
                 const [rows] = await pool.execute(query, [userID, userID]);
@@ -1473,7 +1473,7 @@ app.post('/api/auth/refresh', async (req, res) => {
         let query;
         let idField = 'id';
 
-        if (decoded.table === 'Customer') {
+        if (decoded.table === 'customer') {
             idField = 'customer_id';
         }
 
@@ -1655,7 +1655,7 @@ app.post('/api/auth/check-refresh', async (req, res) => {
 
 
 // ====================================================
-// ✅ Customer Profile Picture Upload Configuration
+// ✅ customer Profile Picture Upload Configuration
 // ====================================================
 const customerStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -1725,10 +1725,10 @@ const customerUpload = multer({
 
 
 // ====================================================
-// ✅ CUSTOMER PROFILE APIs
+// ✅ customer PROFILE APIs
 // ====================================================
 
-// ✅ 1. Get Customer Profile
+// ✅ 1. Get customer Profile
 app.get('/api/customer/profile', authenticateToken, async (req, res) => {
     try {
         // Use req.user.id instead of req.user.userId
@@ -1750,7 +1750,7 @@ app.get('/api/customer/profile', authenticateToken, async (req, res) => {
                 phone_number,
                 picture,
                 created_at
-             FROM Customer 
+             FROM customer 
              WHERE customer_id = ?`,
             [userId]  // Use the correct variable
         );
@@ -1758,7 +1758,7 @@ app.get('/api/customer/profile', authenticateToken, async (req, res) => {
         if (rows.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Customer not found'
+                message: 'customer not found'
             });
         }
 
@@ -1770,7 +1770,7 @@ app.get('/api/customer/profile', authenticateToken, async (req, res) => {
             phone: customer.phone_number || 'Not set',
             picture: customer.picture ? (customer.picture.startsWith('/') ? customer.picture : '/' + customer.picture) : '/assets/customers/default.png',
             joinDate: customer.created_at,
-            designation: 'Customer'
+            designation: 'customer'
         };
 
         res.json({
@@ -1786,7 +1786,7 @@ app.get('/api/customer/profile', authenticateToken, async (req, res) => {
     }
 });
 
-// ✅ 1.5. Get Customer Dashboard Summary
+// ✅ 1.5. Get customer Dashboard Summary
 app.get('/api/customer/dashboard-summary', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
@@ -1875,12 +1875,12 @@ app.get('/api/customer/dashboard-summary', authenticateToken, async (req, res) =
         });
 
     } catch (error) {
-        console.error('Customer dashboard summary error:', error);
+        console.error('customer dashboard summary error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch dashboard summary' });
     }
 });
 
-// ✅ 2. Update Customer Name
+// ✅ 2. Update customer Name
 app.put('/api/customer/profile/name', authenticateToken, async (req, res) => {
     try {
         const { name } = req.body;
@@ -1902,7 +1902,7 @@ app.put('/api/customer/profile/name', authenticateToken, async (req, res) => {
 
         const pool = await getDBPool();
         await pool.execute(
-            'UPDATE Customer SET name = ? WHERE customer_id = ?',
+            'UPDATE customer SET name = ? WHERE customer_id = ?',
             [name.trim(), userId]  // Use userId
         );
 
@@ -1920,7 +1920,7 @@ app.put('/api/customer/profile/name', authenticateToken, async (req, res) => {
     }
 });
 
-// ✅ 3. Update Customer Phone
+// ✅ 3. Update customer Phone
 app.put('/api/customer/profile/phone', authenticateToken, async (req, res) => {
     try {
         const { phone } = req.body;
@@ -1945,7 +1945,7 @@ app.put('/api/customer/profile/phone', authenticateToken, async (req, res) => {
         const phoneValue = phone ? phone.trim() : null;
 
         await pool.execute(
-            'UPDATE Customer SET phone_number = ? WHERE customer_id = ?',
+            'UPDATE customer SET phone_number = ? WHERE customer_id = ?',
             [phoneValue, userId]  // Use userId
         );
 
@@ -2080,13 +2080,13 @@ app.post('/api/customer/profile/email/verify-and-change', authenticateToken, asy
         // Update email in database - FIXED bind parameter
         const pool = await getDBPool();
         await pool.execute(
-            'UPDATE Customer SET email = ? WHERE customer_id = ?',
+            'UPDATE customer SET email = ? WHERE customer_id = ?',
             [newEmail, userId]  // Use userId instead of req.user.userId
         );
 
         // Generate new JWT token with updated email
         const [customer] = await pool.execute(
-            'SELECT customer_id, name, email FROM Customer WHERE customer_id = ?',
+            'SELECT customer_id, name, email FROM customer WHERE customer_id = ?',
             [userId]  // Use userId
         );
 
@@ -2135,14 +2135,14 @@ app.post('/api/customer/profile/email/verify-and-change', authenticateToken, asy
             }
         });
 
-        // 1. Fetch Natures (Categories)
+        // 1. Fetch natures (Categories)
         app.get('/api/natures', authenticateToken, async (req, res) => {
             try {
                 const pool = await getDBPool();
-                const [rows] = await pool.execute('SELECT * FROM Natures ORDER BY name ASC');
+                const [rows] = await pool.execute('SELECT * FROM natures ORDER BY name ASC');
                 res.json({ success: true, data: rows });
             } catch (error) {
-                console.error('Fetch Natures Error:', error);
+                console.error('Fetch natures Error:', error);
                 res.status(500).json({ success: false, message: 'Failed to fetch natures' });
             }
         });
@@ -2152,7 +2152,7 @@ app.post('/api/customer/profile/email/verify-and-change', authenticateToken, asy
             try {
                 const { natureId } = req.params;
                 const pool = await getDBPool();
-                const [rows] = await pool.execute('SELECT * FROM NatureTypes WHERE nature_id = ? ORDER BY type_name ASC', [natureId]);
+                const [rows] = await pool.execute('SELECT * FROM naturetypes WHERE nature_id = ? ORDER BY type_name ASC', [natureId]);
                 res.json({ success: true, data: rows });
             } catch (error) {
                 console.error('Fetch Nature Types Error:', error);
@@ -2305,12 +2305,12 @@ app.post('/api/customer/profile/email/verify-and-change', authenticateToken, asy
             (complaint_id, previous_status, new_status, changed_by_staff_id) 
             VALUES (?, 'Pending', 'Pending', ?)`, // Assuming system/initial status doesnt need staff_id, but foreign key might require it?
                     // Wait, changed_by_staff_id is NOT NULL in schema. 
-                    // We need a way to handle "Customer created". 
+                    // We need a way to handle "customer created". 
                     // The schema says `changed_by_staff_id VARCHAR(50) NOT NULL`.
                     // This implies a staff member must change it? 
                     // Or maybe we put the customer_id there if the column allows?
-                    // Let's check schema again. `changed_by_staff_id` references `Staff(id)`.
-                    // User is a Customer, not Staff.
+                    // Let's check schema again. `changed_by_staff_id` references `staff(id)`.
+                    // User is a customer, not staff.
                     // Problem: Who is the "changer" for the initial state?
                     // Option 1: Make `changed_by_staff_id` nullable in schema (Best for initial state).
                     // Option 2: Have a dummy "System" staff account.
@@ -2403,14 +2403,14 @@ app.put('/api/customer/profile/password', authenticateToken, async (req, res) =>
 
         // Get current password hash
         const [customer] = await pool.execute(
-            'SELECT password_hash FROM Customer WHERE customer_id = ?',
+            'SELECT password_hash FROM customer WHERE customer_id = ?',
             [userId]  // Use userId
         );
 
         if (customer.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Customer not found'
+                message: 'customer not found'
             });
         }
 
@@ -2428,7 +2428,7 @@ app.put('/api/customer/profile/password', authenticateToken, async (req, res) =>
 
         // Update password
         await pool.execute(
-            'UPDATE Customer SET password_hash = ? WHERE customer_id = ?',
+            'UPDATE customer SET password_hash = ? WHERE customer_id = ?',
             [newPasswordHash, userId]  // Use userId
         );
 
@@ -2472,13 +2472,13 @@ app.post('/api/customer/profile/picture',
 
             // Get old picture to delete it later
             const [oldData] = await pool.execute(
-                'SELECT picture FROM Customer WHERE customer_id = ?',
+                'SELECT picture FROM customer WHERE customer_id = ?',
                 [userId]  // Use userId
             );
 
             // Update database with new picture path
             await pool.execute(
-                'UPDATE Customer SET picture = ? WHERE customer_id = ?',
+                'UPDATE customer SET picture = ? WHERE customer_id = ?',
                 [filePath, userId]  // Use userId
             );
 
@@ -2530,7 +2530,7 @@ app.delete('/api/customer/profile/picture', authenticateToken, async (req, res) 
 
         // Get current picture
         const [customer] = await pool.execute(
-            'SELECT picture FROM Customer WHERE customer_id = ?',
+            'SELECT picture FROM customer WHERE customer_id = ?',
             [userId]  // Use userId
         );
 
@@ -2551,7 +2551,7 @@ app.delete('/api/customer/profile/picture', authenticateToken, async (req, res) 
         // Set to default picture
         const defaultPath = '/assets/customers/default.png';
         await pool.execute(
-            'UPDATE Customer SET picture = ? WHERE customer_id = ?',
+            'UPDATE customer SET picture = ? WHERE customer_id = ?',
             [defaultPath, userId]  // Use userId
         );
 
@@ -2570,14 +2570,14 @@ app.delete('/api/customer/profile/picture', authenticateToken, async (req, res) 
 });
 
 // ====================================================
-// ✅ ADMIN DASHBOARD APIs
+// ✅ admin DASHBOARD APIs
 // ====================================================
 
 app.get('/api/admin/dashboard-stats', authenticateToken, async (req, res) => {
     try {
         const role = req.user.role.toLowerCase();
         if (role !== 'admin' && role !== 'superadmin') {
-            return res.status(403).json({ success: false, message: 'Forbidden: Admin access required' });
+            return res.status(403).json({ success: false, message: 'Forbidden: admin access required' });
         }
 
         const pool = await getDBPool();
@@ -2604,7 +2604,7 @@ app.get('/api/admin/dashboard-stats', authenticateToken, async (req, res) => {
         // 3. Complaints by Category (Nature)
         const [complaintsByCategory] = await pool.execute(`
             SELECT n.name as label, COUNT(c.id) as value
-            FROM Natures n
+            FROM natures n
             LEFT JOIN complaint c ON n.id = c.nature_id
             GROUP BY n.id, n.name
             HAVING value > 0
@@ -2621,10 +2621,10 @@ app.get('/api/admin/dashboard-stats', authenticateToken, async (req, res) => {
         `);
 
         // 5. People & Places Counts
-        const [customerCount] = await pool.execute('SELECT COUNT(*) as count FROM Customer');
-        const [staffCount] = await pool.execute('SELECT COUNT(*) as count FROM Staff');
-        const [adminCount] = await pool.execute('SELECT COUNT(*) as count FROM Admin');
-        const [handlerCount] = await pool.execute('SELECT COUNT(*) as count FROM ComplaintReceiver');
+        const [customerCount] = await pool.execute('SELECT COUNT(*) as count FROM customer');
+        const [staffCount] = await pool.execute('SELECT COUNT(*) as count FROM staff');
+        const [adminCount] = await pool.execute('SELECT COUNT(*) as count FROM admin');
+        const [handlerCount] = await pool.execute('SELECT COUNT(*) as count FROM complaintreceiver');
         const [roomCount] = await pool.execute('SELECT COUNT(*) as count FROM room');
         const [colonyCount] = await pool.execute('SELECT COUNT(*) as count FROM colony');
         const [buildingCount] = await pool.execute('SELECT COUNT(*) as count FROM building');
@@ -2683,18 +2683,18 @@ app.get('/api/admin/dashboard-stats', authenticateToken, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Admin dashboard stats error:', error);
+        console.error('admin dashboard stats error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch admin dashboard statistics' });
     }
 });
 
 // ====================================================
-// ✅ STAFF PROFILE APIs
+// ✅ staff PROFILE APIs
 // ====================================================
 
 
 
-// ✅ 2. Update Staff Profile (Limited to phone)
+// ✅ 2. Update staff Profile (Limited to phone)
 app.put('/api/staff/profile', authenticateToken, async (req, res) => {
     try {
         const { phone } = req.body;
@@ -2719,7 +2719,7 @@ app.put('/api/staff/profile', authenticateToken, async (req, res) => {
         const phoneValue = phone ? phone.trim() : null;
 
         await pool.execute(
-            'UPDATE Staff SET phone = ? WHERE id = ?',
+            'UPDATE staff SET phone = ? WHERE id = ?',
             [phoneValue, userId]
         );
 
@@ -2737,7 +2737,7 @@ app.put('/api/staff/profile', authenticateToken, async (req, res) => {
     }
 });
 
-// ✅ 3. Change Staff Password
+// ✅ 3. Change staff Password
 app.put('/api/staff/profile/password', authenticateToken, async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
@@ -2759,14 +2759,14 @@ app.put('/api/staff/profile/password', authenticateToken, async (req, res) => {
 
         const pool = await getDBPool();
         const [staff] = await pool.execute(
-            'SELECT password_hash FROM Staff WHERE id = ?',
+            'SELECT password_hash FROM staff WHERE id = ?',
             [userId]
         );
 
         if (staff.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Staff member not found'
+                message: 'staff member not found'
             });
         }
 
@@ -2780,7 +2780,7 @@ app.put('/api/staff/profile/password', authenticateToken, async (req, res) => {
 
         const newPasswordHash = await bcrypt.hash(newPassword, 10);
         await pool.execute(
-            'UPDATE Staff SET password_hash = ? WHERE id = ?',
+            'UPDATE staff SET password_hash = ? WHERE id = ?',
             [newPasswordHash, userId]
         );
 
@@ -2789,7 +2789,7 @@ app.put('/api/staff/profile/password', authenticateToken, async (req, res) => {
             message: 'Password updated successfully'
         });
     } catch (error) {
-        console.error('Staff change password error:', error);
+        console.error('staff change password error:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to update password'
@@ -2797,7 +2797,7 @@ app.put('/api/staff/profile/password', authenticateToken, async (req, res) => {
     }
 });
 
-// ✅ 4. Upload Staff Profile Picture
+// ✅ 4. Upload staff Profile Picture
 app.post('/api/staff/profile/picture',
     authenticateToken,
     staffUpload.single('picture'),
@@ -2816,13 +2816,13 @@ app.post('/api/staff/profile/picture',
 
             // Get old picture to delete it
             const [oldData] = await pool.execute(
-                'SELECT picture FROM Staff WHERE id = ?',
+                'SELECT picture FROM staff WHERE id = ?',
                 [userId]
             );
 
             // Update database
             await pool.execute(
-                'UPDATE Staff SET picture = ? WHERE id = ?',
+                'UPDATE staff SET picture = ? WHERE id = ?',
                 [filePath, userId]
             );
 
@@ -2843,7 +2843,7 @@ app.post('/api/staff/profile/picture',
                 data: { picture: filePath }
             });
         } catch (error) {
-            console.error('Staff upload picture error:', error);
+            console.error('staff upload picture error:', error);
             if (req.file) fs.unlinkSync(req.file.path);
             res.status(500).json({
                 success: false,
@@ -2855,10 +2855,10 @@ app.post('/api/staff/profile/picture',
 
 
 // ====================================================
-// ✅ ADMIN REPORTING APIS
+// ✅ admin REPORTING APIS
 // ====================================================
 
-// 1. Get Staff Stats for Reporting Table
+// 1. Get staff Stats for Reporting Table
 app.get('/api/admin/staff-stats', authenticateToken, async (req, res) => {
     try {
         if (req.user.role.toLowerCase() !== 'admin' && req.user.role.toLowerCase() !== 'superadmin') {
@@ -2875,8 +2875,8 @@ app.get('/api/admin/staff-stats', authenticateToken, async (req, res) => {
                 COUNT(c.id) as total,
                 SUM(CASE WHEN c.status = 'In Progress' THEN 1 ELSE 0 END) as inprogress,
                 SUM(CASE WHEN c.status = 'Completed' THEN 1 ELSE 0 END) as completed
-            FROM Staff s
-            LEFT JOIN Designation d ON s.designation_id = d.id
+            FROM staff s
+            LEFT JOIN designation d ON s.designation_id = d.id
             LEFT JOIN complaint c ON s.id = c.staff_id
             GROUP BY s.id, s.name, d.name, s.email
         `;
@@ -2889,7 +2889,7 @@ app.get('/api/admin/staff-stats', authenticateToken, async (req, res) => {
     }
 });
 
-// 2. Get Detailed Staff Complaints for CSV Report
+// 2. Get Detailed staff Complaints for CSV Report
 app.get('/api/admin/staff-complaints-report', authenticateToken, async (req, res) => {
     try {
         if (req.user.role.toLowerCase() !== 'admin' && req.user.role.toLowerCase() !== 'superadmin') {
@@ -2912,10 +2912,10 @@ app.get('/api/admin/staff-complaints-report', authenticateToken, async (req, res
                 c.completed_at,
                 c.status
             FROM complaint c
-            JOIN Staff s ON c.staff_id = s.id
-            LEFT JOIN Natures n ON c.nature_id = n.id
-            LEFT JOIN NatureTypes nt ON c.nature_type_id = nt.id
-            LEFT JOIN Customer cust ON c.customer_id = cust.customer_id
+            JOIN staff s ON c.staff_id = s.id
+            LEFT JOIN natures n ON c.nature_id = n.id
+            LEFT JOIN naturetypes nt ON c.nature_type_id = nt.id
+            LEFT JOIN customer cust ON c.customer_id = cust.customer_id
             LEFT JOIN room r ON c.room_id = r.id
             LEFT JOIN floor f ON r.floor_id = f.id
             LEFT JOIN building b ON f.building_id = b.id
@@ -2988,12 +2988,12 @@ app.get('/api/handler/complaints-report', authenticateToken, async (req, res) =>
                 c.status,
                 s.name as assigned_to
             FROM complaint c
-            LEFT JOIN Natures n ON c.nature_id = n.id
-            LEFT JOIN NatureTypes nt ON c.nature_type_id = nt.id
+            LEFT JOIN natures n ON c.nature_id = n.id
+            LEFT JOIN naturetypes nt ON c.nature_type_id = nt.id
             LEFT JOIN room r ON c.room_id = r.id
             LEFT JOIN floor f ON r.floor_id = f.id
             LEFT JOIN building b ON f.building_id = b.id
-            LEFT JOIN Staff s ON c.staff_id = s.id
+            LEFT JOIN staff s ON c.staff_id = s.id
             WHERE 1=1
         `;
 
@@ -3049,7 +3049,7 @@ app.get('/api/staff/complaints', authenticateToken, async (req, res) => {
 
         const pool = await getDBPool();
 
-        // Join with Natures, NatureTypes, Priority, Customer, and Location tables
+        // Join with natures, naturetypes, priority, customer, and Location tables
         // INCLUDING building.picture and floor.picture
         const query = `
             SELECT 
@@ -3070,10 +3070,10 @@ app.get('/api/staff/complaints', authenticateToken, async (req, res) => {
                 b.name as building_name,
                 f.floor_name as floor_name
             FROM complaint c
-            LEFT JOIN Natures n ON c.nature_id = n.id
-            LEFT JOIN NatureTypes nt ON c.nature_type_id = nt.id
-            LEFT JOIN Priority p ON c.priority_id = p.id
-            LEFT JOIN Customer cust ON c.customer_id = cust.customer_id
+            LEFT JOIN natures n ON c.nature_id = n.id
+            LEFT JOIN naturetypes nt ON c.nature_type_id = nt.id
+            LEFT JOIN priority p ON c.priority_id = p.id
+            LEFT JOIN customer cust ON c.customer_id = cust.customer_id
             LEFT JOIN room r ON c.room_id = r.id
             LEFT JOIN floor f ON r.floor_id = f.id
             LEFT JOIN building b ON f.building_id = b.id
@@ -3266,7 +3266,7 @@ app.get('/api/complaints/natures', async (req, res) => {
         // Get all natures
         const [natures] = await pool.query(`
             SELECT id, name 
-            FROM Natures 
+            FROM natures 
             ORDER BY name
         `);
 
@@ -3274,7 +3274,7 @@ app.get('/api/complaints/natures', async (req, res) => {
         const naturesWithTypes = await Promise.all(natures.map(async (nature) => {
             const [types] = await pool.query(`
                 SELECT id, type_name 
-                FROM NatureTypes 
+                FROM naturetypes 
                 WHERE nature_id = ?
                 ORDER BY type_name
             `, [nature.id]);
@@ -3366,7 +3366,7 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
 
         const [users] = await pool.query(
             `SELECT customer_id, name, email, phone_number, picture 
-             FROM Customer 
+             FROM customer 
              WHERE customer_id = ?`,
             [userId]
         );
@@ -3430,8 +3430,8 @@ app.post('/api/complaint', authenticateToken, uploadComplaintImage.single('compl
         // Verify nature_type_id exists
         const [natureType] = await pool.query(
             `SELECT nt.id, nt.nature_id, n.name as nature_name, nt.type_name 
-             FROM NatureTypes nt
-             JOIN Natures n ON nt.nature_id = n.id
+             FROM naturetypes nt
+             JOIN natures n ON nt.nature_id = n.id
              WHERE nt.id = ?`,
             [complaintData.nature_type_id]
         );
@@ -3446,7 +3446,7 @@ app.post('/api/complaint', authenticateToken, uploadComplaintImage.single('compl
 
         // Verify user exists
         const [user] = await pool.query(
-            'SELECT customer_id, name FROM Customer WHERE customer_id = ?',
+            'SELECT customer_id, name FROM customer WHERE customer_id = ?',
             [userId]
         );
 
@@ -3600,16 +3600,16 @@ app.get('/api/complaint/:id', authenticateToken, async (req, res) => {
                 s.email as staff_email,
                 rcv.name as receiver_name
             FROM complaint c
-            LEFT JOIN Natures n ON c.nature_id = n.id
-            LEFT JOIN NatureTypes nt ON c.nature_type_id = nt.id
+            LEFT JOIN natures n ON c.nature_id = n.id
+            LEFT JOIN naturetypes nt ON c.nature_type_id = nt.id
             LEFT JOIN room r ON c.room_id = r.id
             LEFT JOIN floor f ON r.floor_id = f.id
             LEFT JOIN building b ON f.building_id = b.id
             LEFT JOIN colony col ON b.colony_id = col.id
-            LEFT JOIN Customer cust ON c.customer_id = cust.customer_id
-            LEFT JOIN Staff s ON c.staff_id = s.id
-            LEFT JOIN Staff rcv ON c.receiver_id = rcv.id
-            WHERE c.id = ? AND (c.customer_id = ? OR ? IN (SELECT customer_id FROM Customer WHERE role = 'admin'))
+            LEFT JOIN customer cust ON c.customer_id = cust.customer_id
+            LEFT JOIN staff s ON c.staff_id = s.id
+            LEFT JOIN staff rcv ON c.receiver_id = rcv.id
+            WHERE c.id = ? AND (c.customer_id = ? OR ? IN (SELECT customer_id FROM customer WHERE role = 'admin'))
             AND c.deleted_at IS NULL
         `, [req.params.id, userId, userId]);
 
@@ -3699,9 +3699,9 @@ app.get('/api/customer/complaints', authenticateToken, async (req, res) => {
                 b.name as building_name,
                 col.name as colony_name
             FROM complaint c
-            LEFT JOIN Natures n ON c.nature_id = n.id
-            LEFT JOIN Priority p ON c.priority_id = p.id
-            LEFT JOIN Staff s ON c.staff_id = s.id
+            LEFT JOIN natures n ON c.nature_id = n.id
+            LEFT JOIN priority p ON c.priority_id = p.id
+            LEFT JOIN staff s ON c.staff_id = s.id
             LEFT JOIN room r ON c.room_id = r.id
             LEFT JOIN floor f ON r.floor_id = f.id
             LEFT JOIN building b ON f.building_id = b.id
@@ -3730,7 +3730,7 @@ app.get('/api/customer/complaints', authenticateToken, async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Fetch Customer Complaints Error:', error);
+        console.error('Fetch customer Complaints Error:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to fetch complaints'
@@ -3754,8 +3754,8 @@ app.get('/api/my-complaints', authenticateToken, async (req, res) => {
                 f.floor_name,
                 b.name as building_name
             FROM complaint c
-            LEFT JOIN Natures n ON c.nature_id = n.id
-            LEFT JOIN NatureTypes nt ON c.nature_type_id = nt.id
+            LEFT JOIN natures n ON c.nature_id = n.id
+            LEFT JOIN naturetypes nt ON c.nature_type_id = nt.id
             LEFT JOIN room r ON c.room_id = r.id
             LEFT JOIN floor f ON r.floor_id = f.id
             LEFT JOIN building b ON f.building_id = b.id
@@ -3802,7 +3802,7 @@ app.get('/api/complaint-stats', authenticateToken, async (req, res) => {
 
         // Check if user is admin
         const [user] = await pool.query(
-            'SELECT role FROM Customer WHERE customer_id = ? AND deleted_at IS NULL',
+            'SELECT role FROM customer WHERE customer_id = ? AND deleted_at IS NULL',
             [userId]
         );
 
@@ -3812,7 +3812,7 @@ app.get('/api/complaint-stats', authenticateToken, async (req, res) => {
         let queryParams = [];
 
         if (isAdmin) {
-            // Admin sees all stats
+            // admin sees all stats
             statsQuery = `
                 SELECT 
                     DATE(created_at) as date,
@@ -3887,7 +3887,7 @@ app.put('/api/complaint/:id/update-status', authenticateToken, async (req, res) 
         const [complaint] = await pool.query(
             `SELECT c.*, cust.role 
              FROM complaint c
-             JOIN Customer cust ON c.customer_id = cust.customer_id
+             JOIN customer cust ON c.customer_id = cust.customer_id
              WHERE c.id = ? AND c.deleted_at IS NULL`,
             [req.params.id]
         );
@@ -3998,7 +3998,7 @@ createComplaintLogsTable();
 
 // ====================================================
 // ✅ COMPLAINTS MANAGEMENT API ENDPOINTS
-// ✅ UPDATED FOR ComplaintReceiver IN STATUS HISTORY
+// ✅ UPDATED FOR complaintreceiver IN STATUS HISTORY
 // ====================================================
 
 /**
@@ -4012,7 +4012,7 @@ app.get('/api/complaint-center/get-category-list', async (req, res) => {
 
         const [natures] = await pool.execute(`
             SELECT id, name 
-            FROM Natures 
+            FROM natures 
             ORDER BY name
         `);
 
@@ -4020,7 +4020,7 @@ app.get('/api/complaint-center/get-category-list', async (req, res) => {
         for (const nature of natures) {
             const [types] = await pool.execute(`
                 SELECT id, type_name 
-                FROM NatureTypes 
+                FROM naturetypes 
                 WHERE nature_id = ?
                 ORDER BY type_name
             `, [nature.id]);
@@ -4102,14 +4102,14 @@ app.get('/api/complaint-center/get-all-complaints', authenticateToken, async (re
                 col.id as colony_id,
                 col.name as colony_name,
                 
-                -- Customer info
+                -- customer info
                 cust.customer_id,
                 cust.name as customer_name,
                 cust.email as customer_email,
                 cust.phone_number as customer_phone,
                 cust.picture as customer_picture,
                 
-                -- Staff/Resolver info
+                -- staff/Resolver info
                 s.id as staff_id,
                 s.name as staff_name,
                 s.phone as staff_phone,
@@ -4123,22 +4123,22 @@ app.get('/api/complaint-center/get-all-complaints', authenticateToken, async (re
                 rec.email as receiver_email,
                 rec.picture as receiver_picture,
                 
-                -- Priority
+                -- priority
                 p.id as priority_id,
                 p.name as priority_name
                 
             FROM complaint c
-            LEFT JOIN Natures n ON c.nature_id = n.id
-            LEFT JOIN NatureTypes nt ON c.nature_type_id = nt.id
+            LEFT JOIN natures n ON c.nature_id = n.id
+            LEFT JOIN naturetypes nt ON c.nature_type_id = nt.id
             LEFT JOIN room r ON c.room_id = r.id
             LEFT JOIN floor f ON r.floor_id = f.id
             LEFT JOIN building b ON f.building_id = b.id
             LEFT JOIN colony col ON b.colony_id = col.id
-            LEFT JOIN Customer cust ON c.customer_id = cust.customer_id
-            LEFT JOIN Staff s ON c.staff_id = s.id
-            LEFT JOIN Designation d ON s.designation_id = d.id
-            LEFT JOIN ComplaintReceiver rec ON c.receiver_id = rec.id
-            LEFT JOIN Priority p ON c.priority_id = p.id
+            LEFT JOIN customer cust ON c.customer_id = cust.customer_id
+            LEFT JOIN staff s ON c.staff_id = s.id
+            LEFT JOIN designation d ON s.designation_id = d.id
+            LEFT JOIN complaintreceiver rec ON c.receiver_id = rec.id
+            LEFT JOIN priority p ON c.priority_id = p.id
             WHERE 1=1
         `;
 
@@ -4196,14 +4196,14 @@ app.get('/api/complaint-center/get-all-complaints', authenticateToken, async (re
             countParams.push(natureId);
         }
 
-        // STAFF ID FILTER
+        // staff ID FILTER
         if (staffId) {
             baseQuery += ' AND c.staff_id = ?';
             queryParams.push(staffId);
             countParams.push(staffId);
         }
 
-        // CUSTOMER ID FILTER
+        // customer ID FILTER
         if (customerId) {
             baseQuery += ' AND c.customer_id = ?';
             queryParams.push(customerId);
@@ -4224,11 +4224,11 @@ app.get('/api/complaint-center/get-all-complaints', authenticateToken, async (re
         // ========== BUILD COUNT QUERY WITH JOINS IF NEEDED ==========
         if (needsCountJoins) {
             countQuery += `
-                LEFT JOIN Natures n ON c.nature_id = n.id
-                LEFT JOIN NatureTypes nt ON c.nature_type_id = nt.id
+                LEFT JOIN natures n ON c.nature_id = n.id
+                LEFT JOIN naturetypes nt ON c.nature_type_id = nt.id
                 LEFT JOIN room r ON c.room_id = r.id
-                LEFT JOIN Customer cust ON c.customer_id = cust.customer_id
-                LEFT JOIN Staff s ON c.staff_id = s.id
+                LEFT JOIN customer cust ON c.customer_id = cust.customer_id
+                LEFT JOIN staff s ON c.staff_id = s.id
             `;
         }
 
@@ -4351,7 +4351,7 @@ app.get('/api/complaint-center/get-all-complaints', authenticateToken, async (re
                 email: c.staff_email,
                 phone: c.staff_phone,
                 picture: c.staff_picture,
-                designation: c.staff_designation || 'Staff'
+                designation: c.staff_designation || 'staff'
             } : null,
 
             updatedBy: c.receiver_id ? {
@@ -4425,7 +4425,7 @@ app.get('/api/complaint-center/view-details/:complaintId', authenticateToken, as
                 col.id as colony_id,
                 col.name as colony_name,
                 
-                -- Customer info
+                -- customer info
                 cust.customer_id,
                 cust.name as customer_name,
                 cust.email as customer_email,
@@ -4433,7 +4433,7 @@ app.get('/api/complaint-center/view-details/:complaintId', authenticateToken, as
                 cust.picture as customer_picture,
                 cust.status as customer_status,
                 
-                -- Staff/Resolver info - ✅ FIXED: Get all staff fields
+                -- staff/Resolver info - ✅ FIXED: Get all staff fields
                 s.id as staff_id,
                 s.name as staff_name,
                 s.phone as staff_phone,
@@ -4443,29 +4443,29 @@ app.get('/api/complaint-center/view-details/:complaintId', authenticateToken, as
                 d.id as designation_id,
                 d.name as designation_name,
                 
-                -- ✅ FIXED: Receiver/Updated By info from ComplaintReceiver
+                -- ✅ FIXED: Receiver/Updated By info from complaintreceiver
                 rec.id as receiver_id,
                 rec.name as receiver_name,
                 rec.email as receiver_email,
                 rec.picture as receiver_picture,
                 rec.status as receiver_status,
                 
-                -- Priority
+                -- priority
                 p.id as priority_id,
                 p.name as priority_name
                 
             FROM complaint c
-            LEFT JOIN Natures n ON c.nature_id = n.id
-            LEFT JOIN NatureTypes nt ON c.nature_type_id = nt.id
+            LEFT JOIN natures n ON c.nature_id = n.id
+            LEFT JOIN naturetypes nt ON c.nature_type_id = nt.id
             LEFT JOIN room r ON c.room_id = r.id
             LEFT JOIN floor f ON r.floor_id = f.id
             LEFT JOIN building b ON f.building_id = b.id
             LEFT JOIN colony col ON b.colony_id = col.id
-            LEFT JOIN Customer cust ON c.customer_id = cust.customer_id
-            LEFT JOIN Staff s ON c.staff_id = s.id
-            LEFT JOIN Designation d ON s.designation_id = d.id
-            LEFT JOIN ComplaintReceiver rec ON c.receiver_id = rec.id
-            LEFT JOIN Priority p ON c.priority_id = p.id
+            LEFT JOIN customer cust ON c.customer_id = cust.customer_id
+            LEFT JOIN staff s ON c.staff_id = s.id
+            LEFT JOIN designation d ON s.designation_id = d.id
+            LEFT JOIN complaintreceiver rec ON c.receiver_id = rec.id
+            LEFT JOIN priority p ON c.priority_id = p.id
             WHERE c.id = ?
         `;
 
@@ -4495,7 +4495,7 @@ app.get('/api/complaint-center/view-details/:complaintId', authenticateToken, as
             });
         }
 
-        // Get status history with ComplaintReceiver details
+        // Get status history with complaintreceiver details
         const [history] = await pool.execute(
             `SELECT 
                 h.*,
@@ -4503,7 +4503,7 @@ app.get('/api/complaint-center/view-details/:complaintId', authenticateToken, as
                 cr.email as changed_by_email,
                 cr.picture as changed_by_picture
              FROM complaint_status_history h
-             LEFT JOIN ComplaintReceiver cr ON h.changed_by_receiver_id = cr.id
+             LEFT JOIN complaintreceiver cr ON h.changed_by_receiver_id = cr.id
              WHERE h.complaint_id = ?
              ORDER BY h.changed_at DESC`,
             [complaintId]
@@ -4688,7 +4688,7 @@ app.get('/api/complaint-center/get-location-list', async (req, res) => {
 /**
  * @route   GET /api/complaint-center/get-active-staff-list
  * @desc    Get all active staff members for assignment
- * @access  Private (ComplaintReceiver, Admin, Superadmin)
+ * @access  Private (complaintreceiver, admin, Superadmin)
  */
 app.get('/api/complaint-center/get-active-staff-list', authenticateToken, async (req, res) => {
     try {
@@ -4700,7 +4700,7 @@ app.get('/api/complaint-center/get-active-staff-list', authenticateToken, async 
         if (!allowedRoles.includes(userRole) && !allowedRoles.includes(userType)) {
             return res.status(403).json({
                 success: false,
-                message: 'Access denied. Requires ComplaintReceiver or Admin privileges.',
+                message: 'Access denied. Requires complaintreceiver or admin privileges.',
                 debug: { role: userRole, userType: userType }
             });
         }
@@ -4717,8 +4717,8 @@ app.get('/api/complaint-center/get-active-staff-list', authenticateToken, async 
                 s.status,
                 d.id as designation_id,
                 d.name as designation_name
-            FROM Staff s
-            LEFT JOIN Designation d ON s.designation_id = d.id
+            FROM staff s
+            LEFT JOIN designation d ON s.designation_id = d.id
             WHERE s.status = 'Active'
             ORDER BY s.name
         `;
@@ -4830,7 +4830,7 @@ app.get('/api/complaint-center/get-dashboard-stats', authenticateToken, async (r
 /**
  * @route   POST /api/complaint-center/register-new-complaint
  * @desc    Create a new complaint
- * @access  Private (Customer only)
+ * @access  Private (customer only)
  */
 app.post('/api/complaint-center/register-new-complaint', authenticateToken, async (req, res) => {
     try {
@@ -4953,11 +4953,11 @@ app.post('/api/complaint-center/register-new-complaint', authenticateToken, asyn
 /**
  * @route   PUT /api/complaint-center/update-complaint-status/:complaintId
  * @desc    Update complaint status
- * @access  Private (ComplaintReceiver only)
+ * @access  Private (complaintreceiver only)
  */
 app.put('/api/complaint-center/update-complaint-status/:complaintId', authenticateToken, async (req, res) => {
     try {
-        // Check for ComplaintReceiver role
+        // Check for complaintreceiver role
         if (req.user.role !== 'complaintreceiver' && req.user.role !== 'admin' && req.user.role !== 'superadmin') {
             return res.status(403).json({
                 success: false,
@@ -4967,7 +4967,7 @@ app.put('/api/complaint-center/update-complaint-status/:complaintId', authentica
 
         const { status } = req.body;
         const complaintId = req.params.complaintId;
-        const receiverId = req.user.id; // This is from ComplaintReceiver table
+        const receiverId = req.user.id; // This is from complaintreceiver table
 
         if (!status) {
             return res.status(400).json({
@@ -5011,7 +5011,7 @@ app.put('/api/complaint-center/update-complaint-status/:complaintId', authentica
         await connection.beginTransaction();
 
         try {
-            // ✅ FIXED: Update receiver_id with the ComplaintReceiver who is updating
+            // ✅ FIXED: Update receiver_id with the complaintreceiver who is updating
             // This ensures the complaint shows who last updated it
             let updateQuery = 'UPDATE complaint SET status = ?, receiver_id = ?, updated_at = NOW()';
             const params = [status, receiverId];
@@ -5043,7 +5043,7 @@ app.put('/api/complaint-center/update-complaint-status/:complaintId', authentica
                     cr.email as receiver_email,
                     cr.picture as receiver_picture
                  FROM complaint c
-                 LEFT JOIN ComplaintReceiver cr ON c.receiver_id = cr.id
+                 LEFT JOIN complaintreceiver cr ON c.receiver_id = cr.id
                  WHERE c.id = ?`,
                 [complaintId]
             );
@@ -5060,7 +5060,7 @@ app.put('/api/complaint-center/update-complaint-status/:complaintId', authentica
                         name: req.user.name || updatedComplaint[0]?.receiver_name,
                         email: req.user.email || updatedComplaint[0]?.receiver_email,
                         picture: updatedComplaint[0]?.receiver_picture,
-                        type: 'ComplaintReceiver'
+                        type: 'complaintreceiver'
                     }
                 }
             });
@@ -5084,7 +5084,7 @@ app.put('/api/complaint-center/update-complaint-status/:complaintId', authentica
 /**
  * @route   PUT /api/complaint-center/assign-resolver/:complaintId
  * @desc    Assign staff to complaint
- * @access  Private (ComplaintReceiver only)
+ * @access  Private (complaintreceiver only)
  */
 app.put('/api/complaint-center/assign-resolver/:complaintId', authenticateToken, async (req, res) => {
     try {
@@ -5097,12 +5097,12 @@ app.put('/api/complaint-center/assign-resolver/:complaintId', authenticateToken,
 
         const { staff_id } = req.body;
         const complaintId = req.params.complaintId;
-        const receiverId = req.user.id; // This is from ComplaintReceiver table
+        const receiverId = req.user.id; // This is from complaintreceiver table
 
         if (!staff_id) {
             return res.status(400).json({
                 success: false,
-                message: 'Staff ID is required'
+                message: 'staff ID is required'
             });
         }
 
@@ -5110,14 +5110,14 @@ app.put('/api/complaint-center/assign-resolver/:complaintId', authenticateToken,
 
         // Check if staff exists and is active
         const [staff] = await pool.execute(
-            'SELECT id, name, email, phone, picture FROM Staff WHERE id = ? AND status = "Active"',
+            'SELECT id, name, email, phone, picture FROM staff WHERE id = ? AND status = "Active"',
             [staff_id]
         );
 
         if (staff.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Staff member not found or inactive'
+                message: 'staff member not found or inactive'
             });
         }
 
@@ -5176,7 +5176,7 @@ app.put('/api/complaint-center/assign-resolver/:complaintId', authenticateToken,
                     cr.email as receiver_email,
                     cr.picture as receiver_picture
                  FROM complaint c
-                 LEFT JOIN ComplaintReceiver cr ON c.receiver_id = cr.id
+                 LEFT JOIN complaintreceiver cr ON c.receiver_id = cr.id
                  WHERE c.id = ?`,
                 [complaintId]
             );
@@ -5198,7 +5198,7 @@ app.put('/api/complaint-center/assign-resolver/:complaintId', authenticateToken,
                         name: req.user.name || updatedComplaint[0]?.receiver_name,
                         email: req.user.email || updatedComplaint[0]?.receiver_email,
                         picture: updatedComplaint[0]?.receiver_picture,
-                        type: 'ComplaintReceiver'
+                        type: 'complaintreceiver'
                     }
                 }
             });
@@ -5236,7 +5236,7 @@ app.get('/api/complaint-center/get-complaint-history/:complaintId', authenticate
                 cr.name as changed_by_name,
                 cr.email as changed_by_email
             FROM complaint_status_history h
-            LEFT JOIN ComplaintReceiver cr ON h.changed_by_receiver_id = cr.id
+            LEFT JOIN complaintreceiver cr ON h.changed_by_receiver_id = cr.id
             WHERE h.complaint_id = ?
             ORDER BY h.changed_at DESC
         `;
@@ -5252,7 +5252,7 @@ app.get('/api/complaint-center/get-complaint-history/:complaintId', authenticate
                 id: h.changed_by_receiver_id,
                 name: h.changed_by_name || 'Unknown',
                 email: h.changed_by_email,
-                type: 'ComplaintReceiver'
+                type: 'complaintreceiver'
             }
         }));
 
@@ -5303,9 +5303,9 @@ app.get('/api/complaint-center/get-customer-complaints/:customerId', authenticat
                 s.name as resolver_name,
                 s.id as resolver_id
             FROM complaint c
-            LEFT JOIN Natures n ON c.nature_id = n.id
-            LEFT JOIN NatureTypes nt ON c.nature_type_id = nt.id
-            LEFT JOIN Staff s ON c.staff_id = s.id
+            LEFT JOIN natures n ON c.nature_id = n.id
+            LEFT JOIN naturetypes nt ON c.nature_type_id = nt.id
+            LEFT JOIN staff s ON c.staff_id = s.id
             WHERE c.customer_id = ?
             ORDER BY c.created_at DESC
         `;
@@ -5329,14 +5329,14 @@ app.get('/api/complaint-center/get-customer-complaints/:customerId', authenticat
 /**
  * @route   DELETE /api/complaint-center/remove-complaint/:complaintId
  * @desc    Delete a complaint
- * @access  Private (Admin/Superadmin only)
+ * @access  Private (admin/Superadmin only)
  */
 app.delete('/api/complaint-center/remove-complaint/:complaintId', authenticateToken, async (req, res) => {
     try {
         if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
             return res.status(403).json({
                 success: false,
-                message: 'Access denied. Admin privileges required.'
+                message: 'Access denied. admin privileges required.'
             });
         }
 
@@ -5381,7 +5381,7 @@ app.delete('/api/complaint-center/remove-complaint/:complaintId', authenticateTo
 
 /**
  * @route   GET /api/complaint-center/get-receiver-info/:receiverId
- * @desc    Get ComplaintReceiver details
+ * @desc    Get complaintreceiver details
  * @access  Private
  */
 app.get('/api/complaint-center/get-receiver-info/:receiverId', authenticateToken, async (req, res) => {
@@ -5391,7 +5391,7 @@ app.get('/api/complaint-center/get-receiver-info/:receiverId', authenticateToken
 
         const query = `
             SELECT id, name, email, phone, status
-            FROM ComplaintReceiver
+            FROM complaintreceiver
             WHERE id = ?
         `;
 
@@ -5400,7 +5400,7 @@ app.get('/api/complaint-center/get-receiver-info/:receiverId', authenticateToken
         if (receivers.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'ComplaintReceiver not found'
+                message: 'complaintreceiver not found'
             });
         }
 
@@ -5470,7 +5470,7 @@ app.get('/api/handler/daily-report', authenticateToken, async (req, res) => {
                 c.status, 
                 c.created_at as time
              FROM complaint c
-             LEFT JOIN Natures n ON c.nature_id = n.id
+             LEFT JOIN natures n ON c.nature_id = n.id
              WHERE DATE(c.created_at) = ?
              ORDER BY c.created_at DESC`,
             [date]
@@ -5494,7 +5494,7 @@ app.get('/api/handler/daily-report', authenticateToken, async (req, res) => {
         const [complaintMatrix] = await pool.execute(
             `SELECT n.name as category, c.status, COUNT(*) as count 
              FROM complaint c
-             JOIN Natures n ON c.nature_id = n.id
+             JOIN natures n ON c.nature_id = n.id
              WHERE DATE(c.created_at) = ?
              GROUP BY n.name, c.status`,
             [date]
@@ -7284,7 +7284,7 @@ app.use('/assets/floors', express.static(path.join(__dirname, 'assets', 'floors'
 
 
 // ====================================================
-// ✅ Natures Endpoints
+// ✅ natures Endpoints
 // ====================================================
 // Endpoint for fetching natures
 
@@ -7300,8 +7300,8 @@ app.get('/api/natures', async (req, res) => {
                 n.name AS nature_name, 
                 nt.id AS type_id, 
                 nt.type_name 
-            FROM Natures n
-            LEFT JOIN NatureTypes nt ON n.id = nt.nature_id
+            FROM natures n
+            LEFT JOIN naturetypes nt ON n.id = nt.nature_id
             ORDER BY n.id, nt.id;
         `;
 
@@ -7346,8 +7346,8 @@ app.get('/api/natures/:id', async (req, res) => {
                 n.name AS nature_name, 
                 nt.id AS type_id, 
                 nt.type_name 
-            FROM Natures n
-            LEFT JOIN NatureTypes nt ON n.id = nt.nature_id
+            FROM natures n
+            LEFT JOIN naturetypes nt ON n.id = nt.nature_id
             WHERE n.id = ?
             ORDER BY nt.id;
         `;
@@ -7398,7 +7398,7 @@ app.post('/api/natures', async (req, res) => {
 
         // Insert the nature
         const [natureResult] = await connection.query(
-            'INSERT INTO Natures (name) VALUES (?)',
+            'INSERT INTO natures (name) VALUES (?)',
             [name.trim()]
         );
 
@@ -7408,7 +7408,7 @@ app.post('/api/natures', async (req, res) => {
         if (types.length > 0) {
             const typeValues = types.map(type => [natureId, type.trim()]);
             await connection.query(
-                'INSERT INTO NatureTypes (nature_id, type_name) VALUES ?',
+                'INSERT INTO naturetypes (nature_id, type_name) VALUES ?',
                 [typeValues]
             );
         }
@@ -7422,8 +7422,8 @@ app.post('/api/natures', async (req, res) => {
                 n.name AS nature_name, 
                 nt.id AS type_id, 
                 nt.type_name 
-            FROM Natures n
-            LEFT JOIN NatureTypes nt ON n.id = nt.nature_id
+            FROM natures n
+            LEFT JOIN naturetypes nt ON n.id = nt.nature_id
             WHERE n.id = ?
             ORDER BY nt.id;
         `, [natureId]);
@@ -7477,7 +7477,7 @@ app.put('/api/natures/:id', async (req, res) => {
 
         // Check if nature exists
         const [existing] = await connection.query(
-            'SELECT id FROM Natures WHERE id = ?',
+            'SELECT id FROM natures WHERE id = ?',
             [natureId]
         );
 
@@ -7488,7 +7488,7 @@ app.put('/api/natures/:id', async (req, res) => {
 
         // Update nature name
         await connection.query(
-            'UPDATE Natures SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            'UPDATE natures SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
             [name.trim(), natureId]
         );
 
@@ -7496,7 +7496,7 @@ app.put('/api/natures/:id', async (req, res) => {
         if (types !== undefined) {
             // Delete existing types
             await connection.query(
-                'DELETE FROM NatureTypes WHERE nature_id = ?',
+                'DELETE FROM naturetypes WHERE nature_id = ?',
                 [natureId]
             );
 
@@ -7504,7 +7504,7 @@ app.put('/api/natures/:id', async (req, res) => {
             if (types.length > 0) {
                 const typeValues = types.map(type => [natureId, type.trim()]);
                 await connection.query(
-                    'INSERT INTO NatureTypes (nature_id, type_name) VALUES ?',
+                    'INSERT INTO naturetypes (nature_id, type_name) VALUES ?',
                     [typeValues]
                 );
             }
@@ -7519,8 +7519,8 @@ app.put('/api/natures/:id', async (req, res) => {
                 n.name AS nature_name, 
                 nt.id AS type_id, 
                 nt.type_name 
-            FROM Natures n
-            LEFT JOIN NatureTypes nt ON n.id = nt.nature_id
+            FROM natures n
+            LEFT JOIN naturetypes nt ON n.id = nt.nature_id
             WHERE n.id = ?
             ORDER BY nt.id;
         `, [natureId]);
@@ -7569,7 +7569,7 @@ app.put('/api/natures/:id/types', async (req, res) => {
 
         // Check if nature exists
         const [existing] = await connection.query(
-            'SELECT id FROM Natures WHERE id = ?',
+            'SELECT id FROM natures WHERE id = ?',
             [natureId]
         );
 
@@ -7580,7 +7580,7 @@ app.put('/api/natures/:id/types', async (req, res) => {
 
         // Delete existing types
         await connection.query(
-            'DELETE FROM NatureTypes WHERE nature_id = ?',
+            'DELETE FROM naturetypes WHERE nature_id = ?',
             [natureId]
         );
 
@@ -7588,7 +7588,7 @@ app.put('/api/natures/:id/types', async (req, res) => {
         if (types.length > 0) {
             const typeValues = types.map(type => [natureId, type.trim()]);
             await connection.query(
-                'INSERT INTO NatureTypes (nature_id, type_name) VALUES ?',
+                'INSERT INTO naturetypes (nature_id, type_name) VALUES ?',
                 [typeValues]
             );
         }
@@ -7602,8 +7602,8 @@ app.put('/api/natures/:id/types', async (req, res) => {
                 n.name AS nature_name, 
                 nt.id AS type_id, 
                 nt.type_name 
-            FROM Natures n
-            LEFT JOIN NatureTypes nt ON n.id = nt.nature_id
+            FROM natures n
+            LEFT JOIN naturetypes nt ON n.id = nt.nature_id
             WHERE n.id = ?
             ORDER BY nt.id;
         `, [natureId]);
@@ -7646,7 +7646,7 @@ app.delete('/api/natures/:id', async (req, res) => {
 
         // Check if nature exists
         const [existing] = await connection.query(
-            'SELECT id FROM Natures WHERE id = ?',
+            'SELECT id FROM natures WHERE id = ?',
             [natureId]
         );
 
@@ -7657,7 +7657,7 @@ app.delete('/api/natures/:id', async (req, res) => {
 
         // Delete nature (cascade will delete types)
         await connection.query(
-            'DELETE FROM Natures WHERE id = ?',
+            'DELETE FROM natures WHERE id = ?',
             [natureId]
         );
 
@@ -7686,7 +7686,7 @@ app.delete('/api/nature-types/:id', async (req, res) => {
 
         // Check if type exists
         const [existing] = await pool.query(
-            'SELECT id FROM NatureTypes WHERE id = ?',
+            'SELECT id FROM naturetypes WHERE id = ?',
             [typeId]
         );
 
@@ -7696,7 +7696,7 @@ app.delete('/api/nature-types/:id', async (req, res) => {
 
         // Delete type
         await pool.query(
-            'DELETE FROM NatureTypes WHERE id = ?',
+            'DELETE FROM naturetypes WHERE id = ?',
             [typeId]
         );
 
@@ -7713,7 +7713,7 @@ app.delete('/api/nature-types/:id', async (req, res) => {
 
 
 // ====================================================
-// ✅ Admin Management Endpoints
+// ✅ admin Management Endpoints
 // ====================================================
 
 const adminStorage = multer.diskStorage({
@@ -7747,8 +7747,8 @@ app.get('/api/admins', async (req, res) => {
         const offset = (page - 1) * limit;
         const search = req.query.search || '';
 
-        let query = `SELECT * FROM Admin WHERE 1=1`;
-        let countQuery = `SELECT COUNT(*) as total FROM Admin WHERE 1=1`;
+        let query = `SELECT * FROM admin WHERE 1=1`;
+        let countQuery = `SELECT COUNT(*) as total FROM admin WHERE 1=1`;
         const params = [];
         const countParams = [];
 
@@ -7797,12 +7797,12 @@ app.get('/api/admins/:id', async (req, res) => {
     try {
         const pool = await getDBPool();
         const [rows] = await pool.execute(
-            'SELECT * FROM Admin WHERE id = ?',
+            'SELECT * FROM admin WHERE id = ?',
             [req.params.id]
         );
 
         if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'Admin not found' });
+            return res.status(404).json({ success: false, message: 'admin not found' });
         }
 
         const { password_hash, ...admin } = rows[0];
@@ -7840,14 +7840,14 @@ app.post('/api/admins', adminUpload.single('picture'), async (req, res) => {
 
         // Check if ID already exists
         const [existingId] = await pool.execute(
-            'SELECT id FROM Admin WHERE id = ?',
+            'SELECT id FROM admin WHERE id = ?',
             [id]
         );
 
         if (existingId.length > 0) {
             return res.status(400).json({
                 success: false,
-                message: 'Admin ID already exists'
+                message: 'admin ID already exists'
             });
         }
 
@@ -7874,7 +7874,7 @@ app.post('/api/admins', adminUpload.single('picture'), async (req, res) => {
 
         // Insert admin
         await pool.execute(
-            `INSERT INTO Admin 
+            `INSERT INTO admin 
              (id, name, picture, email, status, password_hash, is_superadmin) 
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [id, name, picturePath, email, status, password_hash, isSuperadmin]
@@ -7882,7 +7882,7 @@ app.post('/api/admins', adminUpload.single('picture'), async (req, res) => {
 
         // Get the created admin
         const [newAdminRows] = await pool.execute(
-            'SELECT * FROM Admin WHERE id = ?',
+            'SELECT * FROM admin WHERE id = ?',
             [id]
         );
 
@@ -7892,7 +7892,7 @@ app.post('/api/admins', adminUpload.single('picture'), async (req, res) => {
 
         res.status(201).json({
             success: true,
-            message: 'Admin created successfully',
+            message: 'admin created successfully',
             data: admin
         });
     } catch (error) {
@@ -7916,12 +7916,12 @@ app.put('/api/admins/:id', adminUpload.single('picture'), async (req, res) => {
 
         // Check if admin exists
         const [existingAdmin] = await pool.execute(
-            'SELECT * FROM Admin WHERE id = ?',
+            'SELECT * FROM admin WHERE id = ?',
             [adminId]
         );
 
         if (existingAdmin.length === 0) {
-            return res.status(404).json({ success: false, message: 'Admin not found' });
+            return res.status(404).json({ success: false, message: 'admin not found' });
         }
 
         // Check if trying to update a superadmin
@@ -7976,13 +7976,13 @@ app.put('/api/admins/:id', adminUpload.single('picture'), async (req, res) => {
 
         // Update admin
         await pool.execute(
-            `UPDATE Admin SET ${updateFields.join(', ')} WHERE id = ?`,
+            `UPDATE admin SET ${updateFields.join(', ')} WHERE id = ?`,
             params
         );
 
         // Get updated admin
         const [updatedRows] = await pool.execute(
-            'SELECT * FROM Admin WHERE id = ?',
+            'SELECT * FROM admin WHERE id = ?',
             [adminId]
         );
 
@@ -7992,7 +7992,7 @@ app.put('/api/admins/:id', adminUpload.single('picture'), async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Admin updated successfully',
+            message: 'admin updated successfully',
             data: admin
         });
     } catch (error) {
@@ -8009,12 +8009,12 @@ app.delete('/api/admins/:id', async (req, res) => {
 
         // Check if admin exists
         const [existingAdmin] = await pool.execute(
-            'SELECT * FROM Admin WHERE id = ?',
+            'SELECT * FROM admin WHERE id = ?',
             [adminId]
         );
 
         if (existingAdmin.length === 0) {
-            return res.status(404).json({ success: false, message: 'Admin not found' });
+            return res.status(404).json({ success: false, message: 'admin not found' });
         }
 
         // Check if trying to delete a superadmin
@@ -8032,11 +8032,11 @@ app.delete('/api/admins/:id', async (req, res) => {
         }
 
         // Delete admin from database
-        await pool.execute('DELETE FROM Admin WHERE id = ?', [adminId]);
+        await pool.execute('DELETE FROM admin WHERE id = ?', [adminId]);
 
         res.json({
             success: true,
-            message: 'Admin deleted successfully'
+            message: 'admin deleted successfully'
         });
     } catch (error) {
         console.error('Error deleting admin:', error);
@@ -8048,7 +8048,7 @@ app.delete('/api/admins/:id', async (req, res) => {
 
 
 // ====================================================
-// ✅ Staff Profile Endpoints (Self-Service)
+// ✅ staff Profile Endpoints (Self-Service)
 // ====================================================
 
 // Get Own Profile
@@ -8058,13 +8058,13 @@ app.get('/api/staff/profile', authenticateToken, async (req, res) => {
         const pool = await getDBPool();
         const [rows] = await pool.execute(`
             SELECT s.*, d.name as designation_name 
-            FROM Staff s 
-            LEFT JOIN Designation d ON s.designation_id = d.id 
+            FROM staff s 
+            LEFT JOIN designation d ON s.designation_id = d.id 
             WHERE s.id = ?
         `, [userId]);
 
         if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'Staff not found' });
+            return res.status(404).json({ success: false, message: 'staff not found' });
         }
 
         const { password_hash, ...staff } = rows[0];
@@ -8106,7 +8106,7 @@ app.put('/api/staff/profile', authenticateToken, async (req, res) => {
         params.push(userId);
 
         await pool.execute(
-            `UPDATE Staff SET ${updateFields.join(', ')} WHERE id = ?`,
+            `UPDATE staff SET ${updateFields.join(', ')} WHERE id = ?`,
             params
         );
 
@@ -8124,14 +8124,14 @@ app.put('/api/staff/profile/password', authenticateToken, async (req, res) => {
         const { currentPassword, newPassword } = req.body;
         const pool = await getDBPool();
 
-        const [staff] = await pool.execute('SELECT password_hash FROM Staff WHERE id = ?', [userId]);
+        const [staff] = await pool.execute('SELECT password_hash FROM staff WHERE id = ?', [userId]);
         if (staff.length === 0) return res.status(404).json({ success: false, message: 'User not found' });
 
         const isValid = await bcrypt.compare(currentPassword, staff[0].password_hash);
         if (!isValid) return res.status(400).json({ success: false, message: 'Incorrect current password' });
 
         const newHash = await bcrypt.hash(newPassword, 10);
-        await pool.execute('UPDATE Staff SET password_hash = ? WHERE id = ?', [newHash, userId]);
+        await pool.execute('UPDATE staff SET password_hash = ? WHERE id = ?', [newHash, userId]);
 
         res.json({ success: true, message: 'Password updated successfully' });
     } catch (error) {
@@ -8148,13 +8148,13 @@ app.post('/api/staff/profile/picture', authenticateToken, upload.single('picture
         const picturePath = `/assets/staff/${req.file.filename}`;
         const pool = await getDBPool();
 
-        const [old] = await pool.execute('SELECT picture FROM Staff WHERE id = ?', [userId]);
+        const [old] = await pool.execute('SELECT picture FROM staff WHERE id = ?', [userId]);
         if (old.length > 0 && old[0].picture) {
             const oldPath = path.join(__dirname, old[0].picture);
             if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
         }
 
-        await pool.execute('UPDATE Staff SET picture = ? WHERE id = ?', [picturePath, userId]);
+        await pool.execute('UPDATE staff SET picture = ? WHERE id = ?', [picturePath, userId]);
         res.json({ success: true, message: 'Picture updated', data: { picture: `/assets/staff/${req.file.filename}` } });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Server error' });
@@ -8163,7 +8163,7 @@ app.post('/api/staff/profile/picture', authenticateToken, upload.single('picture
 
 
 // ====================================================
-// ✅ Staff Endpoints
+// ✅ staff Endpoints
 // ====================================================
 
 app.get('/api/staff', async (req, res) => {
@@ -8176,11 +8176,11 @@ app.get('/api/staff', async (req, res) => {
 
         let query = `
             SELECT s.*, d.name as designation_name 
-            FROM Staff s 
-            LEFT JOIN Designation d ON s.designation_id = d.id
+            FROM staff s 
+            LEFT JOIN designation d ON s.designation_id = d.id
             WHERE 1=1
         `;
-        let countQuery = `SELECT COUNT(*) as total FROM Staff s WHERE 1=1`;
+        let countQuery = `SELECT COUNT(*) as total FROM staff s WHERE 1=1`;
         const params = [];
         const countParams = [];
 
@@ -8228,7 +8228,7 @@ app.get('/api/staff', async (req, res) => {
 
 // Get staff by ID
 // ====================================================
-// ✅ Staff Dashboard API & Helpers
+// ✅ staff Dashboard API & Helpers
 // ====================================================
 async function getStaffDashboardStats(staffId) {
     const pool = await getDBPool();
@@ -8317,21 +8317,21 @@ async function getStaffRecentNotifications(staffId) {
 }
 async function getStaffUserInfo(staffId) {
     const pool = await getDBPool();
-    const [rows] = await pool.execute('SELECT name FROM Staff WHERE id = ?', [staffId]);
-    return rows[0] || { name: 'Unknown Staff' };
+    const [rows] = await pool.execute('SELECT name FROM staff WHERE id = ?', [staffId]);
+    return rows[0] || { name: 'Unknown staff' };
 }
 app.get('/api/staff/dashboard-summary', authenticateToken, async (req, res) => {
-    console.log('[API] Staff Dashboard Summary hit');
+    console.log('[API] staff Dashboard Summary hit');
     try {
         const staffId = req.user.id || req.user.userId;
         const role = (req.user.role || '').toLowerCase();
-        if (role !== 'staff') return res.status(403).json({ success: false, message: 'Access denied. Staff only.' });
+        if (role !== 'staff') return res.status(403).json({ success: false, message: 'Access denied. staff only.' });
         const period = req.query.period || 'week';
         const [stats, complaints, chartData, userInfo, notifications] = await Promise.all([
             getStaffDashboardStats(staffId), getStaffRecentComplaints(staffId), getStaffChartData(staffId, period), getStaffUserInfo(staffId), getStaffRecentNotifications(staffId)
         ]);
         res.json({ success: true, data: { stats, complaints, notifications, chartData, userInfo } });
-    } catch (error) { console.error('Staff Dashboard Summary Error:', error); res.status(500).json({ success: false, message: 'Failed to fetch dashboard data' }); }
+    } catch (error) { console.error('staff Dashboard Summary Error:', error); res.status(500).json({ success: false, message: 'Failed to fetch dashboard data' }); }
 });
 
 // ====================================================
@@ -8418,7 +8418,7 @@ async function getHandlerCategoryDistribution(handlerId) {
     const pool = await getDBPool();
     const [rows] = await pool.execute(`
         SELECT n.name as label, COUNT(c.id) as value
-        FROM Natures n
+        FROM natures n
         LEFT JOIN complaint c ON n.id = c.nature_id AND c.receiver_id = ?
         GROUP BY n.id
         HAVING value > 0
@@ -8430,7 +8430,7 @@ async function getHandlerCategoryDistribution(handlerId) {
 
 async function getHandlerUserInfo(id) {
     const pool = await getDBPool();
-    const [rows] = await pool.execute('SELECT name, picture FROM ComplaintReceiver WHERE id = ?', [id]);
+    const [rows] = await pool.execute('SELECT name, picture FROM complaintreceiver WHERE id = ?', [id]);
     return rows[0] || { name: 'Unknown Handler', picture: null };
 }
 
@@ -8480,14 +8480,14 @@ app.get('/api/staff/:id', async (req, res) => {
         const pool = await getDBPool();
         const [rows] = await pool.execute(
             `SELECT s.*, d.name as designation_name 
-             FROM Staff s 
-             LEFT JOIN Designation d ON s.designation_id = d.id 
+             FROM staff s 
+             LEFT JOIN designation d ON s.designation_id = d.id 
              WHERE s.id = ?`,
             [req.params.id]
         );
 
         if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'Staff not found' });
+            return res.status(404).json({ success: false, message: 'staff not found' });
         }
 
         const { password_hash, ...staff } = rows[0];
@@ -8506,7 +8506,7 @@ app.post('/api/staff', upload.single('picture'), async (req, res) => {
     try {
         const pool = await getDBPool();
 
-        console.log('=== START STAFF CREATION ===');
+        console.log('=== START staff CREATION ===');
         console.log('Request body:', req.body);
         console.log('Files:', req.file);
 
@@ -8524,7 +8524,7 @@ app.post('/api/staff', upload.single('picture'), async (req, res) => {
         console.log('ID:', id);
         console.log('Name:', name);
         console.log('Email:', email);
-        console.log('Designation ID:', designation_id);
+        console.log('designation ID:', designation_id);
         console.log('Password exists:', !!password);
 
         // Validate required fields
@@ -8538,7 +8538,7 @@ app.post('/api/staff', upload.single('picture'), async (req, res) => {
 
         // Check if ID already exists
         const [existingId] = await pool.execute(
-            'SELECT id FROM Staff WHERE id = ?',
+            'SELECT id FROM staff WHERE id = ?',
             [id]
         );
 
@@ -8546,7 +8546,7 @@ app.post('/api/staff', upload.single('picture'), async (req, res) => {
             console.log('ID already exists:', id);
             return res.status(400).json({
                 success: false,
-                message: 'Staff ID already exists'
+                message: 'staff ID already exists'
             });
         }
 
@@ -8572,7 +8572,7 @@ app.post('/api/staff', upload.single('picture'), async (req, res) => {
         let finalDesignationId = designation_id;
         if (isNaN(designation_id) && designation_id) {
             const [designationRows] = await pool.execute(
-                'SELECT id FROM Designation WHERE name = ?',
+                'SELECT id FROM designation WHERE name = ?',
                 [designation_id]
             );
             if (designationRows.length > 0) {
@@ -8580,7 +8580,7 @@ app.post('/api/staff', upload.single('picture'), async (req, res) => {
             } else {
                 // Create new designation
                 const [newDesignation] = await pool.execute(
-                    'INSERT INTO Designation (name) VALUES (?)',
+                    'INSERT INTO designation (name) VALUES (?)',
                     [designation_id]
                 );
                 finalDesignationId = newDesignation.insertId;
@@ -8594,7 +8594,7 @@ app.post('/api/staff', upload.single('picture'), async (req, res) => {
         // Insert staff
         console.log('Inserting staff with ID:', id);
         const result = await pool.execute(
-            `INSERT INTO Staff 
+            `INSERT INTO staff 
              (id, name, picture, phone, email, designation_id, status, password_hash) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [id, name, picturePath, phone, email, finalDesignationId, status, password_hash]
@@ -8607,8 +8607,8 @@ app.post('/api/staff', upload.single('picture'), async (req, res) => {
         console.log('Fetching created staff...');
         const [newStaffRows] = await pool.execute(
             `SELECT s.*, d.name as designation_name 
-             FROM Staff s 
-             LEFT JOIN Designation d ON s.designation_id = d.id 
+             FROM staff s 
+             LEFT JOIN designation d ON s.designation_id = d.id 
              WHERE s.id = ?`,
             [id]  // ✅ Using user-provided ID
         );
@@ -8617,11 +8617,11 @@ app.post('/api/staff', upload.single('picture'), async (req, res) => {
         console.log('New staff rows:', newStaffRows);
 
         if (newStaffRows.length === 0) {
-            console.log('ERROR: Staff was inserted but not found when fetching!');
+            console.log('ERROR: staff was inserted but not found when fetching!');
             // Even if not found, return success since it was inserted
             return res.status(201).json({
                 success: true,
-                message: 'Staff created successfully (but could not fetch details)',
+                message: 'staff created successfully (but could not fetch details)',
                 data: { id, name, email, status }
             });
         }
@@ -8630,11 +8630,11 @@ app.post('/api/staff', upload.single('picture'), async (req, res) => {
         staff.picture = staff.picture ? `/assets/staff/${path.basename(staff.picture)}` : null;
 
         console.log('Final staff data to send:', staff);
-        console.log('=== END STAFF CREATION ===');
+        console.log('=== END staff CREATION ===');
 
         res.status(201).json({
             success: true,
-            message: 'Staff created successfully',
+            message: 'staff created successfully',
             data: staff
         });
     } catch (error) {
@@ -8661,12 +8661,12 @@ app.put('/api/staff/:id', upload.single('picture'), async (req, res) => {
 
         // Check if staff exists
         const [existingStaff] = await pool.execute(
-            'SELECT * FROM Staff WHERE id = ?',
+            'SELECT * FROM staff WHERE id = ?',
             [staffId]
         );
 
         if (existingStaff.length === 0) {
-            return res.status(404).json({ success: false, message: 'Staff not found' });
+            return res.status(404).json({ success: false, message: 'staff not found' });
         }
 
         // Check if email is being changed and already exists globally
@@ -8701,7 +8701,7 @@ app.put('/api/staff/:id', upload.single('picture'), async (req, res) => {
         if (designation_id !== undefined) {
             if (isNaN(designation_id) && designation_id) {
                 const [designationRows] = await pool.execute(
-                    'SELECT id FROM Designation WHERE name = ?',
+                    'SELECT id FROM designation WHERE name = ?',
                     [designation_id]
                 );
                 if (designationRows.length > 0) {
@@ -8709,7 +8709,7 @@ app.put('/api/staff/:id', upload.single('picture'), async (req, res) => {
                 } else {
                     // Create new designation
                     const [newDesignation] = await pool.execute(
-                        'INSERT INTO Designation (name) VALUES (?)',
+                        'INSERT INTO designation (name) VALUES (?)',
                         [designation_id]
                     );
                     finalDesignationId = newDesignation.insertId;
@@ -8737,15 +8737,15 @@ app.put('/api/staff/:id', upload.single('picture'), async (req, res) => {
 
         // Update staff
         await pool.execute(
-            `UPDATE Staff SET ${updateFields.join(', ')} WHERE id = ?`,
+            `UPDATE staff SET ${updateFields.join(', ')} WHERE id = ?`,
             params
         );
 
         // Get updated staff
         const [updatedRows] = await pool.execute(
             `SELECT s.*, d.name as designation_name 
-             FROM Staff s 
-             LEFT JOIN Designation d ON s.designation_id = d.id 
+             FROM staff s 
+             LEFT JOIN designation d ON s.designation_id = d.id 
              WHERE s.id = ?`,
             [staffId]
         );
@@ -8755,7 +8755,7 @@ app.put('/api/staff/:id', upload.single('picture'), async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Staff updated successfully',
+            message: 'staff updated successfully',
             data: staff
         });
     } catch (error) {
@@ -8773,12 +8773,12 @@ app.delete('/api/staff/:id', async (req, res) => {
 
         // Check if staff exists
         const [existingStaff] = await pool.execute(
-            'SELECT picture FROM Staff WHERE id = ?',
+            'SELECT picture FROM staff WHERE id = ?',
             [staffId]
         );
 
         if (existingStaff.length === 0) {
-            return res.status(404).json({ success: false, message: 'Staff not found' });
+            return res.status(404).json({ success: false, message: 'staff not found' });
         }
 
         // Delete image file if exists
@@ -8788,11 +8788,11 @@ app.delete('/api/staff/:id', async (req, res) => {
         }
 
         // Delete staff from database
-        await pool.execute('DELETE FROM Staff WHERE id = ?', [staffId]);
+        await pool.execute('DELETE FROM staff WHERE id = ?', [staffId]);
 
         res.json({
             success: true,
-            message: 'Staff deleted successfully'
+            message: 'staff deleted successfully'
         });
     } catch (error) {
         console.error('Error deleting staff:', error);
@@ -8801,11 +8801,11 @@ app.delete('/api/staff/:id', async (req, res) => {
 });
 
 
-// Designation CRUD operations
+// designation CRUD operations
 app.get('/api/designations', async (req, res) => {
     try {
         const pool = await getDBPool();
-        const [rows] = await pool.execute('SELECT * FROM Designation ORDER BY name');
+        const [rows] = await pool.execute('SELECT * FROM designation ORDER BY name');
         res.json({ success: true, data: rows });
     } catch (error) {
         console.error('Error fetching designations:', error);
@@ -8820,22 +8820,22 @@ app.post('/api/designations', async (req, res) => {
         const { name } = req.body;
 
         if (!name) {
-            return res.status(400).json({ success: false, message: 'Designation name is required' });
+            return res.status(400).json({ success: false, message: 'designation name is required' });
         }
 
         const [result] = await pool.execute(
-            'INSERT INTO Designation (name) VALUES (?)',
+            'INSERT INTO designation (name) VALUES (?)',
             [name]
         );
 
         res.status(201).json({
             success: true,
-            message: 'Designation created successfully',
+            message: 'designation created successfully',
             data: { id: result.insertId, name }
         });
     } catch (error) {
         if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(400).json({ success: false, message: 'Designation already exists' });
+            return res.status(400).json({ success: false, message: 'designation already exists' });
         }
         console.error('Error creating designation:', error);
         res.status(500).json({ success: false, message: 'Error creating designation' });
@@ -8849,21 +8849,21 @@ app.put('/api/designations/:id', async (req, res) => {
         const { name } = req.body;
 
         if (!name) {
-            return res.status(400).json({ success: false, message: 'Designation name is required' });
+            return res.status(400).json({ success: false, message: 'designation name is required' });
         }
 
         await pool.execute(
-            'UPDATE Designation SET name = ? WHERE id = ?',
+            'UPDATE designation SET name = ? WHERE id = ?',
             [name, req.params.id]
         );
 
         res.json({
             success: true,
-            message: 'Designation updated successfully'
+            message: 'designation updated successfully'
         });
     } catch (error) {
         if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(400).json({ success: false, message: 'Designation already exists' });
+            return res.status(400).json({ success: false, message: 'designation already exists' });
         }
         console.error('Error updating designation:', error);
         res.status(500).json({ success: false, message: 'Error updating designation' });
@@ -8878,7 +8878,7 @@ app.delete('/api/designations/:id', async (req, res) => {
 
         // Check if any staff uses this designation
         const [staffUsing] = await pool.execute(
-            'SELECT COUNT(*) as count FROM Staff WHERE designation_id = ?',
+            'SELECT COUNT(*) as count FROM staff WHERE designation_id = ?',
             [designationId]
         );
 
@@ -8889,11 +8889,11 @@ app.delete('/api/designations/:id', async (req, res) => {
             });
         }
 
-        await pool.execute('DELETE FROM Designation WHERE id = ?', [designationId]);
+        await pool.execute('DELETE FROM designation WHERE id = ?', [designationId]);
 
         res.json({
             success: true,
-            message: 'Designation deleted successfully'
+            message: 'designation deleted successfully'
         });
     } catch (error) {
         console.error('Error deleting designation:', error);
@@ -8906,7 +8906,7 @@ app.delete('/api/designations/:id', async (req, res) => {
 
 
 // ====================================================
-// ✅ Customer Endpoints
+// ✅ customer Endpoints
 // ====================================================
 
 // Get all customers with pagination and search
@@ -8918,8 +8918,8 @@ app.get('/api/customers', async (req, res) => {
         const offset = (page - 1) * limit;
         const search = req.query.search || '';
 
-        let query = `SELECT * FROM Customer WHERE 1=1`;
-        let countQuery = `SELECT COUNT(*) as total FROM Customer WHERE 1=1`;
+        let query = `SELECT * FROM customer WHERE 1=1`;
+        let countQuery = `SELECT COUNT(*) as total FROM customer WHERE 1=1`;
         const params = [];
         const countParams = [];
 
@@ -8965,12 +8965,12 @@ app.get('/api/customers/:id', async (req, res) => {
     try {
         const pool = await getDBPool();
         const [rows] = await pool.execute(
-            'SELECT * FROM Customer WHERE customer_id = ?',
+            'SELECT * FROM customer WHERE customer_id = ?',
             [req.params.id]
         );
 
         if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'Customer not found' });
+            return res.status(404).json({ success: false, message: 'customer not found' });
         }
 
         const customer = rows[0];
@@ -8998,23 +8998,23 @@ app.put('/api/customers/:id/status', async (req, res) => {
 
         // Check if customer exists
         const [existingCustomer] = await pool.execute(
-            'SELECT customer_id FROM Customer WHERE customer_id = ?',
+            'SELECT customer_id FROM customer WHERE customer_id = ?',
             [req.params.id]
         );
 
         if (existingCustomer.length === 0) {
-            return res.status(404).json({ success: false, message: 'Customer not found' });
+            return res.status(404).json({ success: false, message: 'customer not found' });
         }
 
         // Update status
         await pool.execute(
-            'UPDATE Customer SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE customer_id = ?',
+            'UPDATE customer SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE customer_id = ?',
             [status, req.params.id]
         );
 
         // Get updated customer
         const [updatedCustomer] = await pool.execute(
-            'SELECT * FROM Customer WHERE customer_id = ?',
+            'SELECT * FROM customer WHERE customer_id = ?',
             [req.params.id]
         );
 
@@ -9023,7 +9023,7 @@ app.put('/api/customers/:id/status', async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Customer status updated successfully',
+            message: 'customer status updated successfully',
             data: customer
         });
     } catch (error) {
@@ -9036,13 +9036,13 @@ app.put('/api/customers/:id/status', async (req, res) => {
 
 
 // ====================================================
-// ✅ Admin: Receiver Reporting Endpoints
+// ✅ admin: Receiver Reporting Endpoints
 // ====================================================
 
 /**
  * @route   GET /api/admin/receivers-report
  * @desc    Get all complaint receivers with assignment stats
- * @access  Private (Admin)
+ * @access  Private (admin)
  */
 app.get('/api/admin/receivers-report', authenticateToken, async (req, res) => {
     try {
@@ -9065,7 +9065,7 @@ app.get('/api/admin/receivers-report', authenticateToken, async (req, res) => {
                         TIMESTAMPDIFF(MINUTE, c.created_at, sal.changed_at)
                     ), 1
                 )                                                      AS avg_assign_time_mins
-            FROM ComplaintReceiver cr
+            FROM complaintreceiver cr
             LEFT JOIN complaint c
                 ON c.receiver_id = cr.id
             LEFT JOIN (
@@ -9091,7 +9091,7 @@ app.get('/api/admin/receivers-report', authenticateToken, async (req, res) => {
 /**
  * @route   GET /api/admin/receivers-report/:id/details
  * @desc    Get detailed status & staff-assignment logs for a receiver, filtered by date range
- * @access  Private (Admin)
+ * @access  Private (admin)
  * @query   from (YYYY-MM-DD), to (YYYY-MM-DD)
  */
 app.get('/api/admin/receivers-report/:id/details', authenticateToken, async (req, res) => {
@@ -9106,7 +9106,7 @@ app.get('/api/admin/receivers-report/:id/details', authenticateToken, async (req
 
         // 1. Receiver info
         const [receiverRows] = await pool.execute(
-            'SELECT id, name, email, status FROM ComplaintReceiver WHERE id = ?',
+            'SELECT id, name, email, status FROM complaintreceiver WHERE id = ?',
             [receiverId]
         );
         if (receiverRows.length === 0) {
@@ -9126,7 +9126,7 @@ app.get('/api/admin/receivers-report/:id/details', authenticateToken, async (req
             ORDER BY csh.changed_at ASC
         `, [receiverId, from, toEndOfDay]);
 
-        // 3. Staff assignment logs (assignments this receiver made)
+        // 3. staff assignment logs (assignments this receiver made)
         const [staffLogs] = await pool.execute(`
             SELECT
                 sal.complaint_id,
@@ -9136,8 +9136,8 @@ app.get('/api/admin/receivers-report/:id/details', authenticateToken, async (req
                 sal.new_staff_id,
                 sal.changed_at
             FROM staff_assignment_logs sal
-            LEFT JOIN Staff prev_s ON prev_s.id = sal.previous_staff_id
-            LEFT JOIN Staff new_s  ON new_s.id  = sal.new_staff_id
+            LEFT JOIN staff prev_s ON prev_s.id = sal.previous_staff_id
+            LEFT JOIN staff new_s  ON new_s.id  = sal.new_staff_id
             WHERE sal.changed_by_receiver_id = ?
               AND sal.changed_at BETWEEN ? AND ?
             ORDER BY sal.changed_at ASC
@@ -9159,7 +9159,7 @@ app.get('/api/admin/receivers-report/:id/details', authenticateToken, async (req
 
 
 // ====================================================
-// ✅ Admin Profile Endpoints (Self-Service)
+// ✅ admin Profile Endpoints (Self-Service)
 // ====================================================
 
 // Get Own Profile
@@ -9167,10 +9167,10 @@ app.get('/api/admin/profile', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id || req.user.userId;
         const pool = await getDBPool();
-        const [rows] = await pool.execute('SELECT * FROM Admin WHERE id = ?', [userId]);
+        const [rows] = await pool.execute('SELECT * FROM admin WHERE id = ?', [userId]);
 
         if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'Admin not found' });
+            return res.status(404).json({ success: false, message: 'admin not found' });
         }
 
         const { password_hash, ...admin } = rows[0];
@@ -9213,7 +9213,7 @@ app.put('/api/admin/profile', authenticateToken, async (req, res) => {
         params.push(userId);
 
         await pool.execute(
-            `UPDATE Admin SET ${updateFields.join(', ')} WHERE id = ?`,
+            `UPDATE admin SET ${updateFields.join(', ')} WHERE id = ?`,
             params
         );
 
@@ -9231,14 +9231,14 @@ app.put('/api/admin/profile/password', authenticateToken, async (req, res) => {
         const { currentPassword, newPassword } = req.body;
         const pool = await getDBPool();
 
-        const [admin] = await pool.execute('SELECT password_hash FROM Admin WHERE id = ?', [userId]);
+        const [admin] = await pool.execute('SELECT password_hash FROM admin WHERE id = ?', [userId]);
         if (admin.length === 0) return res.status(404).json({ success: false, message: 'User not found' });
 
         const isValid = await bcrypt.compare(currentPassword, admin[0].password_hash);
         if (!isValid) return res.status(400).json({ success: false, message: 'Incorrect current password' });
 
         const newHash = await bcrypt.hash(newPassword, 10);
-        await pool.execute('UPDATE Admin SET password_hash = ? WHERE id = ?', [newHash, userId]);
+        await pool.execute('UPDATE admin SET password_hash = ? WHERE id = ?', [newHash, userId]);
 
         res.json({ success: true, message: 'Password updated successfully' });
     } catch (error) {
@@ -9255,13 +9255,13 @@ app.post('/api/admin/profile/picture', authenticateToken, adminUpload.single('pi
         const picturePath = `/assets/admins/${req.file.filename}`;
         const pool = await getDBPool();
 
-        const [old] = await pool.execute('SELECT picture FROM Admin WHERE id = ?', [userId]);
+        const [old] = await pool.execute('SELECT picture FROM admin WHERE id = ?', [userId]);
         if (old.length > 0 && old[0].picture) {
             const oldPath = path.join(__dirname, old[0].picture);
             if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
         }
 
-        await pool.execute('UPDATE Admin SET picture = ? WHERE id = ?', [picturePath, userId]);
+        await pool.execute('UPDATE admin SET picture = ? WHERE id = ?', [picturePath, userId]);
         res.json({ success: true, message: 'Picture updated', data: { picture: `/assets/admins/${req.file.filename}` } });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Server error' });
@@ -9302,7 +9302,7 @@ app.get('/api/handler/profile', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id || req.user.userId;
         const pool = await getDBPool();
-        const [rows] = await pool.execute('SELECT * FROM ComplaintReceiver WHERE id = ?', [userId]);
+        const [rows] = await pool.execute('SELECT * FROM complaintreceiver WHERE id = ?', [userId]);
 
         if (rows.length === 0) {
             return res.status(404).json({ success: false, message: 'Handler not found' });
@@ -9347,7 +9347,7 @@ app.put('/api/handler/profile', authenticateToken, async (req, res) => {
         params.push(userId);
 
         await pool.execute(
-            `UPDATE ComplaintReceiver SET ${updateFields.join(', ')} WHERE id = ?`,
+            `UPDATE complaintreceiver SET ${updateFields.join(', ')} WHERE id = ?`,
             params
         );
 
@@ -9366,14 +9366,14 @@ app.put('/api/handler/profile/password', authenticateToken, async (req, res) => 
         const { currentPassword, newPassword } = req.body;
         const pool = await getDBPool();
 
-        const [handler] = await pool.execute('SELECT password_hash FROM ComplaintReceiver WHERE id = ?', [userId]);
+        const [handler] = await pool.execute('SELECT password_hash FROM complaintreceiver WHERE id = ?', [userId]);
         if (handler.length === 0) return res.status(404).json({ success: false, message: 'User not found' });
 
         const isValid = await bcrypt.compare(currentPassword, handler[0].password_hash);
         if (!isValid) return res.status(400).json({ success: false, message: 'Incorrect current password' });
 
         const newHash = await bcrypt.hash(newPassword, 10);
-        await pool.execute('UPDATE ComplaintReceiver SET password_hash = ? WHERE id = ?', [newHash, userId]);
+        await pool.execute('UPDATE complaintreceiver SET password_hash = ? WHERE id = ?', [newHash, userId]);
 
         res.json({ success: true, message: 'Password updated successfully' });
     } catch (error) {
@@ -9390,13 +9390,13 @@ app.post('/api/handler/profile/picture', authenticateToken, complaintManagerUplo
         const picturePath = `/assets/cmanager/${req.file.filename}`;
         const pool = await getDBPool();
 
-        const [old] = await pool.execute('SELECT picture FROM ComplaintReceiver WHERE id = ?', [userId]);
+        const [old] = await pool.execute('SELECT picture FROM complaintreceiver WHERE id = ?', [userId]);
         if (old.length > 0 && old[0].picture) {
             const oldPath = path.join(__dirname, old[0].picture);
             if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
         }
 
-        await pool.execute('UPDATE ComplaintReceiver SET picture = ? WHERE id = ?', [picturePath, userId]);
+        await pool.execute('UPDATE complaintreceiver SET picture = ? WHERE id = ?', [picturePath, userId]);
         res.json({ success: true, message: 'Picture updated', data: { picture: `/assets/cmanager/${req.file.filename}` } });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Server error' });
@@ -9419,8 +9419,8 @@ app.get('/api/complaint-receivers', async (req, res) => {
         const offset = (page - 1) * limit;
         const search = req.query.search || '';
 
-        let query = `SELECT * FROM ComplaintReceiver WHERE 1=1`;
-        let countQuery = `SELECT COUNT(*) as total FROM ComplaintReceiver WHERE 1=1`;
+        let query = `SELECT * FROM complaintreceiver WHERE 1=1`;
+        let countQuery = `SELECT COUNT(*) as total FROM complaintreceiver WHERE 1=1`;
         const params = [];
         const countParams = [];
 
@@ -9468,7 +9468,7 @@ app.get('/api/complaint-receivers/:id', async (req, res) => {
     try {
         const pool = await getDBPool();
         const [rows] = await pool.execute(
-            'SELECT * FROM ComplaintReceiver WHERE id = ?',
+            'SELECT * FROM complaintreceiver WHERE id = ?',
             [req.params.id]
         );
 
@@ -9510,7 +9510,7 @@ app.post('/api/complaint-receivers', complaintManagerUpload.single('picture'), a
 
         // Check if ID already exists
         const [existingId] = await pool.execute(
-            'SELECT id FROM ComplaintReceiver WHERE id = ?',
+            'SELECT id FROM complaintreceiver WHERE id = ?',
             [id]
         );
 
@@ -9541,7 +9541,7 @@ app.post('/api/complaint-receivers', complaintManagerUpload.single('picture'), a
 
         // Insert complaint manager
         await pool.execute(
-            `INSERT INTO ComplaintReceiver 
+            `INSERT INTO complaintreceiver 
              (id, name, picture, email, phone_number, status, password_hash) 
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [id, name, picturePath, email, phone_number || null, status, password_hash]
@@ -9549,7 +9549,7 @@ app.post('/api/complaint-receivers', complaintManagerUpload.single('picture'), a
 
         // Get the created manager
         const [newManagerRows] = await pool.execute(
-            'SELECT * FROM ComplaintReceiver WHERE id = ?',
+            'SELECT * FROM complaintreceiver WHERE id = ?',
             [id]
         );
 
@@ -9582,7 +9582,7 @@ app.put('/api/complaint-receivers/:id', complaintManagerUpload.single('picture')
 
         // Check if manager exists
         const [existingManager] = await pool.execute(
-            'SELECT * FROM ComplaintReceiver WHERE id = ?',
+            'SELECT * FROM complaintreceiver WHERE id = ?',
             [managerId]
         );
 
@@ -9635,13 +9635,13 @@ app.put('/api/complaint-receivers/:id', complaintManagerUpload.single('picture')
 
         // Update manager
         await pool.execute(
-            `UPDATE ComplaintReceiver SET ${updateFields.join(', ')} WHERE id = ?`,
+            `UPDATE complaintreceiver SET ${updateFields.join(', ')} WHERE id = ?`,
             params
         );
 
         // Get updated manager
         const [updatedRows] = await pool.execute(
-            'SELECT * FROM ComplaintReceiver WHERE id = ?',
+            'SELECT * FROM complaintreceiver WHERE id = ?',
             [managerId]
         );
 
@@ -9667,7 +9667,7 @@ app.delete('/api/complaint-receivers/:id', async (req, res) => {
 
         // Check if manager exists
         const [existingManager] = await pool.execute(
-            'SELECT picture FROM ComplaintReceiver WHERE id = ?',
+            'SELECT picture FROM complaintreceiver WHERE id = ?',
             [managerId]
         );
 
@@ -9682,7 +9682,7 @@ app.delete('/api/complaint-receivers/:id', async (req, res) => {
         }
 
         // Delete manager from database
-        await pool.execute('DELETE FROM ComplaintReceiver WHERE id = ?', [managerId]);
+        await pool.execute('DELETE FROM complaintreceiver WHERE id = ?', [managerId]);
 
         res.json({
             success: true,
@@ -9707,7 +9707,7 @@ app.delete('/api/complaint-receivers/:id', async (req, res) => {
 app.get('/api/priorities', async (req, res) => {
     try {
         const db = await getDBPool();
-        const [rows] = await db.query('SELECT * FROM Priority ORDER BY value DESC');
+        const [rows] = await db.query('SELECT * FROM priority ORDER BY value DESC');
 
         res.json(rows);
     } catch (error) {
@@ -9720,10 +9720,10 @@ app.get('/api/priorities', async (req, res) => {
 app.get('/api/priorities/:id', async (req, res) => {
     try {
         const db = await getDBPool();
-        const [rows] = await db.query('SELECT * FROM Priority WHERE id = ?', [req.params.id]);
+        const [rows] = await db.query('SELECT * FROM priority WHERE id = ?', [req.params.id]);
 
         if (rows.length === 0) {
-            return res.status(404).json({ error: 'Priority not found' });
+            return res.status(404).json({ error: 'priority not found' });
         }
 
         res.json(rows[0]);
@@ -9750,18 +9750,18 @@ app.post('/api/priorities', async (req, res) => {
 
         // Check for duplicate name
         const db = await getDBPool();
-        const [existing] = await db.query('SELECT id FROM Priority WHERE name = ?', [name]);
+        const [existing] = await db.query('SELECT id FROM priority WHERE name = ?', [name]);
 
         if (existing.length > 0) {
-            return res.status(409).json({ error: 'Priority with this name already exists' });
+            return res.status(409).json({ error: 'priority with this name already exists' });
         }
 
         const [result] = await db.query(
-            'INSERT INTO Priority (name, value) VALUES (?, ?)',
+            'INSERT INTO priority (name, value) VALUES (?, ?)',
             [name, numValue]
         );
 
-        const [newPriority] = await db.query('SELECT * FROM Priority WHERE id = ?', [result.insertId]);
+        const [newPriority] = await db.query('SELECT * FROM priority WHERE id = ?', [result.insertId]);
 
         res.status(201).json(newPriority[0]);
     } catch (error) {
@@ -9787,28 +9787,28 @@ app.put('/api/priorities/:id', async (req, res) => {
 
         // Check if priority exists
         const db = await getDBPool();
-        const [existing] = await db.query('SELECT id FROM Priority WHERE id = ?', [req.params.id]);
+        const [existing] = await db.query('SELECT id FROM priority WHERE id = ?', [req.params.id]);
 
         if (existing.length === 0) {
-            return res.status(404).json({ error: 'Priority not found' });
+            return res.status(404).json({ error: 'priority not found' });
         }
 
         // Check for duplicate name (excluding current priority)
         const [duplicate] = await db.query(
-            'SELECT id FROM Priority WHERE name = ? AND id != ?',
+            'SELECT id FROM priority WHERE name = ? AND id != ?',
             [name, req.params.id]
         );
 
         if (duplicate.length > 0) {
-            return res.status(409).json({ error: 'Priority with this name already exists' });
+            return res.status(409).json({ error: 'priority with this name already exists' });
         }
 
         await db.query(
-            'UPDATE Priority SET name = ?, value = ? WHERE id = ?',
+            'UPDATE priority SET name = ?, value = ? WHERE id = ?',
             [name, numValue, req.params.id]
         );
 
-        const [updatedPriority] = await db.query('SELECT * FROM Priority WHERE id = ?', [req.params.id]);
+        const [updatedPriority] = await db.query('SELECT * FROM priority WHERE id = ?', [req.params.id]);
 
         res.json(updatedPriority[0]);
     } catch (error) {
@@ -9823,10 +9823,10 @@ app.delete('/api/priorities/:id', async (req, res) => {
         const db = await getDBPool();
 
         // Check if priority exists
-        const [existing] = await db.query('SELECT id FROM Priority WHERE id = ?', [req.params.id]);
+        const [existing] = await db.query('SELECT id FROM priority WHERE id = ?', [req.params.id]);
 
         if (existing.length === 0) {
-            return res.status(404).json({ error: 'Priority not found' });
+            return res.status(404).json({ error: 'priority not found' });
         }
 
         // Check if priority is being used (you can add this check based on your business logic)
@@ -9836,9 +9836,9 @@ app.delete('/api/priorities/:id', async (req, res) => {
         //     return res.status(400).json({ error: 'Cannot delete priority that is in use' });
         // }
 
-        await db.query('DELETE FROM Priority WHERE id = ?', [req.params.id]);
+        await db.query('DELETE FROM priority WHERE id = ?', [req.params.id]);
 
-        res.json({ success: true, message: 'Priority deleted successfully' });
+        res.json({ success: true, message: 'priority deleted successfully' });
     } catch (error) {
         console.error('Error deleting priority:', error);
         res.status(500).json({ error: 'Failed to delete priority' });
@@ -10078,7 +10078,7 @@ app.get('/api/found-items', authenticateToken, async (req, res) => {
                     fic.claim_date,
                     fic.status
                  FROM found_item_claims fic
-                 JOIN Customer c ON fic.customer_id = c.customer_id
+                 JOIN customer c ON fic.customer_id = c.customer_id
                  WHERE fic.found_item_id = ?
                  ORDER BY fic.claim_date DESC`,
                 [item.id]
@@ -10143,7 +10143,7 @@ app.get('/api/found-items/:id', authenticateToken, async (req, res) => {
                 CONCAT(fi.location, ', ', fi.city, ', ', fi.state_province, ', ', fi.country) as full_location,
                 CONCAT(fi.location, ' - ', fi.city) as detailedLocation
              FROM found_items fi
-             LEFT JOIN Customer c ON fi.customer_id = c.customer_id
+             LEFT JOIN customer c ON fi.customer_id = c.customer_id
              WHERE fi.id = ?`,
             [id]
         );
@@ -10177,7 +10177,7 @@ app.get('/api/found-items/:id', authenticateToken, async (req, res) => {
                 fic.claim_date,
                 fic.status
              FROM found_item_claims fic
-             JOIN Customer c ON fic.customer_id = c.customer_id
+             JOIN customer c ON fic.customer_id = c.customer_id
              WHERE fic.found_item_id = ?
              ORDER BY fic.claim_date DESC`,
             [id]
@@ -10344,7 +10344,7 @@ app.post('/api/found-items/:id/claims/:claimId/approve', authenticateToken, asyn
         const [claim] = await connection.execute(
             `SELECT fic.id, c.name 
              FROM found_item_claims fic
-             JOIN Customer c ON fic.customer_id = c.customer_id
+             JOIN customer c ON fic.customer_id = c.customer_id
              WHERE fic.id = ? AND fic.found_item_id = ? AND fic.status = 'pending'`,
             [claimId, itemId]
         );
@@ -10484,7 +10484,7 @@ app.get('/api/found-items/stats/summary', authenticateToken, async (req, res) =>
 
 
 // ====================================================
-// ✅ Customer Found Items APIs
+// ✅ customer Found Items APIs
 // ====================================================
 
 // Get items found by the current customer
@@ -10790,7 +10790,7 @@ app.get('/api/handler/found-items-report', authenticateToken, async (req, res) =
                 COALESCE(c.name, '-') as claimedBy
             FROM found_items f
             LEFT JOIN found_item_claims fic ON f.id = fic.found_item_id AND fic.status = 'approved'
-            LEFT JOIN Customer c ON fic.customer_id = c.customer_id
+            LEFT JOIN customer c ON fic.customer_id = c.customer_id
             ORDER BY f.date_found DESC
         `;
 

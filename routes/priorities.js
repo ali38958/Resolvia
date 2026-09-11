@@ -1,5 +1,5 @@
 /**
- * Priority management CRUD
+ * priority management CRUD
  */
 const router = require('express').Router();
 const { getDBPool } = require('../config/db');
@@ -8,7 +8,7 @@ const { authenticateToken } = require('../middleware/auth');
 router.get('/priorities', authenticateToken, async (req, res) => {
     try {
         const db = await getDBPool();
-        const [rows] = await db.query('SELECT * FROM Priority ORDER BY value DESC');
+        const [rows] = await db.query('SELECT * FROM priority ORDER BY value DESC');
 
         res.json(rows);
     } catch (error) {
@@ -20,10 +20,10 @@ router.get('/priorities', authenticateToken, async (req, res) => {
 router.get('/priorities/:id', authenticateToken, async (req, res) => {
     try {
         const db = await getDBPool();
-        const [rows] = await db.query('SELECT * FROM Priority WHERE id = ?', [req.params.id]);
+        const [rows] = await db.query('SELECT * FROM priority WHERE id = ?', [req.params.id]);
 
         if (rows.length === 0) {
-            return res.status(404).json({ error: 'Priority not found' });
+            return res.status(404).json({ error: 'priority not found' });
         }
 
         res.json(rows[0]);
@@ -49,18 +49,18 @@ router.post('/priorities', authenticateToken, async (req, res) => {
 
         // Check for duplicate name
         const db = await getDBPool();
-        const [existing] = await db.query('SELECT id FROM Priority WHERE name = ?', [name]);
+        const [existing] = await db.query('SELECT id FROM priority WHERE name = ?', [name]);
 
         if (existing.length > 0) {
-            return res.status(409).json({ error: 'Priority with this name already exists' });
+            return res.status(409).json({ error: 'priority with this name already exists' });
         }
 
         const [result] = await db.query(
-            'INSERT INTO Priority (name, value) VALUES (?, ?)',
+            'INSERT INTO priority (name, value) VALUES (?, ?)',
             [name, numValue]
         );
 
-        const [newPriority] = await db.query('SELECT * FROM Priority WHERE id = ?', [result.insertId]);
+        const [newPriority] = await db.query('SELECT * FROM priority WHERE id = ?', [result.insertId]);
 
         res.status(201).json(newPriority[0]);
     } catch (error) {
@@ -85,28 +85,28 @@ router.put('/priorities/:id', authenticateToken, async (req, res) => {
 
         // Check if priority exists
         const db = await getDBPool();
-        const [existing] = await db.query('SELECT id FROM Priority WHERE id = ?', [req.params.id]);
+        const [existing] = await db.query('SELECT id FROM priority WHERE id = ?', [req.params.id]);
 
         if (existing.length === 0) {
-            return res.status(404).json({ error: 'Priority not found' });
+            return res.status(404).json({ error: 'priority not found' });
         }
 
         // Check for duplicate name (excluding current priority)
         const [duplicate] = await db.query(
-            'SELECT id FROM Priority WHERE name = ? AND id != ?',
+            'SELECT id FROM priority WHERE name = ? AND id != ?',
             [name, req.params.id]
         );
 
         if (duplicate.length > 0) {
-            return res.status(409).json({ error: 'Priority with this name already exists' });
+            return res.status(409).json({ error: 'priority with this name already exists' });
         }
 
         await db.query(
-            'UPDATE Priority SET name = ?, value = ? WHERE id = ?',
+            'UPDATE priority SET name = ?, value = ? WHERE id = ?',
             [name, numValue, req.params.id]
         );
 
-        const [updatedPriority] = await db.query('SELECT * FROM Priority WHERE id = ?', [req.params.id]);
+        const [updatedPriority] = await db.query('SELECT * FROM priority WHERE id = ?', [req.params.id]);
 
         res.json(updatedPriority[0]);
     } catch (error) {
@@ -120,10 +120,10 @@ router.delete('/priorities/:id', authenticateToken, async (req, res) => {
         const db = await getDBPool();
 
         // Check if priority exists
-        const [existing] = await db.query('SELECT id FROM Priority WHERE id = ?', [req.params.id]);
+        const [existing] = await db.query('SELECT id FROM priority WHERE id = ?', [req.params.id]);
 
         if (existing.length === 0) {
-            return res.status(404).json({ error: 'Priority not found' });
+            return res.status(404).json({ error: 'priority not found' });
         }
 
         // Check if priority is being used (you can add this check based on your business logic)
@@ -133,9 +133,9 @@ router.delete('/priorities/:id', authenticateToken, async (req, res) => {
         //     return res.status(400).json({ error: 'Cannot delete priority that is in use' });
         // }
 
-        await db.query('DELETE FROM Priority WHERE id = ?', [req.params.id]);
+        await db.query('DELETE FROM priority WHERE id = ?', [req.params.id]);
 
-        res.json({ success: true, message: 'Priority deleted successfully' });
+        res.json({ success: true, message: 'priority deleted successfully' });
     } catch (error) {
         console.error('Error deleting priority:', error);
         res.status(500).json({ error: 'Failed to delete priority' });

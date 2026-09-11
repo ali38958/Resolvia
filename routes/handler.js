@@ -46,12 +46,12 @@ router.get('/complaints-report', authenticateToken, async (req, res) => {
                 c.status,
                 s.name as assigned_to
             FROM complaint c
-            LEFT JOIN Natures n ON c.nature_id = n.id
-            LEFT JOIN NatureTypes nt ON c.nature_type_id = nt.id
+            LEFT JOIN natures n ON c.nature_id = n.id
+            LEFT JOIN naturetypes nt ON c.nature_type_id = nt.id
             LEFT JOIN room r ON c.room_id = r.id
             LEFT JOIN floor f ON r.floor_id = f.id
             LEFT JOIN building b ON f.building_id = b.id
-            LEFT JOIN Staff s ON c.staff_id = s.id
+            LEFT JOIN staff s ON c.staff_id = s.id
             WHERE 1=1
         `;
 
@@ -129,7 +129,7 @@ router.get('/daily-report', authenticateToken, async (req, res) => {
                 c.status, 
                 c.created_at as time
              FROM complaint c
-             LEFT JOIN Natures n ON c.nature_id = n.id
+             LEFT JOIN natures n ON c.nature_id = n.id
              WHERE DATE(c.created_at) = ?
              ORDER BY c.created_at DESC`,
             [date]
@@ -153,7 +153,7 @@ router.get('/daily-report', authenticateToken, async (req, res) => {
         const [complaintMatrix] = await pool.execute(
             `SELECT n.name as category, c.status, COUNT(*) as count 
              FROM complaint c
-             JOIN Natures n ON c.nature_id = n.id
+             JOIN natures n ON c.nature_id = n.id
              WHERE DATE(c.created_at) = ?
              GROUP BY n.name, c.status`,
             [date]
@@ -381,7 +381,7 @@ async function getHandlerCategoryDistribution(handlerId) {
     const pool = await getDBPool();
     const [rows] = await pool.execute(`
         SELECT n.name as label, COUNT(c.id) as value
-        FROM Natures n
+        FROM natures n
         LEFT JOIN complaint c ON n.id = c.nature_id AND c.receiver_id = ?
         GROUP BY n.id
         HAVING value > 0
@@ -393,7 +393,7 @@ async function getHandlerCategoryDistribution(handlerId) {
 
 async function getHandlerUserInfo(id) {
     const pool = await getDBPool();
-    const [rows] = await pool.execute('SELECT name, picture FROM ComplaintReceiver WHERE id = ?', [id]);
+    const [rows] = await pool.execute('SELECT name, picture FROM complaintreceiver WHERE id = ?', [id]);
     return rows[0] || { name: 'Unknown Handler', picture: null };
 }
 
@@ -441,7 +441,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id || req.user.userId;
         const pool = await getDBPool();
-        const [rows] = await pool.execute('SELECT * FROM ComplaintReceiver WHERE id = ?', [userId]);
+        const [rows] = await pool.execute('SELECT * FROM complaintreceiver WHERE id = ?', [userId]);
 
         if (rows.length === 0) {
             return res.status(404).json({ success: false, message: 'Handler not found' });
@@ -485,7 +485,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
         params.push(userId);
 
         await pool.execute(
-            `UPDATE ComplaintReceiver SET ${updateFields.join(', ')} WHERE id = ?`,
+            `UPDATE complaintreceiver SET ${updateFields.join(', ')} WHERE id = ?`,
             params
         );
 
@@ -502,14 +502,14 @@ router.put('/profile/password', authenticateToken, async (req, res) => {
         const { currentPassword, newPassword } = req.body;
         const pool = await getDBPool();
 
-        const [handler] = await pool.execute('SELECT password_hash FROM ComplaintReceiver WHERE id = ?', [userId]);
+        const [handler] = await pool.execute('SELECT password_hash FROM complaintreceiver WHERE id = ?', [userId]);
         if (handler.length === 0) return res.status(404).json({ success: false, message: 'User not found' });
 
         const isValid = await bcrypt.compare(currentPassword, handler[0].password_hash);
         if (!isValid) return res.status(400).json({ success: false, message: 'Incorrect current password' });
 
         const newHash = await bcrypt.hash(newPassword, 10);
-        await pool.execute('UPDATE ComplaintReceiver SET password_hash = ? WHERE id = ?', [newHash, userId]);
+        await pool.execute('UPDATE complaintreceiver SET password_hash = ? WHERE id = ?', [newHash, userId]);
 
         res.json({ success: true, message: 'Password updated successfully' });
     } catch (error) {
@@ -525,13 +525,13 @@ router.post('/profile/picture', authenticateToken, complaintManagerUpload.single
         const picturePath = `/assets/cmanager/${req.file.filename}`;
         const pool = await getDBPool();
 
-        const [old] = await pool.execute('SELECT picture FROM ComplaintReceiver WHERE id = ?', [userId]);
+        const [old] = await pool.execute('SELECT picture FROM complaintreceiver WHERE id = ?', [userId]);
         if (old.length > 0 && old[0].picture) {
             const oldPath = path.join(__dirname, '..', old[0].picture);
             if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
         }
 
-        await pool.execute('UPDATE ComplaintReceiver SET picture = ? WHERE id = ?', [picturePath, userId]);
+        await pool.execute('UPDATE complaintreceiver SET picture = ? WHERE id = ?', [picturePath, userId]);
         res.json({ success: true, message: 'Picture updated', data: { picture: `/assets/cmanager/${req.file.filename}` } });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Server error' });
@@ -558,7 +558,7 @@ router.get('/found-items-report', authenticateToken, async (req, res) => {
                 COALESCE(c.name, '-') as claimedBy
             FROM found_items f
             LEFT JOIN found_item_claims fic ON f.id = fic.found_item_id AND fic.status = 'approved'
-            LEFT JOIN Customer c ON fic.customer_id = c.customer_id
+            LEFT JOIN customer c ON fic.customer_id = c.customer_id
             ORDER BY f.date_found DESC
         `;
 

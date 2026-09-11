@@ -14,7 +14,7 @@ router.get('/get-category-list', authenticateToken, async (req, res) => {
 
         const [natures] = await pool.execute(`
             SELECT id, name 
-            FROM Natures 
+            FROM natures 
             ORDER BY name
         `);
 
@@ -22,7 +22,7 @@ router.get('/get-category-list', authenticateToken, async (req, res) => {
         for (const nature of natures) {
             const [types] = await pool.execute(`
                 SELECT id, type_name 
-                FROM NatureTypes 
+                FROM naturetypes 
                 WHERE nature_id = ?
                 ORDER BY type_name
             `, [nature.id]);
@@ -96,14 +96,14 @@ router.get('/get-all-complaints', authenticateToken, async (req, res) => {
                 col.id as colony_id,
                 col.name as colony_name,
                 
-                -- Customer info
+                -- customer info
                 cust.customer_id,
                 cust.name as customer_name,
                 cust.email as customer_email,
                 cust.phone_number as customer_phone,
                 cust.picture as customer_picture,
                 
-                -- Staff/Resolver info
+                -- staff/Resolver info
                 s.id as staff_id,
                 s.name as staff_name,
                 s.phone as staff_phone,
@@ -117,22 +117,22 @@ router.get('/get-all-complaints', authenticateToken, async (req, res) => {
                 rec.email as receiver_email,
                 rec.picture as receiver_picture,
                 
-                -- Priority
+                -- priority
                 p.id as priority_id,
                 p.name as priority_name
                 
             FROM complaint c
-            LEFT JOIN Natures n ON c.nature_id = n.id
-            LEFT JOIN NatureTypes nt ON c.nature_type_id = nt.id
+            LEFT JOIN natures n ON c.nature_id = n.id
+            LEFT JOIN naturetypes nt ON c.nature_type_id = nt.id
             LEFT JOIN room r ON c.room_id = r.id
             LEFT JOIN floor f ON r.floor_id = f.id
             LEFT JOIN building b ON f.building_id = b.id
             LEFT JOIN colony col ON b.colony_id = col.id
-            LEFT JOIN Customer cust ON c.customer_id = cust.customer_id
-            LEFT JOIN Staff s ON c.staff_id = s.id
-            LEFT JOIN Designation d ON s.designation_id = d.id
-            LEFT JOIN ComplaintReceiver rec ON c.receiver_id = rec.id
-            LEFT JOIN Priority p ON c.priority_id = p.id
+            LEFT JOIN customer cust ON c.customer_id = cust.customer_id
+            LEFT JOIN staff s ON c.staff_id = s.id
+            LEFT JOIN designation d ON s.designation_id = d.id
+            LEFT JOIN complaintreceiver rec ON c.receiver_id = rec.id
+            LEFT JOIN priority p ON c.priority_id = p.id
             WHERE 1=1
         `;
 
@@ -190,14 +190,14 @@ router.get('/get-all-complaints', authenticateToken, async (req, res) => {
             countParams.push(natureId);
         }
 
-        // STAFF ID FILTER
+        // staff ID FILTER
         if (staffId) {
             baseQuery += ' AND c.staff_id = ?';
             queryParams.push(staffId);
             countParams.push(staffId);
         }
 
-        // CUSTOMER ID FILTER
+        // customer ID FILTER
         if (customerId) {
             baseQuery += ' AND c.customer_id = ?';
             queryParams.push(customerId);
@@ -218,11 +218,11 @@ router.get('/get-all-complaints', authenticateToken, async (req, res) => {
         // ========== BUILD COUNT QUERY WITH JOINS IF NEEDED ==========
         if (needsCountJoins) {
             countQuery += `
-                LEFT JOIN Natures n ON c.nature_id = n.id
-                LEFT JOIN NatureTypes nt ON c.nature_type_id = nt.id
+                LEFT JOIN natures n ON c.nature_id = n.id
+                LEFT JOIN naturetypes nt ON c.nature_type_id = nt.id
                 LEFT JOIN room r ON c.room_id = r.id
-                LEFT JOIN Customer cust ON c.customer_id = cust.customer_id
-                LEFT JOIN Staff s ON c.staff_id = s.id
+                LEFT JOIN customer cust ON c.customer_id = cust.customer_id
+                LEFT JOIN staff s ON c.staff_id = s.id
             `;
         }
 
@@ -345,7 +345,7 @@ router.get('/get-all-complaints', authenticateToken, async (req, res) => {
                 email: c.staff_email,
                 phone: c.staff_phone,
                 picture: c.staff_picture,
-                designation: c.staff_designation || 'Staff'
+                designation: c.staff_designation || 'staff'
             } : null,
 
             updatedBy: c.receiver_id ? {
@@ -414,7 +414,7 @@ router.get('/view-details/:complaintId', authenticateToken, async (req, res) => 
                 col.id as colony_id,
                 col.name as colony_name,
                 
-                -- Customer info
+                -- customer info
                 cust.customer_id,
                 cust.name as customer_name,
                 cust.email as customer_email,
@@ -422,7 +422,7 @@ router.get('/view-details/:complaintId', authenticateToken, async (req, res) => 
                 cust.picture as customer_picture,
                 cust.status as customer_status,
                 
-                -- Staff/Resolver info - ✅ FIXED: Get all staff fields
+                -- staff/Resolver info - ✅ FIXED: Get all staff fields
                 s.id as staff_id,
                 s.name as staff_name,
                 s.phone as staff_phone,
@@ -432,29 +432,29 @@ router.get('/view-details/:complaintId', authenticateToken, async (req, res) => 
                 d.id as designation_id,
                 d.name as designation_name,
                 
-                -- ✅ FIXED: Receiver/Updated By info from ComplaintReceiver
+                -- ✅ FIXED: Receiver/Updated By info from complaintreceiver
                 rec.id as receiver_id,
                 rec.name as receiver_name,
                 rec.email as receiver_email,
                 rec.picture as receiver_picture,
                 rec.status as receiver_status,
                 
-                -- Priority
+                -- priority
                 p.id as priority_id,
                 p.name as priority_name
                 
             FROM complaint c
-            LEFT JOIN Natures n ON c.nature_id = n.id
-            LEFT JOIN NatureTypes nt ON c.nature_type_id = nt.id
+            LEFT JOIN natures n ON c.nature_id = n.id
+            LEFT JOIN naturetypes nt ON c.nature_type_id = nt.id
             LEFT JOIN room r ON c.room_id = r.id
             LEFT JOIN floor f ON r.floor_id = f.id
             LEFT JOIN building b ON f.building_id = b.id
             LEFT JOIN colony col ON b.colony_id = col.id
-            LEFT JOIN Customer cust ON c.customer_id = cust.customer_id
-            LEFT JOIN Staff s ON c.staff_id = s.id
-            LEFT JOIN Designation d ON s.designation_id = d.id
-            LEFT JOIN ComplaintReceiver rec ON c.receiver_id = rec.id
-            LEFT JOIN Priority p ON c.priority_id = p.id
+            LEFT JOIN customer cust ON c.customer_id = cust.customer_id
+            LEFT JOIN staff s ON c.staff_id = s.id
+            LEFT JOIN designation d ON s.designation_id = d.id
+            LEFT JOIN complaintreceiver rec ON c.receiver_id = rec.id
+            LEFT JOIN priority p ON c.priority_id = p.id
             WHERE c.id = ?
         `;
 
@@ -484,7 +484,7 @@ router.get('/view-details/:complaintId', authenticateToken, async (req, res) => 
             });
         }
 
-        // Get status history with ComplaintReceiver details
+        // Get status history with complaintreceiver details
         const [history] = await pool.execute(
             `SELECT 
                 h.*,
@@ -492,7 +492,7 @@ router.get('/view-details/:complaintId', authenticateToken, async (req, res) => 
                 cr.email as changed_by_email,
                 cr.picture as changed_by_picture
              FROM complaint_status_history h
-             LEFT JOIN ComplaintReceiver cr ON h.changed_by_receiver_id = cr.id
+             LEFT JOIN complaintreceiver cr ON h.changed_by_receiver_id = cr.id
              WHERE h.complaint_id = ?
              ORDER BY h.changed_at DESC`,
             [complaintId]
@@ -678,7 +678,7 @@ router.get('/get-active-staff-list', authenticateToken, async (req, res) => {
         if (!allowedRoles.includes(userRole) && !allowedRoles.includes(userType)) {
             return res.status(403).json({
                 success: false,
-                message: 'Access denied. Requires ComplaintReceiver or Admin privileges.',
+                message: 'Access denied. Requires complaintreceiver or admin privileges.',
                 debug: { role: userRole, userType: userType }
             });
         }
@@ -695,8 +695,8 @@ router.get('/get-active-staff-list', authenticateToken, async (req, res) => {
                 s.status,
                 d.id as designation_id,
                 d.name as designation_name
-            FROM Staff s
-            LEFT JOIN Designation d ON s.designation_id = d.id
+            FROM staff s
+            LEFT JOIN designation d ON s.designation_id = d.id
             WHERE s.status = 'Active'
             ORDER BY s.name
         `;
@@ -920,7 +920,7 @@ router.post('/register-new-complaint', authenticateToken, async (req, res) => {
 
 router.put('/update-complaint-status/:complaintId', authenticateToken, async (req, res) => {
     try {
-        // Check for ComplaintReceiver role
+        // Check for complaintreceiver role
         if (req.user.role !== 'complaintreceiver' && req.user.role !== 'admin' && req.user.role !== 'superadmin') {
             return res.status(403).json({
                 success: false,
@@ -930,7 +930,7 @@ router.put('/update-complaint-status/:complaintId', authenticateToken, async (re
 
         const { status } = req.body;
         const complaintId = req.params.complaintId;
-        const receiverId = req.user.id; // This is from ComplaintReceiver table
+        const receiverId = req.user.id; // This is from complaintreceiver table
 
         if (!status) {
             return res.status(400).json({
@@ -974,7 +974,7 @@ router.put('/update-complaint-status/:complaintId', authenticateToken, async (re
         await connection.beginTransaction();
 
         try {
-            // ✅ FIXED: Update receiver_id with the ComplaintReceiver who is updating
+            // ✅ FIXED: Update receiver_id with the complaintreceiver who is updating
             // This ensures the complaint shows who last updated it
             let updateQuery = 'UPDATE complaint SET status = ?, receiver_id = ?, updated_at = NOW()';
             const params = [status, receiverId];
@@ -1006,7 +1006,7 @@ router.put('/update-complaint-status/:complaintId', authenticateToken, async (re
                     cr.email as receiver_email,
                     cr.picture as receiver_picture
                  FROM complaint c
-                 LEFT JOIN ComplaintReceiver cr ON c.receiver_id = cr.id
+                 LEFT JOIN complaintreceiver cr ON c.receiver_id = cr.id
                  WHERE c.id = ?`,
                 [complaintId]
             );
@@ -1023,7 +1023,7 @@ router.put('/update-complaint-status/:complaintId', authenticateToken, async (re
                         name: req.user.name || updatedComplaint[0]?.receiver_name,
                         email: req.user.email || updatedComplaint[0]?.receiver_email,
                         picture: updatedComplaint[0]?.receiver_picture,
-                        type: 'ComplaintReceiver'
+                        type: 'complaintreceiver'
                     }
                 }
             });
@@ -1055,12 +1055,12 @@ router.put('/assign-resolver/:complaintId', authenticateToken, async (req, res) 
 
         const { staff_id } = req.body;
         const complaintId = req.params.complaintId;
-        const receiverId = req.user.id; // This is from ComplaintReceiver table
+        const receiverId = req.user.id; // This is from complaintreceiver table
 
         if (!staff_id) {
             return res.status(400).json({
                 success: false,
-                message: 'Staff ID is required'
+                message: 'staff ID is required'
             });
         }
 
@@ -1068,14 +1068,14 @@ router.put('/assign-resolver/:complaintId', authenticateToken, async (req, res) 
 
         // Check if staff exists and is active
         const [staff] = await pool.execute(
-            'SELECT id, name, email, phone, picture FROM Staff WHERE id = ? AND status = "Active"',
+            'SELECT id, name, email, phone, picture FROM staff WHERE id = ? AND status = "Active"',
             [staff_id]
         );
 
         if (staff.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Staff member not found or inactive'
+                message: 'staff member not found or inactive'
             });
         }
 
@@ -1134,7 +1134,7 @@ router.put('/assign-resolver/:complaintId', authenticateToken, async (req, res) 
                     cr.email as receiver_email,
                     cr.picture as receiver_picture
                  FROM complaint c
-                 LEFT JOIN ComplaintReceiver cr ON c.receiver_id = cr.id
+                 LEFT JOIN complaintreceiver cr ON c.receiver_id = cr.id
                  WHERE c.id = ?`,
                 [complaintId]
             );
@@ -1156,7 +1156,7 @@ router.put('/assign-resolver/:complaintId', authenticateToken, async (req, res) 
                         name: req.user.name || updatedComplaint[0]?.receiver_name,
                         email: req.user.email || updatedComplaint[0]?.receiver_email,
                         picture: updatedComplaint[0]?.receiver_picture,
-                        type: 'ComplaintReceiver'
+                        type: 'complaintreceiver'
                     }
                 }
             });
@@ -1189,7 +1189,7 @@ router.get('/get-complaint-history/:complaintId', authenticateToken, async (req,
                 cr.name as changed_by_name,
                 cr.email as changed_by_email
             FROM complaint_status_history h
-            LEFT JOIN ComplaintReceiver cr ON h.changed_by_receiver_id = cr.id
+            LEFT JOIN complaintreceiver cr ON h.changed_by_receiver_id = cr.id
             WHERE h.complaint_id = ?
             ORDER BY h.changed_at DESC
         `;
@@ -1205,7 +1205,7 @@ router.get('/get-complaint-history/:complaintId', authenticateToken, async (req,
                 id: h.changed_by_receiver_id,
                 name: h.changed_by_name || 'Unknown',
                 email: h.changed_by_email,
-                type: 'ComplaintReceiver'
+                type: 'complaintreceiver'
             }
         }));
 
@@ -1251,9 +1251,9 @@ router.get('/get-customer-complaints/:customerId', authenticateToken, async (req
                 s.name as resolver_name,
                 s.id as resolver_id
             FROM complaint c
-            LEFT JOIN Natures n ON c.nature_id = n.id
-            LEFT JOIN NatureTypes nt ON c.nature_type_id = nt.id
-            LEFT JOIN Staff s ON c.staff_id = s.id
+            LEFT JOIN natures n ON c.nature_id = n.id
+            LEFT JOIN naturetypes nt ON c.nature_type_id = nt.id
+            LEFT JOIN staff s ON c.staff_id = s.id
             WHERE c.customer_id = ?
             ORDER BY c.created_at DESC
         `;
@@ -1279,7 +1279,7 @@ router.delete('/remove-complaint/:complaintId', authenticateToken, async (req, r
         if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
             return res.status(403).json({
                 success: false,
-                message: 'Access denied. Admin privileges required.'
+                message: 'Access denied. admin privileges required.'
             });
         }
 
@@ -1329,7 +1329,7 @@ router.get('/get-receiver-info/:receiverId', authenticateToken, async (req, res)
 
         const query = `
             SELECT id, name, email, phone, status
-            FROM ComplaintReceiver
+            FROM complaintreceiver
             WHERE id = ?
         `;
 
@@ -1338,7 +1338,7 @@ router.get('/get-receiver-info/:receiverId', authenticateToken, async (req, res)
         if (receivers.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'ComplaintReceiver not found'
+                message: 'complaintreceiver not found'
             });
         }
 
