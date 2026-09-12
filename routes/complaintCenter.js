@@ -280,7 +280,7 @@ router.get('/get-all-complaints', authenticateToken, async (req, res) => {
 
         // Add sorting and pagination to main query
         baseQuery += ' ORDER BY c.created_at DESC LIMIT ? OFFSET ?';
-        queryParams.push(limit, offset);
+        queryParams.push(String(limit), String(offset));
 
         // Execute main query
         const [complaints] = await pool.execute(baseQuery, queryParams);

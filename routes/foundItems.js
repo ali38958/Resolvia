@@ -167,7 +167,7 @@ router.get('/found-items', authenticateToken, async (req, res) => {
             LIMIT ? OFFSET ?
         `;
 
-        const paginatedParams = [...queryParams, parseInt(limit), parseInt(offset)];
+        const paginatedParams = [...queryParams, String(limit), String(offset)];
         const [items] = await pool.execute(itemsQuery, paginatedParams);
 
         // For each item, get its pictures and claims

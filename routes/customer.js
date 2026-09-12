@@ -661,7 +661,7 @@ router.get('/complaints', authenticateToken, async (req, res) => {
         `;
 
         // Add pagination params
-        const dataParams = [...queryParams, limit, offset];
+        const dataParams = [...queryParams, String(limit), String(offset)];
 
         const [complaints] = await pool.execute(dataQuery, dataParams);
 
@@ -752,7 +752,7 @@ router.get('/my-found-items', authenticateToken, async (req, res) => {
             LIMIT ? OFFSET ?
         `;
 
-        const paginatedParams = [...queryParams, parseInt(limit), parseInt(offset)];
+        const paginatedParams = [...queryParams, String(limit), String(offset)];
         const [items] = await pool.execute(itemsQuery, paginatedParams);
 
         // Fetch pictures for each item and map status
@@ -836,7 +836,7 @@ router.get('/found-items', authenticateToken, async (req, res) => {
             LIMIT ? OFFSET ?
         `;
 
-        const paginatedParams = [...queryParams, parseInt(limit), parseInt(offset)];
+        const paginatedParams = [...queryParams, String(limit), String(offset)];
         const [items] = await pool.execute(itemsQuery, paginatedParams);
 
         // Fetch pictures for each item
