@@ -36,7 +36,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 2 * 1024 * 1024 },
+    limits: { fileSize: 10 * 1024 * 1024 },
     fileFilter: createImageFilter()
 });
 
@@ -57,7 +57,7 @@ const customerStorage = multer.diskStorage({
 
 const customerUpload = multer({
     storage: customerStorage,
-    limits: { fileSize: 2 * 1024 * 1024 },
+    limits: { fileSize: 10 * 1024 * 1024 },
     fileFilter: createImageFilter()
 });
 
@@ -78,7 +78,7 @@ const staffStorage = multer.diskStorage({
 
 const staffUpload = multer({
     storage: staffStorage,
-    limits: { fileSize: 2 * 1024 * 1024 },
+    limits: { fileSize: 10 * 1024 * 1024 },
     fileFilter: createImageFilter()
 });
 
@@ -97,7 +97,7 @@ const adminStorage = multer.diskStorage({
 
 const adminUpload = multer({
     storage: adminStorage,
-    limits: { fileSize: 2 * 1024 * 1024 },
+    limits: { fileSize: 10 * 1024 * 1024 },
     fileFilter: createImageFilter()
 });
 
@@ -116,7 +116,7 @@ const complaintManagerStorage = multer.diskStorage({
 
 const complaintManagerUpload = multer({
     storage: complaintManagerStorage,
-    limits: { fileSize: 2 * 1024 * 1024 },
+    limits: { fileSize: 10 * 1024 * 1024 },
     fileFilter: createImageFilter()
 });
 
@@ -156,7 +156,7 @@ const buildingStorage = multer.diskStorage({
 
 const buildingUpload = multer({
     storage: buildingStorage,
-    limits: { fileSize: 2 * 1024 * 1024 },
+    limits: { fileSize: 10 * 1024 * 1024 },
     fileFilter: createImageFilter()
 });
 
@@ -175,7 +175,7 @@ const floorStorage = multer.diskStorage({
 
 const floorUpload = multer({
     storage: floorStorage,
-    limits: { fileSize: 2 * 1024 * 1024 },
+    limits: { fileSize: 10 * 1024 * 1024 },
     fileFilter: createImageFilter()
 });
 
