@@ -768,7 +768,7 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            if (file.size > 2 * 1024 * 1024) { showToast('Image must be under 2MB', 'error'); this.value = ''; return; }
+            if (file.size > 10 * 1024 * 1024) { showToast('Image must be under 10MB', 'error'); this.value = ''; return; }
             if (!file.type.match('image.*')) { showToast('Please select an image file', 'error'); this.value = ''; return; }
 
             // Preview

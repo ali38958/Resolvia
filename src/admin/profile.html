@@ -685,7 +685,7 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            if (file.size > 2 * 1024 * 1024) {
+            if (file.size > 10 * 1024 * 1024) {
                 showToast('File size must be less than 2 MB.', 'error'); this.value = ''; return;
             }
             if (!['image/jpeg', 'image/jpg', 'image/png', 'image/gif'].includes(file.type)) {
