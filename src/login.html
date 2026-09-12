@@ -759,20 +759,14 @@
                     showNotification('Login successful! Redirecting...', 'success');
 
                     // Store user data in localStorage if needed
-                    // In login.html, inside the form submit event handler
-                    if (response.data.success) {
-                        showNotification('Login successful! Redirecting...', 'success');
-
-                        // Store user data in localStorage if needed
-                        if (response.data.user) {
-                            localStorage.setItem('user', JSON.stringify(response.data.user));
-                        }
-
-                        // Redirect to /dashboard after a short delay
-                        setTimeout(() => {
-                            window.location.href = 'customer/dashboard';
-                        }, 1500);
+                    if (response.data.user) {
+                        localStorage.setItem('user', JSON.stringify(response.data.user));
                     }
+
+                    // Redirect to /dashboard after a short delay
+                    setTimeout(() => {
+                        window.location.href = 'customer/dashboard';
+                    }, 1500);
                 }
             } catch (error) {
                 console.error('Login error:', error);
